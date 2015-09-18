@@ -1,3 +1,7 @@
+/**
+ * connects to the queue and subscribes the WorkerConsumer on the queue
+ */
+
 package ch.swisscom.graviton.javaworker;
 
 import java.io.IOException;
@@ -10,16 +14,30 @@ import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 import com.rabbitmq.client.*;
 
 /**
- * Created by dn on 17.09.15.
+ * @author List of contributors
+ *         <https://github.com/libgraviton/graviton/graphs/contributors>
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ * @link http://swisscom.ch
  */
 public class Worker {
 
+    /**
+     * exchange name
+     */
     private static final String EXCHANGE_NAME = "graviton";
-    
+
+    /**
+     * properties
+     */
     private Properties properties;
 
+    /**
+     * initializes all
+     * 
+     * @return void
+     */
     public void run() {
-        
+
         try {
             this.loadProperties();
             this.applyVcapConfig();
@@ -29,22 +47,26 @@ public class Worker {
             e.printStackTrace();
         } catch (Exception e) {
             System.out.println("Could not parse VCAP configuration: " + e.getMessage());
-            e.printStackTrace();            
+            e.printStackTrace();
         }
     }
-    
+
     /**
+     * connects to the queue
+     * 
      * @throws java.io.IOException
+     * 
+     * @return void
      */
     private void connectToQueue() throws IOException {
-        
+
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(this.properties.getProperty("queue.host"));
         factory.setPort(Integer.parseInt(this.properties.getProperty("queue.port")));
         factory.setUsername(this.properties.getProperty("queue.username"));
         factory.setPassword(this.properties.getProperty("queue.password"));
         factory.setVirtualHost(this.properties.getProperty("queue.vhost"));
-        
+
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
@@ -54,13 +76,18 @@ public class Worker {
         channel.queueBind(queueName, EXCHANGE_NAME, "document.core.app.*");
 
         System.out.println(" [*] Waiting for messages.");
-        
+
         WorkerConsumer consumer = new WorkerConsumer(channel, this.properties);
-        
+
         channel.basicQos(2);
         channel.basicConsume(queueName, false, consumer);
-    }    
-    
+    }
+
+    /**
+     * loads the properties
+     * 
+     * @return void
+     */
     private void loadProperties() {
         this.properties = new Properties();
         try {
@@ -68,15 +95,17 @@ public class Worker {
         } catch (Exception e1) {
             System.out.println("Could not load properties: " + e1.getMessage());
             e1.printStackTrace();
-        }        
+        }
     }
-    
+
     /**
      * Let's see if we have VCAP ENV vars that we should apply to configuration
      * 
      * @return void
-     * @throws IOException 
-     * @throws JSONObjectException 
+     * @throws IOException
+     * @throws JSONObjectException
+     * 
+     * @return void
      */
     private void applyVcapConfig() throws Exception {
         String vcap = System.getenv("VCAP_SERVICES");
