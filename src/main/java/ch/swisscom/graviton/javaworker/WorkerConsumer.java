@@ -55,7 +55,7 @@ public class WorkerConsumer extends DefaultConsumer {
         if (statusUrl == null || documentUrl == null) {
             return;
         }
-        
+
         this.setStatus(statusUrl, "working");
         System.out.println(" [x] Updated status to 'working' on '" + statusUrl + "'");
         
@@ -100,7 +100,7 @@ public class WorkerConsumer extends DefaultConsumer {
             Unirest.put(statusUrl)
                     .header("Content-Type", "application/json")
                     .body(JSON.std.asString(ob))
-                    .asJson();
+                    .asString();
             
         } catch (UnirestException e) {
             System.out.println("Error GETting Status resource: " + e.getMessage());
@@ -111,9 +111,10 @@ public class WorkerConsumer extends DefaultConsumer {
         } catch (IOException e) {
             System.out.println("Network error on Status update: " + e.getMessage());
             e.printStackTrace();
-        }  
-        
-        
+        } catch (Exception e) {
+            System.out.println("Different exception on status set! " + e.getMessage());
+            e.printStackTrace();            
+        }
     } 
     
     private String getResponseRefPart(DeferredMap map, String property) {
@@ -137,14 +138,14 @@ public class WorkerConsumer extends DefaultConsumer {
                 .startObject()
                 .put("color", "yellow")
                 .put("message", body)
-                .put("notify", true)
+                .put("notify", false)
                 .end()
                 .finish();
         
-        HttpResponse<JsonNode> jsonResponse = Unirest.post(this.properties.getProperty("graviton.hipchatUrl"))
+        HttpResponse<String> jsonResponse = Unirest.post(this.properties.getProperty("graviton.hipchatUrl"))
                 .header("Content-Type", "application/json")
                 .body(hipchat)
-                .asJson();        
+                .asString();        
         
         System.out.println(" [*] Hipchat POST response code: " + jsonResponse.getStatus());
     }
