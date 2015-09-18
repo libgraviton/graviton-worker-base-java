@@ -2,6 +2,7 @@ package ch.swisscom.graviton.javaworker;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.jr.ob.JSON;
@@ -18,10 +19,14 @@ import com.rabbitmq.client.Envelope;
 
 public class WorkerConsumer extends DefaultConsumer {
     
-    private String workerId = "java-test";
+    private String workerId;
+    private Properties properties;
 
-    public WorkerConsumer(Channel channel) {
+    public WorkerConsumer(Channel channel, Properties properties) {
         super(channel);
+        
+        this.properties = properties;
+        this.workerId = this.properties.getProperty("graviton.workerId");
         
         try {
             this.registerWorker();
@@ -62,6 +67,10 @@ public class WorkerConsumer extends DefaultConsumer {
         }
         
         this.setStatus(statusUrl, "done");
+        
+        // send ACK to queue
+        this.getChannel().basicAck(envelope.getDeliveryTag(), false);
+        
         System.out.println(" [x] Updated status to 'done' on '" + statusUrl + "'");
     }
     
@@ -132,8 +141,7 @@ public class WorkerConsumer extends DefaultConsumer {
                 .end()
                 .finish();
         
-        HttpResponse<JsonNode> jsonResponse = Unirest.post("https://api.hipchat.com/v2/room/1914209/notification?" +
-                "auth_token=xM4CA5Fc9FZtjRFyOADFv57Ln7hVO4kjlfzkJ0t8")
+        HttpResponse<JsonNode> jsonResponse = Unirest.post(this.properties.getProperty("graviton.hipchatUrl"))
                 .header("Content-Type", "application/json")
                 .body(hipchat)
                 .asJson();        
@@ -149,13 +157,13 @@ public class WorkerConsumer extends DefaultConsumer {
                 .put("id", "java-test")
                 .startArrayField("subscription")
                     .startObject()
-                    .put("event", "document.core.app.*")
+                    .put("event", this.properties.getProperty("graviton.subscription"))
                     .end()
                 .end()
                 .end()
                 .finish();
         
-        HttpResponse<JsonNode> jsonResponse = Unirest.put("http://localhost:8000/event/worker/{workerId}")
+        HttpResponse<JsonNode> jsonResponse = Unirest.put(this.properties.getProperty("graviton.registerUrl"))
                 .routeParam("workerId", this.workerId)
                 .header("Content-Type", "application/json")
                 .body(register)

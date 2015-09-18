@@ -1,0 +1,10 @@
+---
+applications:
+- name: graviton-event-worker-java
+  buildpack: https://github.com/cloudfoundry/java-buildpack.git
+  instances: 1
+  path: target/javaworker-0.1.0-SNAPSHOT.jar
+  no-route: true
+  memory: 256M
+  services:
+    - graviton-event-unstable-rabbitmq
