@@ -5,6 +5,7 @@
 package ch.swisscom.graviton.javaworker;
 
 import ch.swisscom.graviton.javaworker.lib.Worker;
+import ch.swisscom.graviton.javaworker.lib.WorkerAbstract;
 
 /**
  * @author List of contributors
@@ -20,6 +21,10 @@ public class Wrapper {
      * @param args
      */
     public static void main(String[] args) {
-        new Worker().run();
+        
+        WorkerAbstract exampleWorker = new ExampleWorker();
+        
+        Worker worker = new Worker(exampleWorker);
+        worker.run();
     }
 }

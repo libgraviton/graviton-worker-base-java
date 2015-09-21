@@ -23,15 +23,41 @@ import com.rabbitmq.client.*;
 public class Worker {
 
     /**
-     * exchange name
-     */
-    private static final String EXCHANGE_NAME = "graviton";
-
-    /**
      * properties
      */
     private Properties properties;
-
+    
+    /**
+     * worker
+     */
+    private WorkerAbstract worker;
+    
+    public Worker(WorkerAbstract worker) {
+        
+        try {
+            this.loadProperties();
+        } catch (Exception e) {
+            System.out.println("FATAL ERROR while reading configuration: " + e.getMessage());
+            System.exit(-1);
+        }
+        
+        try {
+            this.applyVcapConfig();
+        } catch (Exception e) {
+            System.out.println("FATAL ERROR while reading vcap configuration: " + e.getMessage());
+            System.exit(-1);
+        }
+        
+        try {
+            worker.initialize(properties);
+            this.worker = worker;
+        } catch (Exception e) {
+            System.out.println("Could not initialize worker: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(-1);
+        }
+    }
+    
     /**
      * initializes all
      * 
@@ -40,16 +66,11 @@ public class Worker {
     public void run() {
 
         try {
-            this.loadProperties();
-            this.applyVcapConfig();
             this.connectToQueue();
         } catch (IOException e) {
             System.out.println("Problem connecting to the queue: " + e.getMessage());
             e.printStackTrace();
-        } catch (Exception e) {
-            System.out.println("Could not parse VCAP configuration: " + e.getMessage());
-            e.printStackTrace();
-        }
+        } 
     }
 
     /**
@@ -72,14 +93,19 @@ public class Worker {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        channel.exchangeDeclare(EXCHANGE_NAME, "topic", true);
+        String exchangeName = this.properties.getProperty("queue.exchangeName");
+        String bindKey = this.properties.getProperty("queue.bindKey");
+        
+        channel.exchangeDeclare(exchangeName, "topic", true);
         String queueName = channel.queueDeclare().getQueue();
 
-        channel.queueBind(queueName, EXCHANGE_NAME, "document.core.app.*");
-
+        channel.queueBind(queueName, exchangeName, bindKey);
+        
+        System.out.println(" [*] Subscribed on topic exchange '"+exchangeName+"' using binding key '"+bindKey+"'.");
         System.out.println(" [*] Waiting for messages.");
 
-        WorkerConsumer consumer = new WorkerConsumer(channel, this.properties);
+        // get our consumer
+        WorkerConsumer consumer = new WorkerConsumer(channel, this.properties, this.worker);
 
         channel.basicQos(2);
         channel.basicConsume(queueName, true, consumer);
