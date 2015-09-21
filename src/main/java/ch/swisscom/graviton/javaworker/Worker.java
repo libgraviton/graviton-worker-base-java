@@ -5,6 +5,7 @@
 package ch.swisscom.graviton.javaworker;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -92,7 +93,19 @@ public class Worker {
     private void loadProperties() {
         this.properties = new Properties();
         try {
-            this.properties.load(ClassLoader.getSystemResourceAsStream("properties.properties"));
+            
+            // load defaults
+            InputStream defaultProps = this.getClass().getClassLoader().getResourceAsStream("default.properties");
+            this.properties.load(defaultProps);
+            defaultProps.close();
+            
+            // overrides?
+            InputStream appProps = this.getClass().getClassLoader().getResourceAsStream("app.properties");
+            if (appProps != null) {
+                this.properties.load(appProps);
+                appProps.close();
+            }
+            
         } catch (Exception e1) {
             System.out.println("Could not load properties: " + e1.getMessage());
             e1.printStackTrace();
