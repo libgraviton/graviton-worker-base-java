@@ -66,6 +66,7 @@ public class Worker {
         factory.setUsername(this.properties.getProperty("queue.username"));
         factory.setPassword(this.properties.getProperty("queue.password"));
         factory.setVirtualHost(this.properties.getProperty("queue.vhost"));
+        factory.setAutomaticRecoveryEnabled(true);
 
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
@@ -80,7 +81,7 @@ public class Worker {
         WorkerConsumer consumer = new WorkerConsumer(channel, this.properties);
 
         channel.basicQos(2);
-        channel.basicConsume(queueName, false, consumer);
+        channel.basicConsume(queueName, true, consumer);
     }
 
     /**

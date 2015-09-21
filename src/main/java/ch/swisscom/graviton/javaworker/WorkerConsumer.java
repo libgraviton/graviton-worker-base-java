@@ -101,8 +101,7 @@ public class WorkerConsumer extends DefaultConsumer {
 
         this.setStatus(statusUrl, "done");
 
-        // send ACK to queue
-        this.getChannel().basicAck(envelope.getDeliveryTag(), false);
+        //this.getChannel().basicAck(envelope.getDeliveryTag(), false);
 
         System.out.println(" [x] Updated status to 'done' on '" + statusUrl + "'");
     }

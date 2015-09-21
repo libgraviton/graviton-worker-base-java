@@ -6,5 +6,7 @@ applications:
   path: target/javaworker-0.1.0-SNAPSHOT.jar
   no-route: true
   memory: 256M
+  env:
+    JBP_CONFIG_OPEN_JDK_JRE: '[jre: { version: 1.7.0_+ }]'
   services:
     - graviton-event-unstable-rabbitmq
