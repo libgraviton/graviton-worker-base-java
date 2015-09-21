@@ -4,6 +4,8 @@
 
 package ch.swisscom.graviton.javaworker;
 
+import ch.swisscom.graviton.javaworker.lib.Worker;
+
 /**
  * @author List of contributors
  *         <https://github.com/libgraviton/graviton/graphs/contributors>

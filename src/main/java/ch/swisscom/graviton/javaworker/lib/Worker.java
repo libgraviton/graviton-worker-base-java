@@ -2,7 +2,7 @@
  * connects to the queue and subscribes the WorkerConsumer on the queue
  */
 
-package ch.swisscom.graviton.javaworker;
+package ch.swisscom.graviton.javaworker.lib;
 
 import java.io.IOException;
 import java.io.InputStream;

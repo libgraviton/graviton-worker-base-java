@@ -2,7 +2,7 @@
  * queue consumer - here we have the main logic
  */
 
-package ch.swisscom.graviton.javaworker;
+package ch.swisscom.graviton.javaworker.lib;
 
 import java.io.IOException;
 import java.util.ArrayList;
