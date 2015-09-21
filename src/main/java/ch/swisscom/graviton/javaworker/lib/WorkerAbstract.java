@@ -6,7 +6,10 @@ import java.util.Properties;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.jr.ob.JSON;
+import com.fasterxml.jackson.jr.ob.JSONComposer;
 import com.fasterxml.jackson.jr.ob.JSONObjectException;
+import com.fasterxml.jackson.jr.ob.comp.ArrayComposer;
+import com.fasterxml.jackson.jr.ob.comp.ObjectComposer;
 import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
@@ -244,10 +247,26 @@ public abstract class WorkerAbstract {
      */
     protected void registerWorker() throws UnirestException, JSONObjectException, JsonProcessingException, IOException {
 
-        String register = JSON.std.composeString().startObject().put("id", "java-test").startArrayField("subscription")
-                .startObject().put("event", this.properties.getProperty("graviton.subscription")).end().end().end()
+        ArrayComposer<ObjectComposer<JSONComposer<String>>> preRegister = JSON
+                .std
+                .composeString()
+                .startObject()
+                    .put("id", "java-test")
+                    .startArrayField("subscription");
+        
+        String[] subscriptionKeys = this.properties.getProperty("graviton.subscription").split(",");
+        for (String subscriptionKey: subscriptionKeys) {
+            preRegister = preRegister
+                .startObject()
+                .put("event", subscriptionKey)
+            .end();
+        }
+        
+        String register = preRegister
+                .end()
+                .end()
                 .finish();
-
+        
         HttpResponse<JsonNode> jsonResponse = Unirest.put(this.properties.getProperty("graviton.registerUrl"))
                 .routeParam("workerId", this.workerId).header("Content-Type", "application/json").body(register)
                 .asJson();
