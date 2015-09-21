@@ -15,8 +15,21 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 
 public abstract class WorkerAbstract {
 
+    /**
+     * status constants
+     */
+    public static final String STATUS_WORKING = "working";
+    public static final String STATUS_DONE = "done";
+    public static final String STATUS_FAILED = "failed";
+    
+    /**
+     * properties
+     */
     protected Properties properties;
     
+    /**
+     * our worker id
+     */
     protected String workerId;
         
     /**
@@ -38,13 +51,30 @@ public abstract class WorkerAbstract {
      */
     abstract public boolean isConcerningRequest(DeferredMap body);
     
+    /**
+     * initializes this worker, will be called by the library
+     * 
+     * @param properties properties
+     * @throws Exception
+     * 
+     * @return void
+     */
     public final void initialize(Properties properties) throws Exception {
         this.properties = properties;
         this.workerId = this.properties.getProperty("graviton.workerId");
 
         if (this.doAutoRegister()) this.registerWorker();
     }
-        
+
+    /**
+     * outer function that will be called on an queue event
+     * 
+     * @param consumerTag consumer tag (aka routing key)
+     * @param ob the deserialized message
+     * @throws IOException
+     * 
+     * @return void
+     */
     public final void handleDelivery(String consumerTag, DeferredMap ob)
             throws IOException {
 
@@ -61,35 +91,64 @@ public abstract class WorkerAbstract {
         }
 
         if (this.doAutoUpdateStatus()) {
-            this.setStatus(statusUrl, "working");
+            this.setStatus(statusUrl, STATUS_WORKING);
             System.out.println(" [x] LIB: Updated status to 'working' on '" + statusUrl + "'");
         }
 
         try {
             // call the worker
             this.handleRequest(ob);
+            
+            if (this.doAutoUpdateStatus()) {
+                this.setStatus(statusUrl, STATUS_DONE);
+                System.out.println(" [x] LIB Updated status to 'done' on '" + statusUrl + "'");
+            }
+            
         } catch (WorkerException e) {
             System.out.println("Error in worker: " + e.getMessage());
             e.printStackTrace();
+
+            if (this.doAutoUpdateStatus()) {
+                this.setStatus(statusUrl, STATUS_FAILED, e.getMessage());
+                System.out.println(" [x] LIB Updated status to 'failed' on '" + statusUrl + "'");
+            }
+            
         } catch (Exception e) {
             System.out.println("General error in logic: " + e.getMessage());
             e.printStackTrace();
         }
-
-        if (this.doAutoUpdateStatus()) {
-            this.setStatus(statusUrl, "done");
-            System.out.println(" [x] LIB Updated status to 'done' on '" + statusUrl + "'");
-        }
     }    
     
+    /**
+     * can be overriden by worker implementation. should the lib automatically update the EventStatus in the backend?
+     * 
+     * @return true if yes, false if not
+     */
     public Boolean doAutoUpdateStatus()
     {
         return true;
     }
-    
+
+    /**
+     * can be overriden by worker implementation. should the lib automatically register the worker?
+     * 
+     * @return true if yes, false if not
+     */    
     public Boolean doAutoRegister()
     {
         return true;
+    }
+    
+    /**
+     * convenience function to set the status
+     * 
+     * @param statusUrl status url 
+     * @param status which status
+     * 
+     * @return void
+     */
+    protected void setStatus(String statusUrl, String status) {
+        this.setStatus(statusUrl, status, "");
     }
     
     /**
@@ -97,16 +156,17 @@ public abstract class WorkerAbstract {
      * 
      * @param statusUrl url to status document
      * @param status status we set to
+     * @param errorInformation error information
      * 
      * @return void
      */
-    protected void setStatus(String statusUrl, String status) {
+    @SuppressWarnings("unchecked")
+    protected void setStatus(String statusUrl, String status, String errorInformation) {
         try {
             HttpResponse<String> response = Unirest.get(statusUrl).header("Accept", "application/json").asString();
 
             DeferredMap ob = (DeferredMap) JSON.std.anyFrom(response.getBody());
 
-            @SuppressWarnings("unchecked")
             ArrayList<DeferredMap> statusObj = (ArrayList<DeferredMap>) ob.get("status");
 
             // modify our status in the status array
@@ -119,6 +179,22 @@ public abstract class WorkerAbstract {
             }
 
             ob.put("status", statusObj);
+            
+            // error information?
+            if (errorInformation.length() > 0) {
+                DeferredMap errorObj = new DeferredMap(false);
+                errorObj.put("workerId", this.workerId);
+                errorObj.put("content", errorInformation);
+                
+                // add or create list?
+                if (ob.get("errorInformation") instanceof ArrayList<?>) {
+                    ((ArrayList<DeferredMap>) ob.get("errorInformation")).add(errorObj);
+                } else {
+                    ArrayList<DeferredMap> errorList = new ArrayList<DeferredMap>();
+                    errorList.add(errorObj);
+                    ob.put("errorInformation", errorList);
+                }
+            }
 
             // send the new status to the backend
             Unirest.put(statusUrl).header("Content-Type", "application/json").body(JSON.std.asString(ob)).asString();
