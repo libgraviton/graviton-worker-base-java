@@ -14,6 +14,8 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
+import ch.swisscom.graviton.javaworker.lib.model.QueueEvent;
+
 /**
  * @author List of contributors
  *         <https://github.com/libgraviton/graviton/graphs/contributors>
@@ -56,6 +58,9 @@ public class WorkerConsumer extends DefaultConsumer {
         System.out.println(" [x] Received '" + envelope.getRoutingKey() + "':'" + message + "'");
 
         // deserialize
+        
+        QueueEvent qevent = JSON.std.beanFrom(QueueEvent.class, message);
+        
         DeferredMap jsonMessage = (DeferredMap) JSON.std.anyFrom(message);
 
         // give to worker

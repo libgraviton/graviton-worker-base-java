@@ -16,7 +16,6 @@ public class ExampleWorker extends WorkerAbstract {
      */
     public void handleRequest(DeferredMap body) throws WorkerException {
         System.out.println("JUHUUUUUUUUUUUUUUUU");
-        throw new WorkerException("dies ist eine fehlermeldung!");
     }
     
     /**

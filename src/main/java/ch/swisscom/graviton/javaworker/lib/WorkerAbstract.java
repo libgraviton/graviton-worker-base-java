@@ -167,7 +167,7 @@ public abstract class WorkerAbstract {
     protected void setStatus(String statusUrl, String status, String errorInformation) {
         try {
             HttpResponse<String> response = Unirest.get(statusUrl).header("Accept", "application/json").asString();
-
+            
             DeferredMap ob = (DeferredMap) JSON.std.anyFrom(response.getBody());
 
             ArrayList<DeferredMap> statusObj = (ArrayList<DeferredMap>) ob.get("status");
