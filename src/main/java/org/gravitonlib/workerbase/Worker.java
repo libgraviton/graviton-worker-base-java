@@ -104,16 +104,30 @@ public class Worker {
         System.out.println(" [*] Subscribed on topic exchange '"+exchangeName+"' using binding key '"+bindKey+"'.");
         System.out.println(" [*] Waiting for messages.");
 
-        // get our consumer
-        WorkerConsumer consumer = new WorkerConsumer(channel, this.properties, this.worker);
-
         channel.basicQos(2);
-        channel.basicConsume(queueName, true, consumer);
+        channel.basicConsume(queueName, true, this.getWorkerConsumer(channel, worker));
     }
     
+    /**
+     * function to return the connection factory
+     * 
+     * @return
+     */
     public ConnectionFactory getConnectionFactory()
     {
         return new ConnectionFactory();
+    }
+    
+    /**
+     * return our WorkerConsumer
+     * 
+     * @param channel rabbitmq channel
+     * @param worker the worker
+     * 
+     * @return
+     */
+    public WorkerConsumer getWorkerConsumer(Channel channel, WorkerAbstract worker) {
+        return new WorkerConsumer(channel, worker);
     }
 
     /**

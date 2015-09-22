@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.gravitonlib.workerbase.Worker;
 import org.gravitonlib.workerbase.WorkerAbstract;
+import org.gravitonlib.workerbase.WorkerConsumer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -19,10 +20,12 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.AMQP.Queue.DeclareOk;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.Envelope;
 
 import javaworker.lib.TestWorker;
 
@@ -78,11 +81,19 @@ public class WorkerBaseTest {
         
         WorkerAbstract testWorker = new TestWorker();
         
-        Worker worker = PowerMockito.spy(new Worker(testWorker));
+        Worker worker = Mockito.spy(new Worker(testWorker));
+        //new WorkerConsumer(queueChannel, worker)
+        WorkerConsumer workerConsumer = PowerMockito.spy(new WorkerConsumer(queueChannel, testWorker));
         Mockito.when(worker.getConnectionFactory())
             .thenReturn(connectionFactory);
+        Mockito.when(worker.getWorkerConsumer(Mockito.any(Channel.class), Mockito.any(WorkerAbstract.class)))
+            .thenReturn(workerConsumer);
         
         worker.run();
+        
+        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
+        String message = "duuud";
+        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
     }
 
 }

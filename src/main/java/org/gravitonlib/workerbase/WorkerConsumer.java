@@ -5,7 +5,6 @@
 package org.gravitonlib.workerbase;
 
 import java.io.IOException;
-import java.util.Properties;
 
 import org.gravitonlib.workerbase.model.QueueEvent;
 
@@ -32,10 +31,9 @@ public class WorkerConsumer extends DefaultConsumer {
      * constructor
      * 
      * @param channel channel
-     * @param properties properties
      * @param worker worker
      */
-    public WorkerConsumer(Channel channel, Properties properties, WorkerAbstract worker) {
+    public WorkerConsumer(Channel channel, WorkerAbstract worker) {
         super(channel);                
         this.worker = worker;
     }
