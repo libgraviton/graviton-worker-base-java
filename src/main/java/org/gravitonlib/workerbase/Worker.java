@@ -82,7 +82,7 @@ public class Worker {
      */
     private void connectToQueue() throws IOException {
 
-        ConnectionFactory factory = new ConnectionFactory();
+        ConnectionFactory factory = this.getConnectionFactory();
         factory.setHost(this.properties.getProperty("queue.host"));
         factory.setPort(Integer.parseInt(this.properties.getProperty("queue.port")));
         factory.setUsername(this.properties.getProperty("queue.username"));
@@ -109,6 +109,11 @@ public class Worker {
 
         channel.basicQos(2);
         channel.basicConsume(queueName, true, consumer);
+    }
+    
+    public ConnectionFactory getConnectionFactory()
+    {
+        return new ConnectionFactory();
     }
 
     /**
