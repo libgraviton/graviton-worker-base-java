@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import com.fasterxml.jackson.jr.ob.JSON;
-import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
@@ -57,14 +56,11 @@ public class WorkerConsumer extends DefaultConsumer {
         String message = new String(body, "UTF-8");
         System.out.println(" [x] Received '" + envelope.getRoutingKey() + "':'" + message + "'");
 
-        // deserialize
-        
+        // deserialize        
         QueueEvent qevent = JSON.std.beanFrom(QueueEvent.class, message);
         
-        DeferredMap jsonMessage = (DeferredMap) JSON.std.anyFrom(message);
-
         // give to worker
-        this.worker.handleDelivery(consumerTag, jsonMessage);
+        this.worker.handleDelivery(consumerTag, qevent);
     }
 
 

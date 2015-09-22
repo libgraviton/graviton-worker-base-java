@@ -16,6 +16,8 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
+import ch.swisscom.graviton.javaworker.lib.model.QueueEvent;
+
 public abstract class WorkerAbstract {
 
     /**
@@ -42,17 +44,17 @@ public abstract class WorkerAbstract {
      * 
      * @throws WorkerException
      */
-    abstract public void handleRequest(DeferredMap body) throws WorkerException;
+    abstract public void handleRequest(QueueEvent body) throws WorkerException;
     
     /**
      * Here, the worker should decide if this requests concerns him in the first
      * place. If false is returned, we ignore the message..
      * 
-     * @param body message body as object
+     * @param body queueevent object
      * 
      * @return boolean true if not, false if yes
      */
-    abstract public boolean isConcerningRequest(DeferredMap body);
+    abstract public boolean isConcerningRequest(QueueEvent body);
     
     /**
      * initializes this worker, will be called by the library
@@ -73,23 +75,23 @@ public abstract class WorkerAbstract {
      * outer function that will be called on an queue event
      * 
      * @param consumerTag consumer tag (aka routing key)
-     * @param ob the deserialized message
+     * @param qevent queue event
      * @throws IOException
      * 
      * @return void
      */
-    public final void handleDelivery(String consumerTag, DeferredMap ob)
+    public final void handleDelivery(String consumerTag, QueueEvent qevent)
             throws IOException {
 
         // get status url
-        String statusUrl = this.getResponseRefPart(ob, "status");
-        String documentUrl = this.getResponseRefPart(ob, "document");
+        String statusUrl = qevent.getStatus().get$ref();
+        String documentUrl = qevent.getDocument().get$ref();
 
         if (statusUrl == null || documentUrl == null) {
             return;
         }
         
-        if (this.isConcerningRequest(ob) == false) {
+        if (this.isConcerningRequest(qevent) == false) {
             return;
         }
 
@@ -100,7 +102,7 @@ public abstract class WorkerAbstract {
 
         try {
             // call the worker
-            this.handleRequest(ob);
+            this.handleRequest(qevent);
             
             if (this.doAutoUpdateStatus()) {
                 this.setStatus(statusUrl, STATUS_DONE);
@@ -251,7 +253,7 @@ public abstract class WorkerAbstract {
                 .std
                 .composeString()
                 .startObject()
-                    .put("id", "java-test")
+                    .put("id", this.workerId)
                     .startArrayField("subscription");
         
         String[] subscriptionKeys = this.properties.getProperty("graviton.subscription").split(",");

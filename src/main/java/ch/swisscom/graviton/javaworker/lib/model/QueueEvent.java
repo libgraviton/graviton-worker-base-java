@@ -5,18 +5,30 @@ public class QueueEvent {
     public QueueEventRef document;
     public QueueEventRef status;
     
+    /**
+     * 
+     * @return string
+     */
     public String getEvent() {
         return event;
     }
     public void setEvent(String event) {
         this.event = event;
     }
+    /**
+     * 
+     * @return QueueEventRef
+     */
     public QueueEventRef getDocument() {
         return document;
     }
     public void setDocument(QueueEventRef document) {
         this.document = document;
     }
+    /**
+     * 
+     * @return QueueEventRef
+     */
     public QueueEventRef getStatus() {
         return status;
     }

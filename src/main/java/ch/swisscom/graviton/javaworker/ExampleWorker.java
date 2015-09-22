@@ -1,9 +1,8 @@
 package ch.swisscom.graviton.javaworker;
 
-import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
-
 import ch.swisscom.graviton.javaworker.lib.WorkerAbstract;
 import ch.swisscom.graviton.javaworker.lib.WorkerException;
+import ch.swisscom.graviton.javaworker.lib.model.QueueEvent;
 
 public class ExampleWorker extends WorkerAbstract {
 
@@ -14,7 +13,7 @@ public class ExampleWorker extends WorkerAbstract {
      * 
      * @throws WorkerException
      */
-    public void handleRequest(DeferredMap body) throws WorkerException {
+    public void handleRequest(QueueEvent qevent) throws WorkerException {
         System.out.println("JUHUUUUUUUUUUUUUUUU");
     }
     
@@ -26,7 +25,7 @@ public class ExampleWorker extends WorkerAbstract {
      * 
      * @return boolean true if not, false if yes
      */
-    public boolean isConcerningRequest(DeferredMap body) {
+    public boolean isConcerningRequest(QueueEvent qevent) {
         return true;
     }
     
