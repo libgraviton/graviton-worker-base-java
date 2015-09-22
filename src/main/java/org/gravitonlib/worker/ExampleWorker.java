@@ -1,8 +1,8 @@
-package ch.swisscom.graviton.javaworker;
+package org.gravitonlib.worker;
 
-import ch.swisscom.graviton.javaworker.lib.WorkerAbstract;
-import ch.swisscom.graviton.javaworker.lib.WorkerException;
-import ch.swisscom.graviton.javaworker.lib.model.QueueEvent;
+import org.gravitonlib.worker.model.QueueEvent;
+import org.gravitonlib.workerbase.WorkerAbstract;
+import org.gravitonlib.workerbase.WorkerException;
 
 public class ExampleWorker extends WorkerAbstract {
 

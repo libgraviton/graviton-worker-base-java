@@ -1,4 +1,4 @@
-package ch.swisscom.graviton.javaworker.lib.model;
+package org.gravitonlib.worker.model;
 
 public class QueueEventRef {
     public String $ref;

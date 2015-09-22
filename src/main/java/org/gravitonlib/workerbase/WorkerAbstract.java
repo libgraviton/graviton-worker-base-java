@@ -1,8 +1,10 @@
-package ch.swisscom.graviton.javaworker.lib;
+package org.gravitonlib.workerbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
+
+import org.gravitonlib.worker.model.QueueEvent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.jr.ob.JSON;
@@ -15,8 +17,6 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-
-import ch.swisscom.graviton.javaworker.lib.model.QueueEvent;
 
 public abstract class WorkerAbstract {
 

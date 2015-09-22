@@ -1,4 +1,4 @@
-package ch.swisscom.graviton.javaworker.lib;
+package org.gravitonlib.workerbase;
 
 public class WorkerException extends Exception {
 

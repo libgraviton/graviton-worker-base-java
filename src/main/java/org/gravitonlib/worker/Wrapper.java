@@ -2,10 +2,10 @@
  * simple wrapper starting the worker. this class is the jar main class
  */
 
-package ch.swisscom.graviton.javaworker;
+package org.gravitonlib.worker;
 
-import ch.swisscom.graviton.javaworker.lib.Worker;
-import ch.swisscom.graviton.javaworker.lib.WorkerAbstract;
+import org.gravitonlib.workerbase.Worker;
+import org.gravitonlib.workerbase.WorkerAbstract;
 
 /**
  * @author List of contributors
