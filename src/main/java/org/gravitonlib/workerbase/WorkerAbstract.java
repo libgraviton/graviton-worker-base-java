@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.gravitonlib.worker.model.QueueEvent;
+import org.gravitonlib.workerbase.model.QueueEvent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.jr.ob.JSON;

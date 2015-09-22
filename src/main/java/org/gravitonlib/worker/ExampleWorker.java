@@ -1,8 +1,8 @@
 package org.gravitonlib.worker;
 
-import org.gravitonlib.worker.model.QueueEvent;
 import org.gravitonlib.workerbase.WorkerAbstract;
 import org.gravitonlib.workerbase.WorkerException;
+import org.gravitonlib.workerbase.model.QueueEvent;
 
 public class ExampleWorker extends WorkerAbstract {
 

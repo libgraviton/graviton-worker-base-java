@@ -1,4 +1,4 @@
-package org.gravitonlib.worker.model;
+package org.gravitonlib.workerbase.model;
 
 public class QueueEventRef {
     public String $ref;
