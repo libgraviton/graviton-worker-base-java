@@ -13,7 +13,7 @@ public class ExampleWorker extends WorkerAbstract {
      * 
      * @throws WorkerException
      */
-    public void handleRequest(QueueEvent qevent) throws WorkerException {
+    public void handleRequest(QueueEvent qevent) throws Exception {
         System.out.println("JUHUUUUUUUUUUUUUUUU");
     }
     
@@ -26,6 +26,9 @@ public class ExampleWorker extends WorkerAbstract {
      * @return boolean true if not, false if yes
      */
     public boolean isConcerningRequest(QueueEvent qevent) {
+        if (qevent.getDocument().get$ref() == null || qevent.getStatus().get$ref() == null) {
+            return false;
+        }
         return true;
     }
     

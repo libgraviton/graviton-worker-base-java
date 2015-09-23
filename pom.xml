@@ -119,6 +119,11 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.7.5.201505241946</version>
+			</plugin>
 		</plugins>
 	</build>
 	<reporting>
@@ -127,6 +132,13 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>cobertura-maven-plugin</artifactId>
         <version>2.7</version>
+<reportSets>
+          <reportSet>
+            <reports>
+              <report>cobertura-integration-test</report>
+            </reports>
+          </reportSet>
+        </reportSets>        
       </plugin>
       </plugins>
 	</reporting>

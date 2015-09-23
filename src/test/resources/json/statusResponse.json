@@ -4,9 +4,13 @@
     "eventName": "document.core.app.update",
     "status": [
         {
+            "workerId": "another-worker",
+            "status": "opened"
+        },
+        {
             "workerId": "java-test",
-            "status": "done"
-        }
+            "status": "opened"
+        }        
     ],
     "errorInformation": []
 }

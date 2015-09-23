@@ -44,7 +44,7 @@ public abstract class WorkerAbstract {
      * 
      * @throws WorkerException
      */
-    abstract public void handleRequest(QueueEvent body) throws WorkerException;
+    abstract public void handleRequest(QueueEvent body) throws Exception;
     
     /**
      * Here, the worker should decide if this requests concerns him in the first
@@ -83,18 +83,12 @@ public abstract class WorkerAbstract {
     public final void handleDelivery(String consumerTag, QueueEvent qevent)
             throws IOException {
 
-        // get status url
         String statusUrl = qevent.getStatus().get$ref();
-        String documentUrl = qevent.getDocument().get$ref();
-
-        if (statusUrl == null || documentUrl == null) {
-            return;
-        }
         
         if (this.isConcerningRequest(qevent) == false) {
             return;
         }
-
+        
         if (this.doAutoUpdateStatus()) {
             this.setStatus(statusUrl, STATUS_WORKING);
             System.out.println(" [x] LIB: Updated status to 'working' on '" + statusUrl + "'");
@@ -217,25 +211,6 @@ public abstract class WorkerAbstract {
             System.out.println("Different exception on status set! " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    /**
-     * gets a $ref of an object of eventstatus
-     * 
-     * @param map map 
-     * @param property which property
-     * 
-     * @return the $ref value
-     */
-    protected String getResponseRefPart(DeferredMap map, String property) {
-        String url = null;
-        if (map.containsKey(property)) {
-            Object subobj = map.get(property);
-            if (subobj instanceof DeferredMap && ((DeferredMap) subobj).containsKey("$ref")) {
-                url = ((DeferredMap) subobj).get("$ref").toString();
-            }
-        }
-        return url;
     }
 
     /**

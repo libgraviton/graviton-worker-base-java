@@ -1,17 +1,23 @@
 package javaworker;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
 import org.gravitonlib.workerbase.Worker;
 import org.gravitonlib.workerbase.WorkerAbstract;
 import org.gravitonlib.workerbase.WorkerConsumer;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
+import org.mockito.AdditionalMatchers;
+import org.mockito.ArgumentCaptor;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -19,6 +25,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
@@ -30,93 +37,170 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Envelope;
 
 import javaworker.lib.TestWorker;
+import javaworker.lib.TestWorkerException;
+import javaworker.lib.TestWorkerNoAuto;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({com.rabbitmq.client.ConnectionFactory.class,Unirest.class})
 public class WorkerBaseTest {
-
+    
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();    
+    
+    private Worker worker;
+    private WorkerConsumer workerConsumer;
+    private TestWorker testWorker;
+    private HttpResponse<JsonNode> jsonResponse;
+    private Channel queueChannel;
+    private ConnectionFactory connectionFactory;
+    private RequestBodyEntity bodyEntity;
+    private HttpRequestWithBody requestBodyMock;
+    
     @SuppressWarnings("unchecked")
-    @Test
-    public void test() throws Exception {
+    @Before
+    public void setUp() throws Exception {
+        
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
         
         PowerMockito.mockStatic(Unirest.class);
         PowerMockito.mock(com.rabbitmq.client.ConnectionFactory.class);
         
         /**** UNIREST MOCKING ****/
 
-        HttpRequestWithBody requestBodyMock = Mockito.mock(HttpRequestWithBody.class);
+        requestBodyMock = mock(HttpRequestWithBody.class);
         
-        HttpResponse<JsonNode> jsonResponse = (HttpResponse<JsonNode>) Mockito.mock(HttpResponse.class);
-        Mockito.when(jsonResponse.getStatus())
+        jsonResponse = (HttpResponse<JsonNode>) mock(HttpResponse.class);
+        when(jsonResponse.getStatus())
             .thenReturn(204);
         
-        RequestBodyEntity bodyEntity = Mockito.mock(RequestBodyEntity.class);
-        Mockito.when(bodyEntity.asJson())
+        bodyEntity = mock(RequestBodyEntity.class);
+        when(bodyEntity.asJson())
             .thenReturn(jsonResponse);
         
-        Mockito.when(requestBodyMock.routeParam(Mockito.anyString(), Mockito.anyString()))
+        when(requestBodyMock.routeParam(anyString(), anyString()))
             .thenReturn(requestBodyMock);
-        Mockito.when(requestBodyMock.header(Mockito.anyString(), Mockito.anyString()))
+        when(requestBodyMock.header(anyString(), anyString()))
         .thenReturn(requestBodyMock);
-        Mockito.when(requestBodyMock.body(Mockito.anyString()))
+        when(requestBodyMock.body(anyString()))
             .thenReturn(bodyEntity);
 
         // PUT mock
-        Mockito
-            .when(Unirest.put(Mockito.anyString()))
+        when(Unirest.put(anyString()))
             .thenReturn(requestBodyMock);
         
-        // GET /event/status mock
-        
+        // GET /event/status mock        
         URL statusResponseUrl = this.getClass().getClassLoader().getResource("json/statusResponse.json");
         String statusResponseContent = FileUtils.readFileToString(new File(statusResponseUrl.getFile()));
-        GetRequest getRequestStatus = Mockito.mock(GetRequest.class);
-        HttpResponse<String> statusResponse = (HttpResponse<String>) Mockito.mock(HttpResponse.class);
-        Mockito.when(statusResponse.getBody())
+        GetRequest getRequestStatus = mock(GetRequest.class);
+        HttpResponse<String> statusResponse = (HttpResponse<String>) mock(HttpResponse.class);
+        when(statusResponse.getBody())
             .thenReturn(statusResponseContent);        
-        Mockito
-            .when(getRequestStatus.header(Mockito.anyString(), Mockito.anyString()))
+        when(getRequestStatus.header(anyString(), anyString()))
             .thenReturn(getRequestStatus);
-        Mockito
-            .when(getRequestStatus.asString())
+        when(getRequestStatus.asString())
             .thenReturn(statusResponse);        
-        Mockito
-            .when(Unirest.get(Mockito.contains("/mystatus")))
+        when(Unirest.get(contains("/mystatus")))
             .thenReturn(getRequestStatus);
         
         /**** RABBITMQ MOCKING ****/
         
-        Connection queueConnection = Mockito.mock(Connection.class);
-        Channel queueChannel = Mockito.mock(Channel.class);
-        ConnectionFactory connectionFactory = Mockito.mock(ConnectionFactory.class);
-        DeclareOk queueDeclareOk = Mockito.mock(DeclareOk.class);
-        Mockito.when(queueDeclareOk.getQueue())
+        Connection queueConnection = mock(Connection.class);
+        queueChannel = mock(Channel.class);
+        connectionFactory = mock(ConnectionFactory.class);
+        DeclareOk queueDeclareOk = mock(DeclareOk.class);
+        
+        when(queueDeclareOk.getQueue())
             .thenReturn("graviton-masterqueue");
         
-        Mockito.when(queueChannel.queueDeclare())
+        when(queueChannel.queueDeclare())
             .thenReturn(queueDeclareOk);
-        Mockito.when(queueConnection.createChannel())
+        when(queueConnection.createChannel())
             .thenReturn(queueChannel);
-        Mockito.when(connectionFactory.newConnection())
-            .thenReturn(queueConnection);
+        when(connectionFactory.newConnection())
+            .thenReturn(queueConnection);                
+    }
+    
+    private Worker getWrappedWorker(WorkerAbstract testWorker) {
+        worker = spy(new Worker(testWorker));
+        workerConsumer = PowerMockito.spy(new WorkerConsumer(queueChannel, testWorker));
         
-        WorkerAbstract testWorker = new TestWorker();
-        
-        Worker worker = Mockito.spy(new Worker(testWorker));
-        //new WorkerConsumer(queueChannel, worker)
-        WorkerConsumer workerConsumer = PowerMockito.spy(new WorkerConsumer(queueChannel, testWorker));
-        Mockito.when(worker.getConnectionFactory())
+        when(worker.getConnectionFactory())
             .thenReturn(connectionFactory);
-        Mockito.when(worker.getWorkerConsumer(Mockito.any(Channel.class), Mockito.any(WorkerAbstract.class)))
+        when(worker.getWorkerConsumer(any(Channel.class), any(WorkerAbstract.class)))
             .thenReturn(workerConsumer);
         
+        return worker;
+    }
+
+    @Test
+    public void testBasicExecution() throws Exception {
+        testWorker = new TestWorker();
+        worker = getWrappedWorker(testWorker);
         worker.run();
         
         Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        
         workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        
+        verify(jsonResponse, times(1)).getStatus();
+        
+        assertTrue(this.testWorker.concerningRequestCalled);
+        
+        assertTrue(this.outContent.toString().contains("Worker register response code: 204"));
+        assertTrue(this.outContent.toString().contains("Subscribed on topic exchange 'graviton' using binding key 'document.core.app.*'"));
+        assertTrue(this.outContent.toString().contains("the testworker has been executed!"));
+        assertTrue(this.outContent.toString().contains("EVENT = documents.core.app.create"));
+        assertTrue(this.outContent.toString().contains("DOCUMENT = http://localhost/core/app/admin"));
+        assertTrue(this.outContent.toString().contains("STATUS = http://localhost/event/status/mystatus"));
+        
+        // register
+        verify(requestBodyMock, times(1)).body(contains("{\"id\":\"java-test\""));
+        // working
+        verify(requestBodyMock, times(1)).body(contains("\"workerId\":\"java-test\",\"status\":\"working\""));
+        // done
+        verify(requestBodyMock, times(1)).body(contains("\"workerId\":\"java-test\",\"status\":\"done\""));
     }
+    
+    @Test
+    public void testNoAutoWorker() throws IOException {
+        TestWorkerNoAuto testWorker = new TestWorkerNoAuto(); 
+        worker = getWrappedWorker(testWorker);
+        worker.run();
+        
+        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
+        URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
+        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        
+        assertTrue(testWorker.concerningRequestCalled);
+        assertFalse(testWorker.handleRequestCalled);
+    }
+    
+    @Test
+    public void testWorkerException() throws IOException {
+        TestWorkerException testWorker = new TestWorkerException();        
+        worker = getWrappedWorker(testWorker);
+        worker.run();
+        
+        // let worker throw WorkerException        
+        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
+        URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
+        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        
+        // register
+        verify(requestBodyMock, times(1)).body(contains("{\"id\":\"java-test\""));
+        // working update
+        verify(requestBodyMock, times(1)).body(contains("\"workerId\":\"java-test\",\"status\":\"working\""));
+        // failed update
+        verify(requestBodyMock, times(1)).body(
+                AdditionalMatchers.and(
+                        contains("\"workerId\":\"java-test\",\"status\":\"failed\""),
+                        contains("\"errorInformation\":[{\"content\":\"Something bad happened!\",\"workerId\":\"java-test\"}]")
+                        )
+                );        
+    }    
 
 }

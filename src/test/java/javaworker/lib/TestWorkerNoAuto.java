@@ -4,9 +4,10 @@ import org.gravitonlib.workerbase.WorkerAbstract;
 import org.gravitonlib.workerbase.WorkerException;
 import org.gravitonlib.workerbase.model.QueueEvent;
 
-public class TestWorker extends WorkerAbstract {
+public class TestWorkerNoAuto extends WorkerAbstract {
 
     public boolean concerningRequestCalled = false;
+    public boolean handleRequestCalled = false;
     
     /**
      * worker logic is implemented here
@@ -16,10 +17,7 @@ public class TestWorker extends WorkerAbstract {
      * @throws WorkerException
      */
     public void handleRequest(QueueEvent qevent) throws WorkerException {
-        System.out.println("the testworker has been executed!");
-        System.out.println("EVENT = " + qevent.getEvent());
-        System.out.println("DOCUMENT = " + qevent.getDocument().get$ref());
-        System.out.println("STATUS = " + qevent.getStatus().get$ref());
+        this.handleRequestCalled = true;
     }
     
     /**
@@ -32,7 +30,17 @@ public class TestWorker extends WorkerAbstract {
      */
     public boolean isConcerningRequest(QueueEvent qevent) {
         this.concerningRequestCalled = true;
-        return true;
+        return false;
     }
+    
+    public Boolean doAutoUpdateStatus()
+    {
+        return false;
+    }
+    
+    public Boolean doAutoRegister()
+    {
+        return false;
+    }    
     
 }
