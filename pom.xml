@@ -124,7 +124,9 @@
 				<artifactId>coveralls-maven-plugin</artifactId>
 				<version>4.0.0</version>
 				<configuration>
-					<repoToken>yourcoverallsprojectrepositorytoken</repoToken>
+					<sourceEncoding>UTF-8</sourceEncoding>
+					<serviceName>travis-ci</serviceName>
+					<serviceJobId>${env.TRAVIS_JOB_ID} </serviceJobId>
 				</configuration>
 			</plugin>
 			<plugin>
