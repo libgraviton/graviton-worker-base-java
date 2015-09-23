@@ -2,16 +2,28 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.gravitonlib</groupId>
+	<groupId>org.libgraviton</groupId>
 	<artifactId>worker-base</artifactId>
 	<packaging>jar</packaging>
 	<version>0.1.0-SNAPSHOT</version>
+    <name>Graviton Worker Base Library</name>
+    <inceptionYear>2015</inceptionYear>
+
+    <description>
+	A base library to simplify the creation of Graviton queue workers.
+    </description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dependency.locations.enabled>false</dependency.locations.enabled>
 		<dependency.details.enabled>false</dependency.details.enabled>
 	</properties>
+
+	<contributors>
+		<contributor>
+			<name>Dario Nuevo</name>
+		</contributor>
+	</contributors>
 
 	<dependencies>
 		<dependency>
@@ -136,6 +148,24 @@
 				<configuration>
 					<format>xml</format>
 					<maxmem>256m</maxmem>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>external.atlassian.jgitflow</groupId>
+				<artifactId>jgitflow-maven-plugin</artifactId>
+				<version>1.0-m5.1</version>
+				<configuration>
+					<configuration>
+						<enableSshAgent>true</enableSshAgent>
+						<flowInitContext>
+							<masterBranchName>master</masterBranchName>
+							<developBranchName>develop</developBranchName>
+							<featureBranchPrefix>feature/</featureBranchPrefix>
+							<releaseBranchPrefix>release/</releaseBranchPrefix>
+							<hotfixBranchPrefix>hotfix/</hotfixBranchPrefix>
+							<versionTagPrefix>blither/</versionTagPrefix>
+						</flowInitContext>
+					</configuration>
 				</configuration>
 			</plugin>
 		</plugins>
