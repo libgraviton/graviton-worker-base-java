@@ -10,6 +10,7 @@ public class TestWorkerException extends WorkerAbstract {
     public boolean handleRequestCalled = false;
     public boolean isConcerningRequest = true;
     public boolean throwWorkerException = true;
+    public boolean doAutoStuff = true;
     
     /**
      * worker logic is implemented here
@@ -25,10 +26,19 @@ public class TestWorkerException extends WorkerAbstract {
         } else {
             throw new Exception("Another thing happened!");
         }
-        
     }
     
     public boolean isConcerningRequest(QueueEvent qevent) {
         return this.isConcerningRequest;
+    }
+    
+    public Boolean doAutoUpdateStatus()
+    {
+        return this.doAutoStuff;
+    }
+   
+    public Boolean doAutoRegister()
+    {
+        return this.doAutoStuff;
     }
 }

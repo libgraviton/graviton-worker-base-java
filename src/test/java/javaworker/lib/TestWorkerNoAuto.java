@@ -30,7 +30,7 @@ public class TestWorkerNoAuto extends WorkerAbstract {
      */
     public boolean isConcerningRequest(QueueEvent qevent) {
         this.concerningRequestCalled = true;
-        return false;
+        return true;
     }
     
     public Boolean doAutoUpdateStatus()

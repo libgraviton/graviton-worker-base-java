@@ -175,7 +175,9 @@ public class WorkerBaseTest {
         workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
         
         assertTrue(testWorker.concerningRequestCalled);
-        assertFalse(testWorker.handleRequestCalled);
+        assertTrue(testWorker.handleRequestCalled);
+        
+        verify(requestBodyMock, times(0)).body(anyString());
     }
     
     @Test
@@ -198,9 +200,26 @@ public class WorkerBaseTest {
         verify(requestBodyMock, times(1)).body(
                 AdditionalMatchers.and(
                         contains("\"workerId\":\"java-test\",\"status\":\"failed\""),
-                        contains("\"errorInformation\":[{\"content\":\"Something bad happened!\",\"workerId\":\"java-test\"}]")
+                        contains("\"content\":\"Something bad happened!\"")
                         )
                 );        
-    }    
+    }
+    
+    @Test
+    public void testWorkerExceptionNoAuto() throws IOException {
+        TestWorkerException testWorker = new TestWorkerException();
+        testWorker.doAutoStuff = false;
+        worker = getWrappedWorker(testWorker);
+        worker.run();
+        
+        // let worker throw WorkerException        
+        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
+        URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
+        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        
+        // should be NO call on requestBodyMock
+        verify(requestBodyMock, times(0)).body(anyString());
+    }      
 
 }
