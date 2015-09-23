@@ -158,9 +158,9 @@ public class WorkerBaseTest {
         // register
         verify(requestBodyMock, times(1)).body(contains("{\"id\":\"java-test\""));
         // working
-        verify(requestBodyMock, times(1)).body(contains("\"workerId\":\"java-test\",\"status\":\"working\""));
+        verify(requestBodyMock, times(1)).body(contains("\"status\":\"working\",\"workerId\":\"java-test\""));
         // done
-        verify(requestBodyMock, times(1)).body(contains("\"workerId\":\"java-test\",\"status\":\"done\""));
+        verify(requestBodyMock, times(1)).body(contains("\"status\":\"done\",\"workerId\":\"java-test\""));
     }
     
     @Test
@@ -178,6 +178,15 @@ public class WorkerBaseTest {
         assertTrue(testWorker.handleRequestCalled);
         
         verify(requestBodyMock, times(0)).body(anyString());
+        
+        // again, this time no request concern
+        testWorker.handleRequestCalled = false;
+        testWorker.isConcerningRequest = false;
+        
+        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        
+        assertTrue(testWorker.concerningRequestCalled);
+        assertFalse(testWorker.handleRequestCalled);        
     }
     
     @Test
@@ -195,11 +204,11 @@ public class WorkerBaseTest {
         // register
         verify(requestBodyMock, times(1)).body(contains("{\"id\":\"java-test\""));
         // working update
-        verify(requestBodyMock, times(1)).body(contains("\"workerId\":\"java-test\",\"status\":\"working\""));
+        verify(requestBodyMock, times(1)).body(contains("\"status\":\"working\",\"workerId\":\"java-test\""));
         // failed update
         verify(requestBodyMock, times(1)).body(
                 AdditionalMatchers.and(
-                        contains("\"workerId\":\"java-test\",\"status\":\"failed\""),
+                        contains("\"status\":\"failed\",\"workerId\":\"java-test\""),
                         contains("\"content\":\"Something bad happened!\"")
                         )
                 );        
@@ -221,5 +230,26 @@ public class WorkerBaseTest {
         // should be NO call on requestBodyMock
         verify(requestBodyMock, times(0)).body(anyString());
     }      
+    
+    @Test
+    public void testVcapConfiguration() throws IOException {
+        
+        testWorker = new TestWorker();
+        worker = getWrappedWorker(testWorker);
+        
+        String vcapCreds = "{\"rabbitmq-3.0\": [{\"credentials\": {\"host\": \"test\", \"port\": 32321,"+
+                "\"username\": \"hansuser\", \"password\": \"hans22\", \"vhost\": \"hanshost\"}}]}";
+        
+        when(worker.getVcap())
+        .thenReturn(vcapCreds);        
+        
+        worker.run();
+        
+        assertEquals("test", worker.getProperties().getProperty("queue.host"));
+        assertEquals("32321", worker.getProperties().getProperty("queue.port"));
+        assertEquals("hansuser", worker.getProperties().getProperty("queue.username"));
+        assertEquals("hans22", worker.getProperties().getProperty("queue.password"));
+        assertEquals("hanshost", worker.getProperties().getProperty("queue.vhost"));        
+    }
 
 }

@@ -8,6 +8,7 @@ public class TestWorkerNoAuto extends WorkerAbstract {
 
     public boolean concerningRequestCalled = false;
     public boolean handleRequestCalled = false;
+    public boolean isConcerningRequest = true;
     
     /**
      * worker logic is implemented here
@@ -30,7 +31,7 @@ public class TestWorkerNoAuto extends WorkerAbstract {
      */
     public boolean isConcerningRequest(QueueEvent qevent) {
         this.concerningRequestCalled = true;
-        return true;
+        return this.isConcerningRequest;
     }
     
     public Boolean doAutoUpdateStatus()

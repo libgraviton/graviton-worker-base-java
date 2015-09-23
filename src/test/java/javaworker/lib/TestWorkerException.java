@@ -8,7 +8,6 @@ public class TestWorkerException extends WorkerAbstract {
 
     public boolean concerningRequestCalled = false;
     public boolean handleRequestCalled = false;
-    public boolean isConcerningRequest = true;
     public boolean throwWorkerException = true;
     public boolean doAutoStuff = true;
     
@@ -29,7 +28,7 @@ public class TestWorkerException extends WorkerAbstract {
     }
     
     public boolean isConcerningRequest(QueueEvent qevent) {
-        return this.isConcerningRequest;
+        return true;
     }
     
     public Boolean doAutoUpdateStatus()
