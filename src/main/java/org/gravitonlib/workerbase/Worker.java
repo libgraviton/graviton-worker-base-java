@@ -42,13 +42,6 @@ public class Worker {
         }
         
         try {
-            this.applyVcapConfig();
-        } catch (Exception e) {
-            System.out.println("FATAL ERROR while reading vcap configuration: " + e.getMessage());
-            System.exit(-1);
-        }
-        
-        try {
             worker.initialize(properties);
             this.worker = worker;
         } catch (Exception e) {
@@ -64,10 +57,10 @@ public class Worker {
      * @return void
      */
     public void run() {
-
         try {
+            this.applyVcapConfig();
             this.connectToQueue();
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("Problem connecting to the queue: " + e.getMessage());
             e.printStackTrace();
         } 
@@ -167,7 +160,7 @@ public class Worker {
      * @return void
      */
     private void applyVcapConfig() throws Exception {
-        String vcap = System.getenv("VCAP_SERVICES");
+        String vcap = this.getVcap();
         if (vcap != null) {
             DeferredMap vcapConf = (DeferredMap) JSON.std.anyFrom(vcap);
             if (vcapConf.containsKey("rabbitmq-3.0")) {
@@ -182,5 +175,23 @@ public class Worker {
                 this.properties.setProperty("queue.vhost", vcapCreds.get("vhost").toString());
             }
         }
+    }
+    
+    /**
+     * Gets the properties
+     * 
+     * @return properties
+     */
+    public Properties getProperties() {
+        return this.properties;
+    }
+    
+    /**
+     * Getter for vcap config
+     * 
+     * @return vcap variable
+     */
+    public String getVcap() {
+        return System.getenv("VCAP_SERVICES");
     }
 }

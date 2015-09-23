@@ -4,15 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.gravitonlib.workerbase.model.QueueEvent;
+import org.gravitonlib.workerbase.model.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.jr.ob.JSON;
-import com.fasterxml.jackson.jr.ob.JSONComposer;
 import com.fasterxml.jackson.jr.ob.JSONObjectException;
-import com.fasterxml.jackson.jr.ob.comp.ArrayComposer;
-import com.fasterxml.jackson.jr.ob.comp.ObjectComposer;
-import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -159,44 +155,35 @@ public abstract class WorkerAbstract {
      * 
      * @return void
      */
-    @SuppressWarnings("unchecked")
     protected void setStatus(String statusUrl, String status, String errorInformation) {
         try {
             HttpResponse<String> response = Unirest.get(statusUrl).header("Accept", "application/json").asString();
             
-            DeferredMap ob = (DeferredMap) JSON.std.anyFrom(response.getBody());
-
-            ArrayList<DeferredMap> statusObj = (ArrayList<DeferredMap>) ob.get("status");
+            EventStatus eventStatus = JSON.std.beanFrom(EventStatus.class, response.getBody());
 
             // modify our status in the status array
+            ArrayList<EventStatusStatus> statusObj = eventStatus.getStatus();
             for (int i = 0; i < statusObj.size(); i++) {
-                DeferredMap statusEntry = statusObj.get(i);
-                if (statusEntry.get("workerId").toString().equals(this.workerId)) {
-                    statusEntry.put("status", status);
+                EventStatusStatus statusEntry = statusObj.get(i);
+                if (statusEntry.getWorkerId().equals(this.workerId)) {
+                    statusEntry.setStatus(status);
+                    statusObj.set(i, statusEntry);
                 }
-                statusObj.set(i, statusEntry);
             }
 
-            ob.put("status", statusObj);
+            eventStatus.setStatus(statusObj);
             
             // error information?
             if (errorInformation.length() > 0) {
-                DeferredMap errorObj = new DeferredMap(false);
-                errorObj.put("workerId", this.workerId);
-                errorObj.put("content", errorInformation);
+                EventStatusErrorInformation errorObj = new EventStatusErrorInformation();
+                errorObj.setWorkerId(this.workerId);
+                errorObj.setContent(errorInformation);
                 
-                // add or create list?
-                if (ob.get("errorInformation") instanceof ArrayList<?>) {
-                    ((ArrayList<DeferredMap>) ob.get("errorInformation")).add(errorObj);
-                } else {
-                    ArrayList<DeferredMap> errorList = new ArrayList<DeferredMap>();
-                    errorList.add(errorObj);
-                    ob.put("errorInformation", errorList);
-                }
+                eventStatus.getErrorInformation().add(errorObj);
             }
 
             // send the new status to the backend
-            Unirest.put(statusUrl).header("Content-Type", "application/json").body(JSON.std.asString(ob)).asString();
+            Unirest.put(statusUrl).header("Content-Type", "application/json").body(JSON.std.asString(eventStatus)).asString();
 
         } catch (UnirestException e) {
             System.out.println("Error GETting Status resource: " + e.getMessage());
@@ -224,28 +211,25 @@ public abstract class WorkerAbstract {
      */
     protected void registerWorker() throws UnirestException, JSONObjectException, JsonProcessingException, IOException {
 
-        ArrayComposer<ObjectComposer<JSONComposer<String>>> preRegister = JSON
-                .std
-                .composeString()
-                .startObject()
-                    .put("id", this.workerId)
-                    .startArrayField("subscription");
+        WorkerRegister registerObj = new WorkerRegister();
+        registerObj.setId(this.workerId);
         
         String[] subscriptionKeys = this.properties.getProperty("graviton.subscription").split(",");
+        ArrayList<WorkerRegisterSubscription> subscriptions = new ArrayList<WorkerRegisterSubscription>();
+        
         for (String subscriptionKey: subscriptionKeys) {
-            preRegister = preRegister
-                .startObject()
-                .put("event", subscriptionKey)
-            .end();
+            WorkerRegisterSubscription subObj = new WorkerRegisterSubscription();
+            subObj.setEvent(subscriptionKey);
+            subscriptions.add(subObj);
         }
         
-        String register = preRegister
-                .end()
-                .end()
-                .finish();
+        registerObj.setSubscription(subscriptions);
         
-        HttpResponse<JsonNode> jsonResponse = Unirest.put(this.properties.getProperty("graviton.registerUrl"))
-                .routeParam("workerId", this.workerId).header("Content-Type", "application/json").body(register)
+        HttpResponse<JsonNode> jsonResponse = 
+                Unirest.put(this.properties.getProperty("graviton.registerUrl"))
+                .routeParam("workerId", this.workerId)
+                .header("Content-Type", "application/json")
+                .body(JSON.std.asString(registerObj))
                 .asJson();
 
         System.out.println(" [*] Worker register response code: " + jsonResponse.getStatus());
