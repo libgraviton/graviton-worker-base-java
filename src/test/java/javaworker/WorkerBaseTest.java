@@ -2,8 +2,10 @@ package javaworker;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
+import java.io.File;
+import java.net.URL;
 
+import org.apache.commons.io.FileUtils;
 import org.gravitonlib.workerbase.Worker;
 import org.gravitonlib.workerbase.WorkerAbstract;
 import org.gravitonlib.workerbase.WorkerConsumer;
@@ -17,7 +19,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.GetRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
 import com.rabbitmq.client.AMQP;
@@ -59,9 +61,28 @@ public class WorkerBaseTest {
         Mockito.when(requestBodyMock.body(Mockito.anyString()))
             .thenReturn(bodyEntity);
 
+        // PUT mock
         Mockito
             .when(Unirest.put(Mockito.anyString()))
             .thenReturn(requestBodyMock);
+        
+        // GET /event/status mock
+        
+        URL statusResponseUrl = this.getClass().getClassLoader().getResource("json/statusResponse.json");
+        String statusResponseContent = FileUtils.readFileToString(new File(statusResponseUrl.getFile()));
+        GetRequest getRequestStatus = Mockito.mock(GetRequest.class);
+        HttpResponse<String> statusResponse = (HttpResponse<String>) Mockito.mock(HttpResponse.class);
+        Mockito.when(statusResponse.getBody())
+            .thenReturn(statusResponseContent);        
+        Mockito
+            .when(getRequestStatus.header(Mockito.anyString(), Mockito.anyString()))
+            .thenReturn(getRequestStatus);
+        Mockito
+            .when(getRequestStatus.asString())
+            .thenReturn(statusResponse);        
+        Mockito
+            .when(Unirest.get(Mockito.contains("/mystatus")))
+            .thenReturn(getRequestStatus);
         
         /**** RABBITMQ MOCKING ****/
         
@@ -92,7 +113,9 @@ public class WorkerBaseTest {
         worker.run();
         
         Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
-        String message = "duuud";
+        URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
+        
         workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
     }
 

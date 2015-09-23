@@ -1,0 +1,12 @@
+{
+    "id": "mystatus",
+    "createDate": "2015-09-23T07:03:39+0000",
+    "eventName": "document.core.app.update",
+    "status": [
+        {
+            "workerId": "java-test",
+            "status": "done"
+        }
+    ],
+    "errorInformation": []
+}

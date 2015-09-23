@@ -1,5 +1,5 @@
 {
 "event": "documents.core.app.create",
-"status": {"$ref": "http://localhost/event/status/1"},
+"status": {"$ref": "http://localhost/event/status/mystatus"},
 "document": {"$ref": "http://localhost/core/app/admin"}
 }
