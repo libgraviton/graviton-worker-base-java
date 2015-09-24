@@ -2,13 +2,12 @@
  * queue consumer - here we have the main logic
  */
 
-package org.gravitonlib.workerbase;
+package com.github.libgraviton.workerbase;
 
 import java.io.IOException;
 
-import org.gravitonlib.workerbase.model.QueueEvent;
-
 import com.fasterxml.jackson.jr.ob.JSON;
+import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;

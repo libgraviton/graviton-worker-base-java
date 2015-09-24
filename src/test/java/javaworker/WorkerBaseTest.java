@@ -10,9 +10,6 @@ import java.io.PrintStream;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
-import org.gravitonlib.workerbase.Worker;
-import org.gravitonlib.workerbase.WorkerAbstract;
-import org.gravitonlib.workerbase.WorkerConsumer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +18,9 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import com.github.libgraviton.workerbase.Worker;
+import com.github.libgraviton.workerbase.WorkerAbstract;
+import com.github.libgraviton.workerbase.WorkerConsumer;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;

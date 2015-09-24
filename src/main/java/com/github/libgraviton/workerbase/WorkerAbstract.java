@@ -1,14 +1,13 @@
-package org.gravitonlib.workerbase;
+package com.github.libgraviton.workerbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.gravitonlib.workerbase.model.*;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.fasterxml.jackson.jr.ob.JSONObjectException;
+import com.github.libgraviton.workerbase.model.*;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;

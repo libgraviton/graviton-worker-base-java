@@ -1,8 +1,8 @@
 package javaworker.lib;
 
-import org.gravitonlib.workerbase.WorkerAbstract;
-import org.gravitonlib.workerbase.WorkerException;
-import org.gravitonlib.workerbase.model.QueueEvent;
+import com.github.libgraviton.workerbase.WorkerAbstract;
+import com.github.libgraviton.workerbase.WorkerException;
+import com.github.libgraviton.workerbase.model.QueueEvent;
 
 public class TestWorkerException extends WorkerAbstract {
 

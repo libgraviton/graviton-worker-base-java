@@ -1,4 +1,4 @@
-package org.gravitonlib.workerbase.model;
+package com.github.libgraviton.workerbase.model;
 
 public class QueueEvent {
     public String event;

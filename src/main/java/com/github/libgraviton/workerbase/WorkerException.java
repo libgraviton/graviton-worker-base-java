@@ -1,4 +1,4 @@
-package org.gravitonlib.workerbase;
+package com.github.libgraviton.workerbase;
 
 public class WorkerException extends Exception {
 
