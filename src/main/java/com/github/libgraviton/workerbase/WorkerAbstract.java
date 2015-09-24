@@ -134,6 +134,15 @@ public abstract class WorkerAbstract {
     }
     
     /**
+     * will be called after we're initialized
+     * 
+     * @return void
+     */    
+    public void onStartUp()
+    {
+    }    
+    
+    /**
      * convenience function to set the status
      * 
      * @param statusUrl status url 

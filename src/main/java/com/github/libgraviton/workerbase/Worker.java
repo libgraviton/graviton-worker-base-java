@@ -4,10 +4,15 @@
 
 package com.github.libgraviton.workerbase;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Properties;
+
+import org.apache.commons.io.FilenameUtils;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.fasterxml.jackson.jr.ob.JSONObjectException;
@@ -43,6 +48,7 @@ public class Worker {
         
         try {
             worker.initialize(properties);
+            worker.onStartUp();
             this.worker = worker;
         } catch (Exception e) {
             System.out.println("Could not initialize worker: " + e.getMessage());
@@ -138,10 +144,26 @@ public class Worker {
             defaultProps.close();
             
             // overrides?
-            InputStream appProps = this.getClass().getClassLoader().getResourceAsStream("app.properties");
-            if (appProps != null) {
+            try {
+            
+                String propertiesPath;
+                if (System.getProperty("propFile", "").equals("")) {
+                    String currentPath = Worker.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+                    String decodedPath = URLDecoder.decode(currentPath, "UTF-8");
+                    String propertiesBasename = FilenameUtils.getFullPath(decodedPath);
+                    propertiesPath = propertiesBasename + "app.properties";
+                } else {
+                    propertiesPath = System.getProperty("propFile");
+                }
+                
+                FileInputStream appProps = new FileInputStream(propertiesPath);
                 this.properties.load(appProps);
                 appProps.close();
+                
+                System.out.println(" [*] Loaded app.properties from " + propertiesPath);
+                
+            } catch (FileNotFoundException e) {
+                // no problem..
             }
             
         } catch (Exception e1) {
