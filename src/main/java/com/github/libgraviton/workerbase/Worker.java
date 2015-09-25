@@ -22,7 +22,6 @@ import com.rabbitmq.client.*;
 /**
  * @author List of contributors
  *         <https://github.com/libgraviton/graviton/graphs/contributors>
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  * @link http://swisscom.ch
  */
 public class Worker {
@@ -37,6 +36,11 @@ public class Worker {
      */
     private WorkerAbstract worker;
     
+    /**
+     * constructor
+     * 
+     * @param worker worker instance
+     */
     public Worker(WorkerAbstract worker) {
         
         try {
@@ -59,8 +63,6 @@ public class Worker {
     
     /**
      * initializes all
-     * 
-     * @return void
      */
     public void run() {
         try {
@@ -76,8 +78,6 @@ public class Worker {
      * connects to the queue
      * 
      * @throws java.io.IOException
-     * 
-     * @return void
      */
     private void connectToQueue() throws IOException {
 
@@ -110,7 +110,7 @@ public class Worker {
     /**
      * function to return the connection factory
      * 
-     * @return
+     * @return connection factory
      */
     public ConnectionFactory getConnectionFactory()
     {
@@ -123,7 +123,7 @@ public class Worker {
      * @param channel rabbitmq channel
      * @param worker the worker
      * 
-     * @return
+     * @return worker consumer
      */
     public WorkerConsumer getWorkerConsumer(Channel channel, WorkerAbstract worker) {
         return new WorkerConsumer(channel, worker);
@@ -131,8 +131,6 @@ public class Worker {
 
     /**
      * loads the properties
-     * 
-     * @return void
      */
     private void loadProperties() {
         this.properties = new Properties();
@@ -178,8 +176,6 @@ public class Worker {
      * @return void
      * @throws IOException
      * @throws JSONObjectException
-     * 
-     * @return void
      */
     private void applyVcapConfig() throws Exception {
         String vcap = this.getVcap();

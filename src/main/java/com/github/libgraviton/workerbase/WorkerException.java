@@ -1,5 +1,14 @@
+/**
+ * worker exception
+ */
+
 package com.github.libgraviton.workerbase;
 
+/**
+ * @author List of contributors
+ *         <https://github.com/libgraviton/graviton/graphs/contributors>
+ * @link http://swisscom.ch
+ */
 public class WorkerException extends Exception {
 
     /**

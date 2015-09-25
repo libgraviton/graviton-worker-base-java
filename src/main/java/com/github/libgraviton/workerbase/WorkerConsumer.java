@@ -16,7 +16,6 @@ import com.rabbitmq.client.Envelope;
 /**
  * @author List of contributors
  *         <https://github.com/libgraviton/graviton/graphs/contributors>
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  * @link http://swisscom.ch
  */
 public class WorkerConsumer extends DefaultConsumer {
@@ -44,8 +43,6 @@ public class WorkerConsumer extends DefaultConsumer {
      * @param envelope envelope object
      * @param properties delivery props
      * @param body message body
-     * 
-     * @return void
      */
     @Override
     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
