@@ -207,7 +207,7 @@ public class WorkerBaseTest {
         verify(requestBodyMock, times(1)).body(
                 AdditionalMatchers.and(
                         contains("\"status\":\"failed\",\"workerId\":\"java-test\""),
-                        contains("\"content\":\"Something bad happened!\"")
+                        contains("\"content\":\"com.github.libgraviton.workerbase.WorkerException: Something bad happened!\"")
                         )
                 );        
     }
