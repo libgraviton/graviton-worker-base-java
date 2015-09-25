@@ -1,3 +1,7 @@
+/**
+ * abstract base class for workers providing convenience
+ */
+
 package com.github.libgraviton.workerbase;
 
 import java.io.IOException;
@@ -13,6 +17,11 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
+/**
+ * @author List of contributors
+ *         <https://github.com/libgraviton/graviton/graphs/contributors>
+ * @link http://swisscom.ch
+ */
 public abstract class WorkerAbstract {
 
     /**
@@ -56,8 +65,6 @@ public abstract class WorkerAbstract {
      * 
      * @param properties properties
      * @throws Exception
-     * 
-     * @return void
      */
     public final void initialize(Properties properties) throws Exception {
         this.properties = properties;
@@ -72,8 +79,6 @@ public abstract class WorkerAbstract {
      * @param consumerTag consumer tag (aka routing key)
      * @param qevent queue event
      * @throws IOException
-     * 
-     * @return void
      */
     public final void handleDelivery(String consumerTag, QueueEvent qevent)
             throws IOException {
@@ -98,7 +103,7 @@ public abstract class WorkerAbstract {
                 System.out.println(" [x] LIB Updated status to 'done' on '" + statusUrl + "'");
             }
             
-        } catch (WorkerException e) {
+        } catch (Exception e) {
             System.out.println("Error in worker: " + e.getMessage());
             e.printStackTrace();
 
@@ -107,9 +112,6 @@ public abstract class WorkerAbstract {
                 System.out.println(" [x] LIB Updated status to 'failed' on '" + statusUrl + "'");
             }
             
-        } catch (Exception e) {
-            System.out.println("General error in logic: " + e.getMessage());
-            e.printStackTrace();
         }
     }    
     
@@ -134,9 +136,7 @@ public abstract class WorkerAbstract {
     }
     
     /**
-     * will be called after we're initialized
-     * 
-     * @return void
+     * will be called after we're initialized, can contain some initial logic in the worker
      */    
     public void onStartUp()
     {
@@ -147,8 +147,6 @@ public abstract class WorkerAbstract {
      * 
      * @param statusUrl status url 
      * @param status which status
-     * 
-     * @return void
      */
     protected void setStatus(String statusUrl, String status) {
         this.setStatus(statusUrl, status, "");
@@ -160,8 +158,6 @@ public abstract class WorkerAbstract {
      * @param statusUrl url to status document
      * @param status status we set to
      * @param errorInformation error information
-     * 
-     * @return void
      */
     protected void setStatus(String statusUrl, String status, String errorInformation) {
         try {
@@ -214,8 +210,6 @@ public abstract class WorkerAbstract {
      * @throws JSONObjectException
      * @throws JsonProcessingException
      * @throws IOException
-     * 
-     * @return void
      */
     protected void registerWorker() throws UnirestException, JSONObjectException, JsonProcessingException, IOException {
 
