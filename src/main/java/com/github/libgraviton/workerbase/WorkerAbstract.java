@@ -30,6 +30,11 @@ public abstract class WorkerAbstract {
     public static final String STATUS_WORKING = "working";
     public static final String STATUS_DONE = "done";
     public static final String STATUS_FAILED = "failed";
+
+    public static final String INFORMATION_TYPE_DEBUG = "debug";
+    public static final String INFORMATION_TYPE_INFO = "info";
+    public static final String INFORMATION_TYPE_WARNING = "warning";
+    public static final String INFORMATION_TYPE_ERROR = "error";
     
     /**
      * properties
@@ -153,13 +158,28 @@ public abstract class WorkerAbstract {
     }
     
     /**
+     * Set status with a string based error information
+     * 
+     * @param statusUrl url to status document
+     * @param status status we set to
+     * @param errorInformation error information message
+     */
+    protected void setStatus(String statusUrl, String status, String errorInformation) {
+        EventStatusInformation infoObj = new EventStatusInformation();
+        infoObj.setWorkerId(this.workerId);
+        infoObj.setType(INFORMATION_TYPE_ERROR);
+        infoObj.setContent(errorInformation);
+        this.setStatus(statusUrl, status, infoObj);
+    }
+    
+    /**
      * sets the status to our backend
      * 
      * @param statusUrl url to status document
      * @param status status we set to
-     * @param errorInformation error information
+     * @param informationEntry an EventStatusInformation instance that will be added to the information array
      */
-    protected void setStatus(String statusUrl, String status, String errorInformation) {
+    protected void setStatus(String statusUrl, String status, EventStatusInformation informationEntry) {
         try {
             HttpResponse<String> response = Unirest.get(statusUrl).header("Accept", "application/json").asString();
             
@@ -177,15 +197,15 @@ public abstract class WorkerAbstract {
 
             eventStatus.setStatus(statusObj);
             
-            // error information?
-            if (errorInformation.length() > 0) {
-                EventStatusErrorInformation errorObj = new EventStatusErrorInformation();
-                errorObj.setWorkerId(this.workerId);
-                errorObj.setContent(errorInformation);
-                
-                eventStatus.getErrorInformation().add(errorObj);
+            // add information entry if present
+            if (informationEntry instanceof EventStatusInformation) {
+                // ensure list presence
+                if (!(eventStatus.getInformation() instanceof ArrayList<?>)) {
+                    eventStatus.setInformation(new ArrayList<EventStatusInformation>());
+                }
+                eventStatus.getInformation().add(informationEntry);                
             }
-
+            
             // send the new status to the backend
             Unirest.put(statusUrl).header("Content-Type", "application/json").body(JSON.std.asString(eventStatus)).asString();
 
@@ -203,7 +223,7 @@ public abstract class WorkerAbstract {
             e.printStackTrace();
         }
     }
-
+    
     /**
      * registers our worker with the backend
      * @throws UnirestException
