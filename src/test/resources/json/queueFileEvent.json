@@ -1,0 +1,5 @@
+{
+"event": "documents.file.file.create",
+"status": {"$ref": "http://localhost/event/status/mystatus"},
+"document": {"$ref": "http://localhost/file/16f52c4b00523e2ba27480ce6905ed1d"}
+}
