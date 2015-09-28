@@ -8,7 +8,7 @@ public class EventStatus {
     public String createDate;
     public String eventName;
     public ArrayList<EventStatusStatus> status;
-    public ArrayList<EventStatusErrorInformation> errorInformation;
+    public ArrayList<EventStatusInformation> information;
     
     public String getId() {
         return id;
@@ -34,11 +34,10 @@ public class EventStatus {
     public void setStatus(ArrayList<EventStatusStatus> status) {
         this.status = status;
     }
-    public ArrayList<EventStatusErrorInformation> getErrorInformation() {
-        return errorInformation;
+    public ArrayList<EventStatusInformation> getInformation() {
+        return information;
     }
-    public void setErrorInformation(ArrayList<EventStatusErrorInformation> errorInformation) {
-        this.errorInformation = errorInformation;
-    }
-    
+    public void setInformation(ArrayList<EventStatusInformation> information) {
+        this.information = information;
+    }    
 }
