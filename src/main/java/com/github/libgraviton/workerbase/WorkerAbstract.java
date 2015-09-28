@@ -104,11 +104,11 @@ public abstract class WorkerAbstract {
             }
             
         } catch (Exception e) {
-            System.out.println("Error in worker: " + e.getMessage());
+            System.out.println("Error in worker: " + e.toString());
             e.printStackTrace();
 
             if (this.doAutoUpdateStatus()) {
-                this.setStatus(statusUrl, STATUS_FAILED, e.getMessage());
+                this.setStatus(statusUrl, STATUS_FAILED, e.toString());
                 System.out.println(" [x] LIB Updated status to 'failed' on '" + statusUrl + "'");
             }
             

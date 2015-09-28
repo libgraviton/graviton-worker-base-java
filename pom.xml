@@ -4,7 +4,7 @@
 	<groupId>com.github.libgraviton</groupId>
 	<artifactId>worker-base</artifactId>
 	<packaging>jar</packaging>
-	<version>0.2.0</version>
+	<version>0.3.0</version>
 	<name>Graviton Worker Base Library</name>
 	<url>https://github.com/libgraviton/graviton-worker-base-java</url>
 	<inceptionYear>2015</inceptionYear>
@@ -159,7 +159,10 @@
 				<artifactId>cobertura-maven-plugin</artifactId>
 				<version>2.7</version>
 				<configuration>
-					<format>xml</format>
+					<formats>
+						<format>html</format>
+						<format>xml</format>
+					</formats>
 					<maxmem>256m</maxmem>
 				</configuration>
 			</plugin>
