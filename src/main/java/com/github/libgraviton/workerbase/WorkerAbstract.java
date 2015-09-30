@@ -8,14 +8,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.jr.ob.JSON;
-import com.fasterxml.jackson.jr.ob.JSONObjectException;
 import com.github.libgraviton.workerbase.model.*;
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 
 /**
  * @author List of contributors
@@ -165,10 +161,16 @@ public abstract class WorkerAbstract {
      * @param errorInformation error information message
      */
     protected void setStatus(String statusUrl, String status, String errorInformation) {
-        EventStatusInformation infoObj = new EventStatusInformation();
-        infoObj.setWorkerId(this.workerId);
-        infoObj.setType(INFORMATION_TYPE_ERROR);
-        infoObj.setContent(errorInformation);
+        
+        EventStatusInformation infoObj = null;
+        
+        if (errorInformation.length() > 0) {
+            infoObj = new EventStatusInformation();
+            infoObj.setWorkerId(this.workerId);
+            infoObj.setType(INFORMATION_TYPE_ERROR);
+            infoObj.setContent(errorInformation);
+        }
+        
         this.setStatus(statusUrl, status, infoObj);
     }
     
@@ -207,31 +209,26 @@ public abstract class WorkerAbstract {
             }
             
             // send the new status to the backend
-            Unirest.put(statusUrl).header("Content-Type", "application/json").body(JSON.std.asString(eventStatus)).asString();
+            HttpResponse<String> putResp = Unirest.put(statusUrl).header("Content-Type", "application/json").body(JSON.std.asString(eventStatus)).asString();
+            
+            if (putResp.getStatus() != 204) {
+                throw new WorkerException("Could not update status on backend! Returned status: " + putResp.getStatus() + ", backend body: " + putResp.getBody());
+            }
 
-        } catch (UnirestException e) {
-            System.out.println("Error GETting Status resource: " + e.getMessage());
-            e.printStackTrace();
-        } catch (JSONObjectException e) {
-            System.out.println("Error Deserializing JSON: " + e.getMessage());
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.out.println("Network error on Status update: " + e.getMessage());
+        } catch (WorkerException e) {
+            System.out.println(" [F] Backend error on status update! " + e.getMessage());
             e.printStackTrace();
         } catch (Exception e) {
-            System.out.println("Different exception on status set! " + e.getMessage());
+            System.out.println(" [F] Exception on status set! " + e.getMessage());
             e.printStackTrace();
         }
     }
     
     /**
      * registers our worker with the backend
-     * @throws UnirestException
-     * @throws JSONObjectException
-     * @throws JsonProcessingException
-     * @throws IOException
+     * @throws Exception
      */
-    protected void registerWorker() throws UnirestException, JSONObjectException, JsonProcessingException, IOException {
+    protected void registerWorker() throws Exception {
 
         WorkerRegister registerObj = new WorkerRegister();
         registerObj.setId(this.workerId);
@@ -247,14 +244,18 @@ public abstract class WorkerAbstract {
         
         registerObj.setSubscription(subscriptions);
         
-        HttpResponse<JsonNode> jsonResponse = 
+        HttpResponse<String> response = 
                 Unirest.put(this.properties.getProperty("graviton.registerUrl"))
                 .routeParam("workerId", this.workerId)
                 .header("Content-Type", "application/json")
                 .body(JSON.std.asString(registerObj))
-                .asJson();
+                .asString();
 
-        System.out.println(" [*] Worker register response code: " + jsonResponse.getStatus());
+        System.out.println(" [*] Worker register response code: " + response.getStatus());
+        
+        if (response.getStatus() != 204) {
+            throw new WorkerException("Could register worker on backend! Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
+        }        
     }    
     
 }

@@ -49,7 +49,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         when(getRequestStatus.asString())
             .thenReturn(statusResponse);        
         when(Unirest.get(contains("/file/16f52c4b00523e2ba27480ce6905ed1d")))
-            .thenReturn(getRequestStatus);      
+            .thenReturn(getRequestStatus);
         
         URL fileResponseActionUrl = this.getClass().getClassLoader().getResource("json/fileResourceWithAction.json");
         String fileResponseActionContent = FileUtils.readFileToString(new File(fileResponseActionUrl.getFile()));
@@ -78,7 +78,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
         workerConsumer.handleDelivery("document.file.file.create", envelope, new AMQP.BasicProperties(), message.getBytes());
         
-        verify(jsonResponse, times(1)).getStatus();
+        verify(stringResponse, times(4)).getStatus();
         
         assertEquals("16f52c4b00523e2ba27480ce6905ed1d", testWorker.fileObj.getId());
         assertEquals("dude", testWorker.fileObj.getLinks().get(0).getType());
@@ -108,7 +108,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
         workerConsumer.handleDelivery("document.file.file.create", envelope, new AMQP.BasicProperties(), message.getBytes());     
         
-        verify(jsonResponse, times(1)).getStatus();
+        verify(stringResponse, times(4)).getStatus();
         
         assertEquals("16f52c4b00523e2ba27480ce6905ed1e", testWorker.fileObj.getId());
         

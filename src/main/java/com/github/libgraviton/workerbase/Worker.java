@@ -40,38 +40,22 @@ public class Worker {
      * constructor
      * 
      * @param worker worker instance
+     * @throws Exception 
      */
-    public Worker(WorkerAbstract worker) {
-        
-        try {
-            this.loadProperties();
-        } catch (Exception e) {
-            System.out.println("FATAL ERROR while reading configuration: " + e.getMessage());
-            System.exit(-1);
-        }
-        
-        try {
-            worker.initialize(properties);
-            worker.onStartUp();
-            this.worker = worker;
-        } catch (Exception e) {
-            System.out.println("Could not initialize worker: " + e.getMessage());
-            e.printStackTrace();
-            System.exit(-1);
-        }
+    public Worker(WorkerAbstract worker) throws Exception {
+        this.loadProperties();
+        worker.initialize(properties);
+        worker.onStartUp();
+        this.worker = worker;
     }
     
     /**
      * initializes all
+     * @throws Exception 
      */
-    public void run() {
-        try {
-            this.applyVcapConfig();
-            this.connectToQueue();
-        } catch (Exception e) {
-            System.out.println("Problem connecting to the queue: " + e.getMessage());
-            e.printStackTrace();
-        } 
+    public void run() throws Exception {
+        this.applyVcapConfig();
+        this.connectToQueue();
     }
 
     /**

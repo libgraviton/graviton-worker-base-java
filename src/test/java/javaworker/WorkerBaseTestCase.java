@@ -33,6 +33,7 @@ public abstract class WorkerBaseTestCase {
     protected WorkerConsumer workerConsumer;
     
     protected HttpResponse<JsonNode> jsonResponse;
+    protected HttpResponse<String> stringResponse;
     protected Channel queueChannel;
     protected ConnectionFactory connectionFactory;
     protected RequestBodyEntity bodyEntity;
@@ -54,11 +55,16 @@ public abstract class WorkerBaseTestCase {
         
         jsonResponse = (HttpResponse<JsonNode>) mock(HttpResponse.class);
         when(jsonResponse.getStatus())
-            .thenReturn(204);
+            .thenReturn(204);        
+        stringResponse = (HttpResponse<String>) mock(HttpResponse.class);
+        when(stringResponse.getStatus())
+            .thenReturn(204);    
         
         bodyEntity = mock(RequestBodyEntity.class);
         when(bodyEntity.asJson())
             .thenReturn(jsonResponse);
+        when(bodyEntity.asString())
+        .thenReturn(stringResponse); 
         
         when(requestBodyMock.routeParam(anyString(), anyString()))
             .thenReturn(requestBodyMock);
@@ -103,7 +109,7 @@ public abstract class WorkerBaseTestCase {
             .thenReturn(queueConnection);                
     }
     
-    protected Worker getWrappedWorker(WorkerAbstract testWorker) {
+    protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {
         worker = spy(new Worker(testWorker));
         workerConsumer = PowerMockito.spy(new WorkerConsumer(queueChannel, testWorker));
         
