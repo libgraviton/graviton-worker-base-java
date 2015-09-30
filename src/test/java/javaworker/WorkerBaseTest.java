@@ -43,7 +43,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
         workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
         
-        verify(jsonResponse, times(1)).getStatus();
+        verify(stringResponse, times(3)).getStatus();
         
         assertTrue(testWorker.concerningRequestCalled);
         
