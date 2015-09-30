@@ -1,10 +1,10 @@
 package javaworker;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
@@ -15,7 +15,11 @@ import org.mockito.AdditionalMatchers;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import com.github.libgraviton.workerbase.WorkerException;
+import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.request.HttpRequestWithBody;
+import com.mashape.unirest.request.body.RequestBodyEntity;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Envelope;
 
@@ -43,7 +47,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
         workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
         
-        verify(stringResponse, times(3)).getStatus();
+        verify(stringResponse, times(4)).getStatus();
         
         assertTrue(testWorker.concerningRequestCalled);
         
@@ -63,7 +67,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     }
     
     @Test
-    public void testNoAutoWorker() throws IOException {
+    public void testNoAutoWorker() throws Exception {
         TestWorkerNoAuto testWorker = new TestWorkerNoAuto(); 
         worker = getWrappedWorker(testWorker);
         worker.run();
@@ -89,7 +93,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     }
     
     @Test
-    public void testWorkerException() throws IOException {
+    public void testWorkerException() throws Exception {
         TestWorkerException testWorker = new TestWorkerException();        
         worker = getWrappedWorker(testWorker);
         worker.run();
@@ -114,7 +118,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     }
     
     @Test
-    public void testWorkerExceptionNoAuto() throws IOException {
+    public void testWorkerExceptionNoAuto() throws Exception {
         TestWorkerException testWorker = new TestWorkerException();
         testWorker.doAutoStuff = false;
         worker = getWrappedWorker(testWorker);
@@ -128,10 +132,80 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         
         // should be NO call on requestBodyMock
         verify(requestBodyMock, times(0)).body(anyString());
-    }      
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test (expected = WorkerException.class)
+    public void testWorkerRegistrationError() throws Exception {
+        
+        /*** change mocking so we get 400 status on worker registration -> worker shall throw WorkerException ***/
+        RequestBodyEntity bodyEntityRegister = mock(RequestBodyEntity.class);
+        
+        HttpResponse<String> stringResponseRegister = (HttpResponse<String>) mock(HttpResponse.class);
+        when(stringResponseRegister.getStatus())
+            .thenReturn(400);            
+        when(bodyEntityRegister.asString())
+        .thenReturn(stringResponseRegister); 
+
+        HttpRequestWithBody registerBodyMock = mock(HttpRequestWithBody.class);
+        
+        when(registerBodyMock.routeParam(anyString(), anyString()))
+            .thenReturn(registerBodyMock);
+        when(registerBodyMock.header(anyString(), anyString()))
+        .thenReturn(registerBodyMock);
+        when(registerBodyMock.body(anyString()))
+            .thenReturn(bodyEntityRegister);
+
+        // PUT mock
+        when(Unirest.put(contains("/event/worker")))
+            .thenReturn(registerBodyMock);    
+        
+        TestWorker testWorker = new TestWorker();
+        worker = getWrappedWorker(testWorker);
+        worker.run();
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testBackenStatusUpdateError() throws Exception {
+        
+        /*** change mocking so we get 400 status on worker registration -> worker shall throw WorkerException ***/
+        RequestBodyEntity bodyEntityRegister = mock(RequestBodyEntity.class);
+        
+        HttpResponse<String> stringResponseRegister = (HttpResponse<String>) mock(HttpResponse.class);
+        when(stringResponseRegister.getStatus())
+            .thenReturn(400);            
+        when(bodyEntityRegister.asString())
+        .thenReturn(stringResponseRegister); 
+
+        HttpRequestWithBody registerBodyMock = mock(HttpRequestWithBody.class);
+        
+        when(registerBodyMock.routeParam(anyString(), anyString()))
+            .thenReturn(registerBodyMock);
+        when(registerBodyMock.header(anyString(), anyString()))
+        .thenReturn(registerBodyMock);
+        when(registerBodyMock.body(anyString()))
+            .thenReturn(bodyEntityRegister);
+
+        // PUT mock
+        when(Unirest.put(contains("/event/status")))
+            .thenReturn(registerBodyMock);    
+        
+        TestWorker testWorker = new TestWorker();
+        worker = getWrappedWorker(testWorker);
+        worker.run();
+        
+        // let worker throw WorkerException        
+        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
+        URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
+        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes()); 
+        
+        assertTrue(this.outContent.toString().contains("Could not update status on backend! Returned status: 400"));               
+    }    
     
     @Test
-    public void testVcapConfiguration() throws IOException {
+    public void testVcapConfiguration() throws Exception {
         
         TestWorker testWorker = new TestWorker();
         worker = getWrappedWorker(testWorker);

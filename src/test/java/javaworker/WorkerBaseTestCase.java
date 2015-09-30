@@ -109,7 +109,7 @@ public abstract class WorkerBaseTestCase {
             .thenReturn(queueConnection);                
     }
     
-    protected Worker getWrappedWorker(WorkerAbstract testWorker) {
+    protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {
         worker = spy(new Worker(testWorker));
         workerConsumer = PowerMockito.spy(new WorkerConsumer(queueChannel, testWorker));
         
