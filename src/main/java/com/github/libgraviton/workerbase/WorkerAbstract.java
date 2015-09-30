@@ -260,12 +260,12 @@ public abstract class WorkerAbstract {
         
         registerObj.setSubscription(subscriptions);
         
-        HttpResponse<JsonNode> jsonResponse = 
+        HttpResponse<String> jsonResponse = 
                 Unirest.put(this.properties.getProperty("graviton.registerUrl"))
                 .routeParam("workerId", this.workerId)
                 .header("Content-Type", "application/json")
                 .body(JSON.std.asString(registerObj))
-                .asJson();
+                .asString();
 
         System.out.println(" [*] Worker register response code: " + jsonResponse.getStatus());
     }    
