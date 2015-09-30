@@ -213,19 +213,26 @@ public abstract class WorkerAbstract {
             }
             
             // send the new status to the backend
-            Unirest.put(statusUrl).header("Content-Type", "application/json").body(JSON.std.asString(eventStatus)).asString();
+            HttpResponse<String> putResp = Unirest.put(statusUrl).header("Content-Type", "application/json").body(JSON.std.asString(eventStatus)).asString();
+            
+            if (putResp.getStatus() != 204 && putResp.getStatus() != 200) {
+                throw new WorkerException("Could not update status on backend! Returned status: " + putResp.getStatus() + ", backend body: " + putResp.getBody());
+            }
 
         } catch (UnirestException e) {
-            System.out.println("Error GETting Status resource: " + e.getMessage());
+            System.out.println(" [F] Error GETting Status resource: " + e.getMessage());
             e.printStackTrace();
         } catch (JSONObjectException e) {
-            System.out.println("Error Deserializing JSON: " + e.getMessage());
+            System.out.println(" [F] Error Deserializing JSON: " + e.getMessage());
             e.printStackTrace();
         } catch (IOException e) {
-            System.out.println("Network error on Status update: " + e.getMessage());
+            System.out.println(" [F] Network error on Status update: " + e.getMessage());
+            e.printStackTrace();
+        } catch (WorkerException e) {
+            System.out.println(" [F] Backend error on status update! " + e.getMessage());
             e.printStackTrace();
         } catch (Exception e) {
-            System.out.println("Different exception on status set! " + e.getMessage());
+            System.out.println(" [F] Different exception on status set! " + e.getMessage());
             e.printStackTrace();
         }
     }
