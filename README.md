@@ -22,7 +22,20 @@ When you extend from one of those abstracts, the worker base takes care of:
 * deserializing the Queue message to a POJO
 * calling your worker function
 * status tracking (`working` / `done` / `failed`)
-* Error handling. It also provides the class `WorkerException` that you can throw inside your logic function. Any exception thrown (and not catched) inside your logic function will turn the `/event/status` entry to `failed`. 
+* Error handling. It also provides the class `WorkerException` that you can throw inside your logic function. Any exception thrown (and not catched) inside your logic function will turn the `/event/status` entry to `failed`.
+
+## Configuration
+
+There are some basic settings needed in order for the library to work. These are defined in the file `src/main/resources/default.properties`.
+Additionally, you may want to have own properties and/or overrides of defaults in your worker implementation.
+
+You may specify a path to an *additional* parsed properties file using the `propFile` system property (i.e. by command line).
+
+Thus, once your worker implementing the base library is usable, you may specify an additional properties file like so:
+
+```bash
+java -DpropFile=path/to/additional.properties <yourCommand>
+```
 
 ## API Doc
 
@@ -43,6 +56,11 @@ You can use this library in your project by including this in your `pom.xml`:
 ```
 
 make sure that `version` points to the newest release on Maven central (see badge above).
+
+## Cloudfoundry support
+
+This library comes with basic Cloudfoundry `VCAP_SERVICES` support. If this environment variable is found with an `rabbitmq-3.0` element,
+those connection credentials will automatically override whatever you specify via properties.
 
 ## Deploying a release
 
