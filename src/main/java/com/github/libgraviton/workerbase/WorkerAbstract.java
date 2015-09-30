@@ -165,10 +165,16 @@ public abstract class WorkerAbstract {
      * @param errorInformation error information message
      */
     protected void setStatus(String statusUrl, String status, String errorInformation) {
-        EventStatusInformation infoObj = new EventStatusInformation();
-        infoObj.setWorkerId(this.workerId);
-        infoObj.setType(INFORMATION_TYPE_ERROR);
-        infoObj.setContent(errorInformation);
+        
+        EventStatusInformation infoObj = null;
+        
+        if (errorInformation.length() > 0) {
+            infoObj = new EventStatusInformation();
+            infoObj.setWorkerId(this.workerId);
+            infoObj.setType(INFORMATION_TYPE_ERROR);
+            infoObj.setContent(errorInformation);
+        }
+        
         this.setStatus(statusUrl, status, infoObj);
     }
     
