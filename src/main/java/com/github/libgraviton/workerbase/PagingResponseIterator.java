@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.google.common.collect.AbstractIterator;
+import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 
@@ -177,9 +178,10 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
      */
     private void parseLinkHeader() throws Exception {
         Pattern pattern = Pattern.compile("\\<(.*)\\>; rel\\=\\\"next\\\"");
+        Headers headers = this.response.getHeaders();
 
-        if (this.response.getHeaders().containsKey("link")) {
-            String linkHeader = this.response.getHeaders().get("link").get(0);
+        if (headers.containsKey("link")) {
+            String linkHeader = headers.get("link").get(0);
             String[] headerParts = linkHeader.split(",");
             Matcher matcher;
             for (String singleLinkHeader : headerParts) {
