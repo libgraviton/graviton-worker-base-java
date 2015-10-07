@@ -5,10 +5,6 @@ public class GravitonConsultation {
 
 	private GravitonCustomer customer;
 	
-	private String date;
-	
-	private String batchName;
-	
 	private String creationDate;
 	
 	public GravitonCustomer getCustomer() {
