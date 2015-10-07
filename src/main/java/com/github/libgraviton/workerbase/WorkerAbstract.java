@@ -248,6 +248,7 @@ public abstract class WorkerAbstract {
                 Unirest.put(this.properties.getProperty("graviton.registerUrl"))
                 .routeParam("workerId", this.workerId)
                 .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
                 .body(JSON.std.asString(registerObj))
                 .asString();
 
