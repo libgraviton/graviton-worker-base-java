@@ -6,6 +6,8 @@ public class GravitonCustomer {
     
     private String recordOrigin;
     
+    private String customerNumber;
+    
     public String getId() {
         return id;
     }
@@ -27,5 +29,13 @@ public class GravitonCustomer {
         if (this.recordOrigin instanceof String && this.recordOrigin.equals("core"))
             retVal = true;
         return retVal;
+    }
+    
+    public void setCustomerNumber(String customerNumber) {
+    	this.customerNumber = customerNumber;
+    }
+	
+    public String getCustomerNumber() {
+    	return this.customerNumber;	
     }
 }
