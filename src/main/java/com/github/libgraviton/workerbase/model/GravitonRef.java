@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase.model;
 
-public class QueueEventRef {
+public class GravitonRef {
     public String $ref;
 
     public String get$ref() {

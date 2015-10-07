@@ -2,8 +2,8 @@ package com.github.libgraviton.workerbase.model;
 
 public class QueueEvent {
     public String event;
-    public QueueEventRef document;
-    public QueueEventRef status;
+    public GravitonRef document;
+    public GravitonRef status;
     
     /**
      * 
@@ -17,22 +17,22 @@ public class QueueEvent {
     }
     /**
      * 
-     * @return QueueEventRef
+     * @return GravitonRef
      */
-    public QueueEventRef getDocument() {
+    public GravitonRef getDocument() {
         return document;
     }
-    public void setDocument(QueueEventRef document) {
+    public void setDocument(GravitonRef document) {
         this.document = document;
     }
     /**
      * 
-     * @return QueueEventRef
+     * @return GravitonRef
      */
-    public QueueEventRef getStatus() {
+    public GravitonRef getStatus() {
         return status;
     }
-    public void setStatus(QueueEventRef status) {
+    public void setStatus(GravitonRef status) {
         this.status = status;
     }   
     
