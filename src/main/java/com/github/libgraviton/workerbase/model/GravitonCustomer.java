@@ -32,10 +32,10 @@ public class GravitonCustomer {
     }
     
     public void setCustomerNumber(String customerNumber) {
-		this.customerNumber = customerNumber;
-	}
+    	this.customerNumber = customerNumber;
+    }
 	
-	public String getCustomerNumber() {
-		return this.customerNumber;
-	}
+    public String getCustomerNumber() {
+    	return this.customerNumber;	
+    }
 }
