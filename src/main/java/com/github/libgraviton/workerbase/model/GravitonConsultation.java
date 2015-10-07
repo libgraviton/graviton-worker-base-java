@@ -1,6 +1,5 @@
 package com.github.libgraviton.workerbase.model;
 
-
 public class GravitonConsultation {
 
 	private GravitonCustomer customer;
