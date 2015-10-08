@@ -16,17 +16,17 @@ public class GravitonFile {
     /**
      * id
      */
-    private String id;
+    public String id;
 
     /**
      * metadata
      */
-    private GravitonFileMetadata metadata;
+    public GravitonFileMetadata metadata;
 
     /**
      * links
      */
-    private ArrayList<GravitonFileLinks> links;
+    public ArrayList<GravitonFileLinks> links;
 
 
     /**
