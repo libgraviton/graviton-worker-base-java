@@ -9,6 +9,7 @@ public class GravitonFileMetadata {
     public String modificationDate;
     public String filename;
     public ArrayList<GravitonFileMetadataAction> action;
+    public String additionalInformation;
     
     public Integer getSize() {
         return size;
@@ -45,6 +46,14 @@ public class GravitonFileMetadata {
     }
     public void setAction(ArrayList<GravitonFileMetadataAction> action) {
         this.action = action;
+    }
+    
+    public String getAdditionalInformation() {
+        return this.additionalInformation;
+    }
+    
+    public void setAdditionalInformation(String additionalInformation) {
+        this.additionalInformation = additionalInformation;
     }
     
 }
