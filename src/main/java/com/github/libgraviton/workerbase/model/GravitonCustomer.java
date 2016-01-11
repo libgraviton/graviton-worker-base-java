@@ -1,27 +1,58 @@
 package com.github.libgraviton.workerbase.model;
 
+/**
+ * <p>GravitonCustomer class.</p>
+ *
+ * @author Dario Nuevo
+ * @version $Id: $Id
+ */
 public class GravitonCustomer {
     
     private String id;
     
     private String recordOrigin;
     
+    /**
+     * <p>Getter for the field <code>id</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getId() {
         return id;
     }
     
+    /**
+     * <p>Setter for the field <code>id</code>.</p>
+     *
+     * @param id a {@link java.lang.String} object.
+     */
     public void setId(String id) {
         this.id = id;
     }
     
+    /**
+     * <p>Getter for the field <code>recordOrigin</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getRecordOrigin() {
         return recordOrigin;
     }
     
+    /**
+     * <p>Setter for the field <code>recordOrigin</code>.</p>
+     *
+     * @param recordOrigin a {@link java.lang.String} object.
+     */
     public void setRecordOrigin(String recordOrigin) {
          this.recordOrigin = recordOrigin;
     }
     
+    /**
+     * <p>isCoreCustomer.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isCoreCustomer() {
         boolean retVal = false;
         if (this.recordOrigin instanceof String && this.recordOrigin.equals("core"))

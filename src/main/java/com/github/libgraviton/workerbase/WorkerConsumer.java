@@ -14,9 +14,12 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
 /**
+ * <p>WorkerConsumer class.</p>
+ *
  * @author List of contributors
  *         <https://github.com/libgraviton/graviton/graphs/contributors>
  * @link http://swisscom.ch
+ * @version $Id: $Id
  */
 public class WorkerConsumer extends DefaultConsumer {
     
@@ -27,7 +30,7 @@ public class WorkerConsumer extends DefaultConsumer {
 
     /**
      * constructor
-     * 
+     *
      * @param channel channel
      * @param worker worker
      */
@@ -37,12 +40,9 @@ public class WorkerConsumer extends DefaultConsumer {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * handles a delivery
-     * 
-     * @param consumerTag consumer tag
-     * @param envelope envelope object
-     * @param properties delivery props
-     * @param body message body
      */
     @Override
     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)

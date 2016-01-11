@@ -7,9 +7,12 @@ package com.github.libgraviton.workerbase.model;
 import java.util.ArrayList;
 
 /**
+ * <p>GravitonFile class.</p>
+ *
  * @author List of contributors
  *         <https://github.com/libgraviton/graviton/graphs/contributors>
  * @link http://swisscom.ch
+ * @version $Id: $Id
  */
 public class GravitonFile {
 
@@ -31,7 +34,7 @@ public class GravitonFile {
 
     /**
      * Get id
-     * 
+     *
      * @return The id
      */
     public String getId() {
@@ -40,7 +43,7 @@ public class GravitonFile {
 
     /**
      * Set id
-     * 
+     *
      * @param id The id to set
      */
     public void setId(String id) {
@@ -49,7 +52,7 @@ public class GravitonFile {
 
     /**
      * Get metadata
-     * 
+     *
      * @return The metadata
      */
     public GravitonFileMetadata getMetadata() {
@@ -58,7 +61,7 @@ public class GravitonFile {
 
     /**
      * Set metadata
-     * 
+     *
      * @param metadata The metadata to set
      */
     public void setMetadata(GravitonFileMetadata metadata) {
@@ -67,7 +70,7 @@ public class GravitonFile {
 
     /**
      * Get links
-     *  
+     *
      * @return The links
      */
     public ArrayList<GravitonFileLinks> getLinks() {
@@ -76,9 +79,10 @@ public class GravitonFile {
 
     /**
      * Returns all links of a given type.
-     * 
+     *
      * @param type The type to filter the links by.
      * @return An ArrayList holding all links matching the given type.
+     * @since 0.7.0
      */
     public ArrayList<GravitonFileLinks> getLinks(String type) {
         ArrayList<GravitonFileLinks> links = new ArrayList<GravitonFileLinks>();
@@ -92,7 +96,7 @@ public class GravitonFile {
 
     /**
      * Set links
-     * 
+     *
      * @param links The links to set
      */
     public void setLinks(ArrayList<GravitonFileLinks> links) {
