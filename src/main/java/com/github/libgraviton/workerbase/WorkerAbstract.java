@@ -154,7 +154,6 @@ public abstract class WorkerAbstract {
      * convenience function to set the status
      *
      * @param statusUrl status url
-     * @param statusUrl status url
      * @param status which status
      */
     protected void setStatus(String statusUrl, String status) {
@@ -164,7 +163,6 @@ public abstract class WorkerAbstract {
     /**
      * Set status with a string based error information
      *
-     * @param statusUrl url to status document
      * @param statusUrl url to status document
      * @param status status we set to
      * @param errorInformation error information message
@@ -186,7 +184,6 @@ public abstract class WorkerAbstract {
     /**
      * sets the status to our backend
      *
-     * @param statusUrl url to status document
      * @param statusUrl url to status document
      * @param status status we set to
      * @param informationEntry an EventStatusInformation instance that will be added to the information array
