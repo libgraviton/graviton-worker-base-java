@@ -9,7 +9,7 @@ package com.github.libgraviton.workerbase;
  *
  * @author List of contributors
  *         <https://github.com/libgraviton/graviton/graphs/contributors>
- * @link http://swisscom.ch
+ * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
 public class WorkerException extends Exception {
