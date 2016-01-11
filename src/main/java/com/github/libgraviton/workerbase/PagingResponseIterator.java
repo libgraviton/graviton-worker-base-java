@@ -25,9 +25,9 @@ import com.mashape.unirest.http.Unirest;
  * pagesize gets used that is potentially different from what you want.
  *
  * This class has two different constructor implementations:
- * * One where you only pass the request URL -> The return will be a
- * List<DeferredMap>. (generic JSON type by Jackson Jr.)
- * * One with URL and a Class type -> the return will be List<YourType>. This
+ * * One where you only pass the request URL and the return will be a
+ * {@literal List<DeferredMap>}. (generic JSON type by Jackson Jr.)
+ * * One with URL and a Class type where the return will be {@literal List<YourType>}. This
  * allows
  * you to serialize to the POJO of your choosing.
  *
@@ -65,8 +65,7 @@ import com.mashape.unirest.http.Unirest;
  * }
  * </pre>
  *
- * @author List of contributors
- *         <https://github.com/libgraviton/graviton/graphs/contributors>
+ * @author List of contributors {@literal <https://github.com/libgraviton/graviton-worker-base-java/graphs/contributors>}
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */

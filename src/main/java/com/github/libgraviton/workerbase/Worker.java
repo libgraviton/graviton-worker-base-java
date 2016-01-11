@@ -22,8 +22,7 @@ import com.rabbitmq.client.*;
 /**
  * <p>Worker class.</p>
  *
- * @author List of contributors
- *         <https://github.com/libgraviton/graviton/graphs/contributors>
+ * @author List of contributors {@literal <https://github.com/libgraviton/graviton-worker-base-java/graphs/contributors>}
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
