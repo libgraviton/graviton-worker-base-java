@@ -19,27 +19,27 @@ import com.mashape.unirest.http.Unirest;
  * This class allows to GET resources from Graviton, abstracting pagination.
  * You can just iterate over the set and the Iterator will take care to fetch
  * the next items if available.
- * 
+ *
  * Important: You *really*should* pass a custom limit(n) RQL
  * expression with your desired pagesize. If you don't, the default Graviton
  * pagesize gets used that is potentially different from what you want.
- * 
+ *
  * This class has two different constructor implementations:
- * * One where you only pass the request URL -> The return will be a
- * List<DeferredMap>. (generic JSON type by Jackson Jr.)
- * * One with URL and a Class type -> the return will be List<YourType>. This
+ * * One where you only pass the request URL and the return will be a
+ * {@literal List<DeferredMap>}. (generic JSON type by Jackson Jr.)
+ * * One with URL and a Class type where the return will be {@literal List<YourType>}. This
  * allows
  * you to serialize to the POJO of your choosing.
- * 
+ *
  * Example usage (using conversion to DeferredMap), pagesize = 2
  * </pre>
- * 
+ *
  * <pre>
  * {@code
  * PagingResponseIterator<DeferredMap> pr = new PagingResponseIterator<>(
  *   "http://localhost:8000/person/customer/?limit(2)"
  * );
- * 
+ *
  * DeferredMap singleElement;
  * while (pr.hasNext()) {
  *   singleElement = pr.next();
@@ -47,16 +47,16 @@ import com.mashape.unirest.http.Unirest;
  * }
  * }
  * </pre>
- * 
+ *
  * Example usage (using conversion to POJO GravitonFile), pagesize = 1:
- * 
+ *
  * <pre>
  * {@code
  * PagingResponseIterator<GravitonFile> pr2 = new PagingResponseIterator<>(
  *   GravitonFile.class,
  *   "http://localhost:8000/file/?limit(1)"
  * );
- *  
+ *
  * GravitonFile thefile;
  * while (pr2.hasNext()) {
  *   thefile = pr2.next();
@@ -64,10 +64,10 @@ import com.mashape.unirest.http.Unirest;
  * }
  * }
  * </pre>
- * 
- * @author List of contributors
- *         <https://github.com/libgraviton/graviton/graphs/contributors>
- * @link http://swisscom.ch
+ *
+ * @author List of contributors {@literal <https://github.com/libgraviton/graviton-worker-base-java/graphs/contributors>}
+ * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
+ * @version $Id: $Id
  */
 public class PagingResponseIterator<T> extends AbstractIterator<T> {
 
@@ -93,9 +93,9 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
 
     /**
      * Constructor to serialize to DeferredMap instances
-     * 
+     *
      * @param requestUrl url to request
-     * @throws Exception
+     * @throws java.lang.Exception if any.
      */
     public PagingResponseIterator(String requestUrl) throws Exception {
         this.init(requestUrl);
@@ -103,10 +103,10 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
 
     /**
      * Constructor to serialize to the object of your choosing
-     * 
+     *
      * @param typeParameterClass class type to serialize to
      * @param requestUrl url to fetch
-     * @throws Exception
+     * @throws java.lang.Exception if any.
      */
     public PagingResponseIterator(Class<T> typeParameterClass, String requestUrl) throws Exception {
         this.typeParameterClass = typeParameterClass;
@@ -125,8 +125,9 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * iterator implementation
-     *  
      * @see com.google.common.collect.AbstractIterator#computeNext()
      */
     @Override
