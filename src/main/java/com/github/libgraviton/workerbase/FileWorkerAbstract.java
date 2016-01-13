@@ -16,19 +16,20 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 
 /**
- * @author List of contributors
- *         <https://github.com/libgraviton/graviton/graphs/contributors>
- * @link http://swisscom.ch
+ * <p>Abstract FileWorkerAbstract class.</p>
+ *
+ * @author List of contributors {@literal <https://github.com/libgraviton/graviton-worker-base-java/graphs/contributors>}
+ * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
+ * @version $Id: $Id
  */
 public abstract class FileWorkerAbstract extends WorkerAbstract {
 
     /**
      * gets file metadata from backend as a GravitonFile object
-     * 
+     *
      * @param url the url of the object
-     * @throws Exception
-     * 
-     * @return file instance 
+     * @throws java.lang.Exception if any.
+     * @return file instance
      */
     public GravitonFile getGravitonFile(String url) throws Exception {
         HttpResponse<String> fileObj = Unirest.get(url).header("Accept", "application/json").asString();
@@ -37,10 +38,9 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
     
     /**
      * checks if a certain action is present in the metadata.action array
-     * 
-     * @param fileObj
-     * @param action
-     * 
+     *
+     * @param fileObj a {@link com.github.libgraviton.workerbase.model.GravitonFile} object.
+     * @param action a {@link java.lang.String} object.
      * @return true if yes, false if not
      */
     public Boolean isActionCommandPresent(GravitonFile fileObj, String action) {
@@ -58,10 +58,10 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
     
     /**
      * removes the action.0.command action from the /file resource, PUTs it to the backend removed
-     *  
+     *
      * @param documentUrl document url
      * @param action action string to remove
-     * @throws Exception
+     * @throws java.lang.Exception if any.
      */
     public void removeFileActionCommand(String documentUrl, String action) throws Exception {
         // we will re-fetch again just to be sure.. this *really* should use PATCH ;-)

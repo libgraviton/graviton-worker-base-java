@@ -14,9 +14,11 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 
 /**
- * @author List of contributors
- *         <https://github.com/libgraviton/graviton/graphs/contributors>
- * @link http://swisscom.ch
+ * <p>Abstract WorkerAbstract class.</p>
+ *
+ * @author List of contributors {@literal <https://github.com/libgraviton/graviton-worker-base-java/graphs/contributors>}
+ * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
+ * @version $Id: $Id
  */
 public abstract class WorkerAbstract {
 
@@ -24,12 +26,18 @@ public abstract class WorkerAbstract {
      * status constants
      */
     public static final String STATUS_WORKING = "working";
+    /** Constant <code>STATUS_DONE="done"</code> */
     public static final String STATUS_DONE = "done";
+    /** Constant <code>STATUS_FAILED="failed"</code> */
     public static final String STATUS_FAILED = "failed";
 
+    /** Constant <code>INFORMATION_TYPE_DEBUG="debug"</code> */
     public static final String INFORMATION_TYPE_DEBUG = "debug";
+    /** Constant <code>INFORMATION_TYPE_INFO="info"</code> */
     public static final String INFORMATION_TYPE_INFO = "info";
+    /** Constant <code>INFORMATION_TYPE_WARNING="warning"</code> */
     public static final String INFORMATION_TYPE_WARNING = "warning";
+    /** Constant <code>INFORMATION_TYPE_ERROR="error"</code> */
     public static final String INFORMATION_TYPE_ERROR = "error";
     
     /**
@@ -44,28 +52,27 @@ public abstract class WorkerAbstract {
         
     /**
      * worker logic is implemented here
-     * 
+     *
      * @param body message body as object
-     * 
-     * @throws WorkerException
+     * @throws WorkerException if any.
+     * @throws java.lang.Exception if any.
      */
     abstract public void handleRequest(QueueEvent body) throws Exception;
     
     /**
      * Here, the worker should decide if this requests concerns him in the first
      * place. If false is returned, we ignore the message..
-     * 
+     *
      * @param body queueevent object
-     * 
      * @return boolean true if not, false if yes
      */
     abstract public boolean isConcerningRequest(QueueEvent body);
     
     /**
      * initializes this worker, will be called by the library
-     * 
+     *
      * @param properties properties
-     * @throws Exception
+     * @throws java.lang.Exception if any.
      */
     public final void initialize(Properties properties) throws Exception {
         this.properties = properties;
@@ -76,10 +83,10 @@ public abstract class WorkerAbstract {
 
     /**
      * outer function that will be called on an queue event
-     * 
+     *
      * @param consumerTag consumer tag (aka routing key)
      * @param qevent queue event
-     * @throws IOException
+     * @throws java.io.IOException if any.
      */
     public final void handleDelivery(String consumerTag, QueueEvent qevent)
             throws IOException {
@@ -118,7 +125,7 @@ public abstract class WorkerAbstract {
     
     /**
      * can be overriden by worker implementation. should the lib automatically update the EventStatus in the backend?
-     * 
+     *
      * @return true if yes, false if not
      */
     public Boolean doAutoUpdateStatus()
@@ -128,9 +135,9 @@ public abstract class WorkerAbstract {
 
     /**
      * can be overriden by worker implementation. should the lib automatically register the worker?
-     * 
+     *
      * @return true if yes, false if not
-     */    
+     */
     public Boolean doAutoRegister()
     {
         return true;
@@ -138,15 +145,15 @@ public abstract class WorkerAbstract {
     
     /**
      * will be called after we're initialized, can contain some initial logic in the worker
-     */    
+     */
     public void onStartUp()
     {
     }    
     
     /**
      * convenience function to set the status
-     * 
-     * @param statusUrl status url 
+     *
+     * @param statusUrl status url
      * @param status which status
      */
     protected void setStatus(String statusUrl, String status) {
@@ -155,7 +162,7 @@ public abstract class WorkerAbstract {
     
     /**
      * Set status with a string based error information
-     * 
+     *
      * @param statusUrl url to status document
      * @param status status we set to
      * @param errorInformation error information message
@@ -176,7 +183,7 @@ public abstract class WorkerAbstract {
     
     /**
      * sets the status to our backend
-     * 
+     *
      * @param statusUrl url to status document
      * @param status status we set to
      * @param informationEntry an EventStatusInformation instance that will be added to the information array
@@ -226,7 +233,8 @@ public abstract class WorkerAbstract {
     
     /**
      * registers our worker with the backend
-     * @throws Exception
+     *
+     * @throws java.lang.Exception if any.
      */
     protected void registerWorker() throws Exception {
 
@@ -248,6 +256,7 @@ public abstract class WorkerAbstract {
                 Unirest.put(this.properties.getProperty("graviton.registerUrl"))
                 .routeParam("workerId", this.workerId)
                 .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
                 .body(JSON.std.asString(registerObj))
                 .asString();
 

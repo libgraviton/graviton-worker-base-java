@@ -20,9 +20,11 @@ import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 import com.rabbitmq.client.*;
 
 /**
- * @author List of contributors
- *         <https://github.com/libgraviton/graviton/graphs/contributors>
- * @link http://swisscom.ch
+ * <p>Worker class.</p>
+ *
+ * @author List of contributors {@literal <https://github.com/libgraviton/graviton-worker-base-java/graphs/contributors>}
+ * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
+ * @version $Id: $Id
  */
 public class Worker {
 
@@ -38,9 +40,9 @@ public class Worker {
     
     /**
      * constructor
-     * 
+     *
      * @param worker worker instance
-     * @throws Exception 
+     * @throws java.lang.Exception if any.
      */
     public Worker(WorkerAbstract worker) throws Exception {
         this.loadProperties();
@@ -51,7 +53,8 @@ public class Worker {
     
     /**
      * initializes all
-     * @throws Exception 
+     *
+     * @throws java.lang.Exception if any.
      */
     public void run() throws Exception {
         this.applyVcapConfig();
@@ -93,7 +96,7 @@ public class Worker {
     
     /**
      * function to return the connection factory
-     * 
+     *
      * @return connection factory
      */
     public ConnectionFactory getConnectionFactory()
@@ -103,10 +106,9 @@ public class Worker {
     
     /**
      * return our WorkerConsumer
-     * 
+     *
      * @param channel rabbitmq channel
      * @param worker the worker
-     * 
      * @return worker consumer
      */
     public WorkerConsumer getWorkerConsumer(Channel channel, WorkerAbstract worker) {
@@ -181,7 +183,7 @@ public class Worker {
     
     /**
      * Gets the properties
-     * 
+     *
      * @return properties
      */
     public Properties getProperties() {
@@ -190,7 +192,7 @@ public class Worker {
     
     /**
      * Getter for vcap config
-     * 
+     *
      * @return vcap variable
      */
     public String getVcap() {

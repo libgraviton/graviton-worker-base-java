@@ -5,9 +5,11 @@
 package com.github.libgraviton.workerbase;
 
 /**
- * @author List of contributors
- *         <https://github.com/libgraviton/graviton/graphs/contributors>
- * @link http://swisscom.ch
+ * <p>WorkerException class.</p>
+ *
+ * @author List of contributors {@literal <https://github.com/libgraviton/graviton-worker-base-java/graphs/contributors>}
+ * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
+ * @version $Id: $Id
  */
 public class WorkerException extends Exception {
 
@@ -16,6 +18,11 @@ public class WorkerException extends Exception {
      */
     private static final long serialVersionUID = 1L;
     
+    /**
+     * <p>Constructor for WorkerException.</p>
+     *
+     * @param message a {@link java.lang.String} object.
+     */
     public WorkerException(String message) {
         super(message);
     }

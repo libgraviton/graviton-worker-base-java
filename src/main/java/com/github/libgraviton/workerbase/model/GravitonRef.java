@@ -1,31 +1,15 @@
 package com.github.libgraviton.workerbase.model;
 
 /**
- * <p>GravitonFileLinks class.</p>
+ * <p>GravitonRef class.</p>
  *
  * @author Dario Nuevo
  * @version $Id: $Id
+ * @since 0.7.0
  */
-public class GravitonFileLinks {
-    public String type;
+public class GravitonRef {
     public String $ref;
-    
-    /**
-     * <p>Getter for the field <code>type</code>.</p>
-     *
-     * @return a {@link java.lang.String} object.
-     */
-    public String getType() {
-        return type;
-    }
-    /**
-     * <p>Setter for the field <code>type</code>.</p>
-     *
-     * @param type a {@link java.lang.String} object.
-     */
-    public void setType(String type) {
-        this.type = type;
-    }
+
     /**
      * <p>Getter for the field <code>$ref</code>.</p>
      *
@@ -34,6 +18,7 @@ public class GravitonFileLinks {
     public String get$ref() {
         return $ref;
     }
+
     /**
      * <p>Setter for the field <code>$ref</code>.</p>
      *
@@ -42,4 +27,5 @@ public class GravitonFileLinks {
     public void set$ref(String $ref) {
         this.$ref = $ref;
     }
+    
 }
