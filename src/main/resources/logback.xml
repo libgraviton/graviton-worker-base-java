@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!--See also http://logback.qos.ch/manual/appenders.html#RollingFileAppender-->
+    <File>logs/worker.log</File>
+    <encoder>
+      <pattern>%d{ISO8601} %5p %c{1}:%L - %m%n</pattern>
+    </encoder>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>debug</level>
+    </filter>
+    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+      <maxIndex>9</maxIndex>
+      <FileNamePattern>logs/worker.log.%i</FileNamePattern>
+    </rollingPolicy>
+    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      <maxFileSize>1000KB</maxFileSize>
+    </triggeringPolicy>
+  </appender>
+  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{ISO8601} %5p %c{1}:%L - %m%n</pattern>
+    </encoder>
+  </appender>
+  <root level="debug">
+    <appender-ref ref="file"/>
+    <appender-ref ref="stdout"/>
+  </root>
+</configuration>
