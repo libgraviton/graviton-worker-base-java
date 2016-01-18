@@ -147,6 +147,9 @@ public class Worker {
                 this.properties.load(appProps);
                 appProps.close();
 
+                // let system properties override everything..
+                this.properties.putAll(System.getProperties());
+
                 LOG.info(" [*] Loaded app.properties from " + propertiesPath);
                 
             } catch (FileNotFoundException e) {
