@@ -12,6 +12,8 @@ import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.model.*;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Abstract WorkerAbstract class.</p>
@@ -21,6 +23,8 @@ import com.mashape.unirest.http.Unirest;
  * @version $Id: $Id
  */
 public abstract class WorkerAbstract {
+
+    private static final Logger logger = LoggerFactory.getLogger(WorkerAbstract.class);
 
     /**
      * status constants
@@ -99,7 +103,7 @@ public abstract class WorkerAbstract {
         
         if (this.doAutoUpdateStatus()) {
             this.setStatus(statusUrl, STATUS_WORKING);
-            System.out.println(" [x] LIB: Updated status to 'working' on '" + statusUrl + "'");
+            logger.info("[x] Updated status to '" + STATUS_WORKING + "' on '" + statusUrl + "'");
         }
 
         try {
@@ -108,16 +112,15 @@ public abstract class WorkerAbstract {
             
             if (this.doAutoUpdateStatus()) {
                 this.setStatus(statusUrl, STATUS_DONE);
-                System.out.println(" [x] LIB Updated status to 'done' on '" + statusUrl + "'");
+                logger.info("[x] Updated status to '" + STATUS_DONE + "' on '" + statusUrl + "'");
             }
             
         } catch (Exception e) {
-            System.out.println("Error in worker: " + e.toString());
-            e.printStackTrace();
+            logger.error("Error in worker: " + workerId, e);
 
             if (this.doAutoUpdateStatus()) {
                 this.setStatus(statusUrl, STATUS_FAILED, e.toString());
-                System.out.println(" [x] LIB Updated status to 'failed' on '" + statusUrl + "'");
+                logger.error("[x] Updated status to '"  + STATUS_FAILED +  "' on '" + statusUrl + "'");
             }
             
         }
@@ -223,11 +226,9 @@ public abstract class WorkerAbstract {
             }
 
         } catch (WorkerException e) {
-            System.out.println(" [F] Backend error on status update! " + e.getMessage());
-            e.printStackTrace();
+            logger.error("[F] Backend error on status update!", e);
         } catch (Exception e) {
-            System.out.println(" [F] Exception on status set! " + e.getMessage());
-            e.printStackTrace();
+            logger.error("[F] Exception on status set!", e);
         }
     }
     
@@ -260,7 +261,7 @@ public abstract class WorkerAbstract {
                 .body(JSON.std.asString(registerObj))
                 .asString();
 
-        System.out.println(" [*] Worker register response code: " + response.getStatus());
+        logger.info("[*] Worker register response code: " + response.getStatus());
         
         if (response.getStatus() != 204) {
             throw new WorkerException("Could register worker on backend! Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
