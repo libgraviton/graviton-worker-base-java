@@ -12,6 +12,8 @@ import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.model.*;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Abstract WorkerAbstract class.</p>
@@ -21,6 +23,8 @@ import com.mashape.unirest.http.Unirest;
  * @version $Id: $Id
  */
 public abstract class WorkerAbstract {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WorkerAbstract.class);
 
     /**
      * status constants
@@ -39,7 +43,7 @@ public abstract class WorkerAbstract {
     public static final String INFORMATION_TYPE_WARNING = "warning";
     /** Constant <code>INFORMATION_TYPE_ERROR="error"</code> */
     public static final String INFORMATION_TYPE_ERROR = "error";
-    
+
     /**
      * properties
      */
@@ -49,6 +53,42 @@ public abstract class WorkerAbstract {
      * our worker id
      */
     protected String workerId;
+
+    /**
+     * our worker state
+     */
+    protected String state;
+
+    /**
+     * is worker registered
+     */
+    protected Boolean isRegistered = Boolean.FALSE;
+
+    /**
+     * was last status update successfully sent to backend
+     */
+    protected Boolean lastStatusUpdateSuccessful = Boolean.TRUE;
+
+
+    public Properties getProperties() {
+        return properties;
+    }
+
+    public String getWorkerId() {
+        return workerId;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public Boolean getRegistered() {
+        return isRegistered;
+    }
+
+    public Boolean getLastStatusUpdateSuccessful() {
+        return lastStatusUpdateSuccessful;
+    }
         
     /**
      * worker logic is implemented here
@@ -98,8 +138,8 @@ public abstract class WorkerAbstract {
         }
         
         if (this.doAutoUpdateStatus()) {
-            this.setStatus(statusUrl, STATUS_WORKING);
-            System.out.println(" [x] LIB: Updated status to 'working' on '" + statusUrl + "'");
+            state = STATUS_WORKING;
+            this.updateStatusAtUrl(statusUrl);
         }
 
         try {
@@ -107,17 +147,16 @@ public abstract class WorkerAbstract {
             this.handleRequest(qevent);
             
             if (this.doAutoUpdateStatus()) {
-                this.setStatus(statusUrl, STATUS_DONE);
-                System.out.println(" [x] LIB Updated status to 'done' on '" + statusUrl + "'");
+                state = STATUS_DONE;
+                this.updateStatusAtUrl(statusUrl);
             }
             
         } catch (Exception e) {
-            System.out.println("Error in worker: " + e.toString());
-            e.printStackTrace();
+            LOG.error("Error in worker: " + workerId, e);
 
             if (this.doAutoUpdateStatus()) {
-                this.setStatus(statusUrl, STATUS_FAILED, e.toString());
-                System.out.println(" [x] LIB Updated status to 'failed' on '" + statusUrl + "'");
+                state = STATUS_FAILED;
+                this.updateStatusAtUrl(statusUrl, e.toString());
             }
             
         }
@@ -148,50 +187,85 @@ public abstract class WorkerAbstract {
      */
     public void onStartUp()
     {
-    }    
-    
+    }
+
     /**
      * convenience function to set the status
      *
      * @param statusUrl status url
-     * @param status which status
+     * @param status status which status
+     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl)} after setting state variable.
      */
     protected void setStatus(String statusUrl, String status) {
-        this.setStatus(statusUrl, status, "");
+        state = status;
+        this.updateStatusAtUrl(statusUrl);
     }
-    
+
     /**
-     * Set status with a string based error information
+     * Update status with a string based error information
      *
-     * @param statusUrl url to status document
-     * @param status status we set to
+     * @param statusUrl status url
+     * @param status status which status
      * @param errorInformation error information message
+     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl, String errorInformation)} after setting state variable.
      */
     protected void setStatus(String statusUrl, String status, String errorInformation) {
+        state = status;
+        this.updateStatusAtUrl(statusUrl, errorInformation);
+    }
+
+    /**
+     * update the status to our backend
+     *
+     * @param statusUrl status url
+     * @param status status which status
+     * @param informationEntry an EventStatusInformation instance that will be added to the information array
+     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl, EventStatusInformation informationEntry)} after setting state variable.
+     */
+    protected void setStatus(String statusUrl, String status, EventStatusInformation informationEntry) {
+        state = status;
+        this.updateStatusAtUrl(statusUrl, informationEntry);
+    }
+
+    /**
+     * convenience function to update the status
+     *
+     * @param statusUrl status url
+     */
+    protected void updateStatusAtUrl(String statusUrl) {
+        this.updateStatusAtUrl(statusUrl, "");
+    }
+
+    /**
+     * Update status with a string based error information
+     *
+     * @param statusUrl url to status document
+     * @param errorInformation error information message
+     */
+    protected void updateStatusAtUrl(String statusUrl, String errorInformation) {
         
-        EventStatusInformation infoObj = null;
+        EventStatusInformation statusInformation = null;
         
         if (errorInformation.length() > 0) {
-            infoObj = new EventStatusInformation();
-            infoObj.setWorkerId(this.workerId);
-            infoObj.setType(INFORMATION_TYPE_ERROR);
-            infoObj.setContent(errorInformation);
+            statusInformation = new EventStatusInformation();
+            statusInformation.setWorkerId(this.workerId);
+            statusInformation.setType(INFORMATION_TYPE_ERROR);
+            statusInformation.setContent(errorInformation);
         }
         
-        this.setStatus(statusUrl, status, infoObj);
+        this.updateStatusAtUrl(statusUrl, statusInformation);
     }
     
     /**
-     * sets the status to our backend
+     * update the status to our backend
      *
      * @param statusUrl url to status document
-     * @param status status we set to
      * @param informationEntry an EventStatusInformation instance that will be added to the information array
      */
-    protected void setStatus(String statusUrl, String status, EventStatusInformation informationEntry) {
+    protected void updateStatusAtUrl(String statusUrl, EventStatusInformation informationEntry) {
         try {
             HttpResponse<String> response = Unirest.get(statusUrl).header("Accept", "application/json").asString();
-            
+
             EventStatus eventStatus = JSON.std.beanFrom(EventStatus.class, response.getBody());
 
             // modify our status in the status array
@@ -199,35 +273,39 @@ public abstract class WorkerAbstract {
             for (int i = 0; i < statusObj.size(); i++) {
                 EventStatusStatus statusEntry = statusObj.get(i);
                 if (statusEntry.getWorkerId().equals(this.workerId)) {
-                    statusEntry.setStatus(status);
+                    statusEntry.setStatus(state);
                     statusObj.set(i, statusEntry);
                 }
             }
 
             eventStatus.setStatus(statusObj);
-            
+
             // add information entry if present
             if (informationEntry instanceof EventStatusInformation) {
                 // ensure list presence
                 if (!(eventStatus.getInformation() instanceof ArrayList<?>)) {
                     eventStatus.setInformation(new ArrayList<EventStatusInformation>());
                 }
-                eventStatus.getInformation().add(informationEntry);                
+                eventStatus.getInformation().add(informationEntry);
             }
-            
+
             // send the new status to the backend
             HttpResponse<String> putResp = Unirest.put(statusUrl).header("Content-Type", "application/json").body(JSON.std.asString(eventStatus)).asString();
-            
-            if (putResp.getStatus() != 204) {
+
+            LOG.info("[x] Updated status to '" + state + "'");
+
+            if (putResp.getStatus() == 204) {
+                lastStatusUpdateSuccessful = Boolean.TRUE;
+                LOG.info("[x] Updated status to '" + state + "' on '" + statusUrl + "'");
+            } else {
+                lastStatusUpdateSuccessful = Boolean.FALSE;
                 throw new WorkerException("Could not update status on backend! Returned status: " + putResp.getStatus() + ", backend body: " + putResp.getBody());
             }
 
         } catch (WorkerException e) {
-            System.out.println(" [F] Backend error on status update! " + e.getMessage());
-            e.printStackTrace();
+            LOG.error("[F] Backend error on status update!", e);
         } catch (Exception e) {
-            System.out.println(" [F] Exception on status set! " + e.getMessage());
-            e.printStackTrace();
+            LOG.error("[F] Exception on status update!", e);
         }
     }
     
@@ -260,10 +338,12 @@ public abstract class WorkerAbstract {
                 .body(JSON.std.asString(registerObj))
                 .asString();
 
-        System.out.println(" [*] Worker register response code: " + response.getStatus());
-        
-        if (response.getStatus() != 204) {
-            throw new WorkerException("Could register worker on backend! Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
+        LOG.info("[*] Worker register response code: " + response.getStatus());
+
+        if (response.getStatus() == 204) {
+            isRegistered = Boolean.TRUE;
+        } else {
+            throw new WorkerException("Could not register worker on backend! Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
         }        
     }    
     

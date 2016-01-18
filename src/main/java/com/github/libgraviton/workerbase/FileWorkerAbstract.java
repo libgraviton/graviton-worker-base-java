@@ -14,6 +14,8 @@ import com.github.libgraviton.workerbase.model.GravitonFileMetadata;
 import com.github.libgraviton.workerbase.model.GravitonFileMetadataAction;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Abstract FileWorkerAbstract class.</p>
@@ -23,6 +25,9 @@ import com.mashape.unirest.http.Unirest;
  * @version $Id: $Id
  */
 public abstract class FileWorkerAbstract extends WorkerAbstract {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FileWorkerAbstract.class);
+
 
     /**
      * gets file metadata from backend as a GravitonFile object
@@ -84,7 +89,7 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
         
         if (hasBeenRemoved) {
             Unirest.put(documentUrl).header("Content-Type", "application/json").body(JSON.std.asString(fileObj)).asString();
-            System.out.println(" [*] Removed action property from " + documentUrl);
+            LOG.info("[*] Removed action property from " + documentUrl);
         }        
     }
 }

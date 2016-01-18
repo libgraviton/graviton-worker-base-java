@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import java.io.File;
 import java.net.URL;
 
+import com.github.libgraviton.workerbase.model.QueueEvent;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,13 +51,11 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         verify(stringResponse, times(4)).getStatus();
         
         assertTrue(testWorker.concerningRequestCalled);
-        
-        assertTrue(this.outContent.toString().contains("Worker register response code: 204"));
-        assertTrue(this.outContent.toString().contains("Subscribed on topic exchange 'graviton' using binding key 'document.core.app.*'"));
-        assertTrue(this.outContent.toString().contains("the testworker has been executed!"));
-        assertTrue(this.outContent.toString().contains("EVENT = documents.core.app.create"));
-        assertTrue(this.outContent.toString().contains("DOCUMENT = http://localhost/core/app/admin"));
-        assertTrue(this.outContent.toString().contains("STATUS = http://localhost/event/status/mystatus"));
+
+        QueueEvent queueEvent = testWorker.getHandledQueueEvent();
+        assertEquals("documents.core.app.create", queueEvent.getEvent());
+        assertEquals("http://localhost/core/app/admin", queueEvent.getDocument().get$ref());
+        assertEquals("http://localhost/event/status/mystatus", queueEvent.getStatus().get$ref());
         
         // register
         verify(requestBodyMock, times(1)).body(contains("{\"id\":\"java-test\""));
@@ -200,8 +199,9 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
         workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes()); 
-        
-        assertTrue(this.outContent.toString().contains("Could not update status on backend! Returned status: 400"));               
+
+        // TODO mwegener
+        assertFalse(testWorker.getLastStatusUpdateSuccessful());
     }    
     
     @Test
