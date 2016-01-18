@@ -91,8 +91,7 @@ public class Worker {
 
         channel.queueBind(queueName, exchangeName, bindKey);
 
-        LOG.info("[*] Subscribed on topic exchange '"+exchangeName+"' using binding key '"+bindKey+"'.");
-        LOG.info("[*] Waiting for messages.");
+        LOG.info("[*] Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey + "'. Waiting for messages...");
 
         channel.basicQos(2);
         channel.basicConsume(queueName, true, this.getWorkerConsumer(channel, worker));
