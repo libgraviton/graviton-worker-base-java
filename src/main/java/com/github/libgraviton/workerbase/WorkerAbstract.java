@@ -187,8 +187,46 @@ public abstract class WorkerAbstract {
      */
     public void onStartUp()
     {
-    }    
-    
+    }
+
+    /**
+     * convenience function to set the status
+     *
+     * @param statusUrl status url
+     * @param status status which status
+     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl)} after setting state variable.
+     */
+    protected void setStatus(String statusUrl, String status) {
+        state = status;
+        this.updateStatusAtUrl(statusUrl);
+    }
+
+    /**
+     * Update status with a string based error information
+     *
+     * @param statusUrl status url
+     * @param status status which status
+     * @param errorInformation error information message
+     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl, String errorInformation)} after setting state variable.
+     */
+    protected void setStatus(String statusUrl, String status, String errorInformation) {
+        state = status;
+        this.updateStatusAtUrl(statusUrl, errorInformation);
+    }
+
+    /**
+     * update the status to our backend
+     *
+     * @param statusUrl status url
+     * @param status status which status
+     * @param informationEntry an EventStatusInformation instance that will be added to the information array
+     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl, EventStatusInformation informationEntry)} after setting state variable.
+     */
+    protected void setStatus(String statusUrl, String status, EventStatusInformation informationEntry) {
+        state = status;
+        this.updateStatusAtUrl(statusUrl, informationEntry);
+    }
+
     /**
      * convenience function to update the status
      *
@@ -197,7 +235,7 @@ public abstract class WorkerAbstract {
     protected void updateStatusAtUrl(String statusUrl) {
         this.updateStatusAtUrl(statusUrl, "");
     }
-    
+
     /**
      * Update status with a string based error information
      *
@@ -206,16 +244,16 @@ public abstract class WorkerAbstract {
      */
     protected void updateStatusAtUrl(String statusUrl, String errorInformation) {
         
-        EventStatusInformation infoObj = null;
+        EventStatusInformation statusInformation = null;
         
         if (errorInformation.length() > 0) {
-            infoObj = new EventStatusInformation();
-            infoObj.setWorkerId(this.workerId);
-            infoObj.setType(INFORMATION_TYPE_ERROR);
-            infoObj.setContent(errorInformation);
+            statusInformation = new EventStatusInformation();
+            statusInformation.setWorkerId(this.workerId);
+            statusInformation.setType(INFORMATION_TYPE_ERROR);
+            statusInformation.setContent(errorInformation);
         }
         
-        this.updateStatusAtUrl(statusUrl, infoObj);
+        this.updateStatusAtUrl(statusUrl, statusInformation);
     }
     
     /**
