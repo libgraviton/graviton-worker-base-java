@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Worker {
 
-    private static final Logger logger = LoggerFactory.getLogger(Worker.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Worker.class);
 
     /**
      * properties
@@ -91,8 +91,8 @@ public class Worker {
 
         channel.queueBind(queueName, exchangeName, bindKey);
 
-        logger.info("[*] Subscribed on topic exchange '"+exchangeName+"' using binding key '"+bindKey+"'.");
-        logger.info("[*] Waiting for messages.");
+        LOG.info("[*] Subscribed on topic exchange '"+exchangeName+"' using binding key '"+bindKey+"'.");
+        LOG.info("[*] Waiting for messages.");
 
         channel.basicQos(2);
         channel.basicConsume(queueName, true, this.getWorkerConsumer(channel, worker));
@@ -148,14 +148,14 @@ public class Worker {
                 this.properties.load(appProps);
                 appProps.close();
 
-                logger.info(" [*] Loaded app.properties from " + propertiesPath);
+                LOG.info(" [*] Loaded app.properties from " + propertiesPath);
                 
             } catch (FileNotFoundException e) {
                 // no problem..
             }
             
         } catch (Exception e1) {
-            logger.error("Could not load properties", e1);
+            LOG.error("Could not load properties", e1);
         }
     }
 

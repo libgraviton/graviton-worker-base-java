@@ -26,7 +26,8 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class FileWorkerAbstract extends WorkerAbstract {
 
-    private static final Logger logger = LoggerFactory.getLogger(FileWorkerAbstract.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileWorkerAbstract.class);
+
 
     /**
      * gets file metadata from backend as a GravitonFile object
@@ -88,7 +89,7 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
         
         if (hasBeenRemoved) {
             Unirest.put(documentUrl).header("Content-Type", "application/json").body(JSON.std.asString(fileObj)).asString();
-            logger.info("[*] Removed action property from " + documentUrl);
+            LOG.info("[*] Removed action property from " + documentUrl);
         }        
     }
 }

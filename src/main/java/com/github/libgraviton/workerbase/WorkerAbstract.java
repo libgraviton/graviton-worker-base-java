@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class WorkerAbstract {
 
-    private static final Logger logger = LoggerFactory.getLogger(WorkerAbstract.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WorkerAbstract.class);
 
     /**
      * status constants
@@ -103,7 +103,7 @@ public abstract class WorkerAbstract {
         
         if (this.doAutoUpdateStatus()) {
             this.setStatus(statusUrl, STATUS_WORKING);
-            logger.info("[x] Updated status to '" + STATUS_WORKING + "' on '" + statusUrl + "'");
+            LOG.info("[x] Updated status to '" + STATUS_WORKING + "' on '" + statusUrl + "'");
         }
 
         try {
@@ -112,15 +112,15 @@ public abstract class WorkerAbstract {
             
             if (this.doAutoUpdateStatus()) {
                 this.setStatus(statusUrl, STATUS_DONE);
-                logger.info("[x] Updated status to '" + STATUS_DONE + "' on '" + statusUrl + "'");
+                LOG.info("[x] Updated status to '" + STATUS_DONE + "' on '" + statusUrl + "'");
             }
             
         } catch (Exception e) {
-            logger.error("Error in worker: " + workerId, e);
+            LOG.error("Error in worker: " + workerId, e);
 
             if (this.doAutoUpdateStatus()) {
                 this.setStatus(statusUrl, STATUS_FAILED, e.toString());
-                logger.error("[x] Updated status to '"  + STATUS_FAILED +  "' on '" + statusUrl + "'");
+                LOG.error("[x] Updated status to '"  + STATUS_FAILED +  "' on '" + statusUrl + "'");
             }
             
         }
@@ -226,9 +226,9 @@ public abstract class WorkerAbstract {
             }
 
         } catch (WorkerException e) {
-            logger.error("[F] Backend error on status update!", e);
+            LOG.error("[F] Backend error on status update!", e);
         } catch (Exception e) {
-            logger.error("[F] Exception on status set!", e);
+            LOG.error("[F] Exception on status set!", e);
         }
     }
     
@@ -261,7 +261,7 @@ public abstract class WorkerAbstract {
                 .body(JSON.std.asString(registerObj))
                 .asString();
 
-        logger.info("[*] Worker register response code: " + response.getStatus());
+        LOG.info("[*] Worker register response code: " + response.getStatus());
         
         if (response.getStatus() != 204) {
             throw new WorkerException("Could register worker on backend! Returned status: " + response.getStatus() + ", backend body: " + response.getBody());

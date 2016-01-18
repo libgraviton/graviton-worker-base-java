@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
  */
 public class WorkerConsumer extends DefaultConsumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(WorkerConsumer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WorkerConsumer.class);
 
     /**
      * worker
@@ -51,7 +51,7 @@ public class WorkerConsumer extends DefaultConsumer {
     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
             throws IOException {
         String message = new String(body, "UTF-8");
-        logger.info("[x] Received '" + envelope.getRoutingKey() + "':'" + message + "'");
+        LOG.info("[x] Received '" + envelope.getRoutingKey() + "':'" + message + "'");
 
         // deserialize        
         QueueEvent qevent = JSON.std.beanFrom(QueueEvent.class, message);
