@@ -12,6 +12,8 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>WorkerConsumer class.</p>
@@ -21,7 +23,9 @@ import com.rabbitmq.client.Envelope;
  * @version $Id: $Id
  */
 public class WorkerConsumer extends DefaultConsumer {
-    
+
+    private static final Logger LOG = LoggerFactory.getLogger(WorkerConsumer.class);
+
     /**
      * worker
      */
@@ -47,7 +51,7 @@ public class WorkerConsumer extends DefaultConsumer {
     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
             throws IOException {
         String message = new String(body, "UTF-8");
-        System.out.println(" [x] Received '" + envelope.getRoutingKey() + "':'" + message + "'");
+        LOG.info("[x] Received '" + envelope.getRoutingKey() + "':'" + message + "'");
 
         // deserialize        
         QueueEvent qevent = JSON.std.beanFrom(QueueEvent.class, message);

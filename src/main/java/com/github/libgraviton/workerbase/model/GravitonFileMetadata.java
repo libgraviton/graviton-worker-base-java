@@ -16,6 +16,7 @@ public class GravitonFileMetadata {
     public String filename;
     public ArrayList<GravitonFileMetadataAction> action;
     public String additionalInformation;
+    public ArrayList<GravitonFileMetadataAddProperty> additionalProperties;
     
     /**
      * <p>Getter for the field <code>size</code>.</p>
@@ -132,6 +133,26 @@ public class GravitonFileMetadata {
      */
     public void setAdditionalInformation(String additionalInformation) {
         this.additionalInformation = additionalInformation;
+    }
+
+    /**
+     * <p>Getter for the field <code>additionalProperties</code>.</p>
+     *
+     * @return a {@link java.util.ArrayList} object.
+     * @since 0.7.0
+     */
+    public ArrayList<GravitonFileMetadataAddProperty> getAdditionalProperties() {
+        return this.additionalProperties;
+    }
+
+    /**
+     * <p>Setter for the field <code>additionalProperties</code>.</p>
+     *
+     * @param additionalProperties a {@link java.util.ArrayList} object.
+     * @since 0.7.0
+     */
+    public void setAdditionalProperties(ArrayList<GravitonFileMetadataAddProperty> additionalProperties) {
+        this.additionalProperties = additionalProperties;
     }
     
 }

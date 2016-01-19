@@ -18,6 +18,8 @@ import com.fasterxml.jackson.jr.ob.JSON;
 import com.fasterxml.jackson.jr.ob.JSONObjectException;
 import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 import com.rabbitmq.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Worker class.</p>
@@ -27,6 +29,8 @@ import com.rabbitmq.client.*;
  * @version $Id: $Id
  */
 public class Worker {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Worker.class);
 
     /**
      * properties
@@ -86,9 +90,8 @@ public class Worker {
         String queueName = channel.queueDeclare().getQueue();
 
         channel.queueBind(queueName, exchangeName, bindKey);
-        
-        System.out.println(" [*] Subscribed on topic exchange '"+exchangeName+"' using binding key '"+bindKey+"'.");
-        System.out.println(" [*] Waiting for messages.");
+
+        LOG.info("[*] Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey + "'. Waiting for messages...");
 
         channel.basicQos(2);
         channel.basicConsume(queueName, true, this.getWorkerConsumer(channel, worker));
@@ -143,16 +146,18 @@ public class Worker {
                 FileInputStream appProps = new FileInputStream(propertiesPath);
                 this.properties.load(appProps);
                 appProps.close();
-                
-                System.out.println(" [*] Loaded app.properties from " + propertiesPath);
+
+                // let system properties override everything..
+                this.properties.putAll(System.getProperties());
+
+                LOG.info(" [*] Loaded app.properties from " + propertiesPath);
                 
             } catch (FileNotFoundException e) {
                 // no problem..
             }
             
         } catch (Exception e1) {
-            System.out.println("Could not load properties: " + e1.getMessage());
-            e1.printStackTrace();
+            LOG.error("Could not load properties", e1);
         }
     }
 
