@@ -11,6 +11,8 @@ public class GravitonCustomer {
     private String id;
     
     private String recordOrigin;
+
+    private Integer customerNumber;
     
     /**
      * <p>Getter for the field <code>id</code>.</p>
@@ -38,16 +40,34 @@ public class GravitonCustomer {
     public String getRecordOrigin() {
         return recordOrigin;
     }
-    
+
     /**
      * <p>Setter for the field <code>recordOrigin</code>.</p>
      *
      * @param recordOrigin a {@link java.lang.String} object.
      */
     public void setRecordOrigin(String recordOrigin) {
-         this.recordOrigin = recordOrigin;
+        this.recordOrigin = recordOrigin;
     }
-    
+
+    /**
+     * <p>Getter for the field <code>customerNumber</code>.</p>
+     *
+     * @return a {@link java.lang.Integer} object.
+     */
+    public Integer getCustomerNumber() {
+        return customerNumber;
+    }
+
+    /**
+     * <p>Setter for the field <code>customerNumber</code>.</p>
+     *
+     * @param customerNumber a {@link java.lang.Integer} object.
+     */
+    public void setCustomerNumber(Integer customerNumber) {
+        this.customerNumber = customerNumber;
+    }
+
     /**
      * <p>isCoreCustomer.</p>
      *
