@@ -14,9 +14,10 @@ import java.net.URLEncoder;
  * @since 0.7.0
  */
 public class WorkerUtil {
-
+   
     /**
      * <p>encodeRql.</p>
+     * Encode as described in https://github.com/xiag-ag/rql-parser
      *
      * @param expr a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
@@ -24,8 +25,12 @@ public class WorkerUtil {
      */
     public static String encodeRql(String expr) throws UnsupportedEncodingException {
         String encoded = URLEncoder.encode(expr, "UTF-8");
-        encoded = encoded.replace(",", "%2C");
+        encoded = encoded
+                .replace("-", "%2D")
+                .replace("_", "%5F")
+                .replace(".", "%2E")
+                .replace("~", "%7E")
+                .replace(",", "%2C");
         return encoded;
     }
-    
 }
