@@ -70,22 +70,47 @@ public abstract class WorkerAbstract {
     protected Boolean lastStatusUpdateSuccessful = Boolean.TRUE;
 
 
+    /**
+     * <p>Getter for the field <code>properties</code>.</p>
+     *
+     * @return a {@link java.util.Properties} object.
+     */
     public Properties getProperties() {
         return properties;
     }
 
+    /**
+     * <p>Getter for the field <code>workerId</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getWorkerId() {
         return workerId;
     }
 
+    /**
+     * <p>Getter for the field <code>state</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getState() {
         return state;
     }
 
+    /**
+     * <p>getRegistered.</p>
+     *
+     * @return a {@link java.lang.Boolean} object.
+     */
     public Boolean getRegistered() {
         return isRegistered;
     }
 
+    /**
+     * <p>Getter for the field <code>lastStatusUpdateSuccessful</code>.</p>
+     *
+     * @return a {@link java.lang.Boolean} object.
+     */
     public Boolean getLastStatusUpdateSuccessful() {
         return lastStatusUpdateSuccessful;
     }
@@ -193,6 +218,7 @@ public abstract class WorkerAbstract {
      * convenience function to set the status
      *
      * @param statusUrl status url
+     * @param statusUrl status url
      * @param status status which status
      * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl)} after setting state variable.
      */
@@ -204,6 +230,7 @@ public abstract class WorkerAbstract {
     /**
      * Update status with a string based error information
      *
+     * @param statusUrl status url
      * @param statusUrl status url
      * @param status status which status
      * @param errorInformation error information message
@@ -217,6 +244,7 @@ public abstract class WorkerAbstract {
     /**
      * update the status to our backend
      *
+     * @param statusUrl status url
      * @param statusUrl status url
      * @param status status which status
      * @param informationEntry an EventStatusInformation instance that will be added to the information array

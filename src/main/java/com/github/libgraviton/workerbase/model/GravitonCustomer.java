@@ -54,6 +54,7 @@ public class GravitonCustomer {
      * <p>Getter for the field <code>customerNumber</code>.</p>
      *
      * @return a {@link java.lang.Integer} object.
+     * @since 0.9.0
      */
     public Integer getCustomerNumber() {
         return customerNumber;
@@ -63,6 +64,7 @@ public class GravitonCustomer {
      * <p>Setter for the field <code>customerNumber</code>.</p>
      *
      * @param customerNumber a {@link java.lang.Integer} object.
+     * @since 0.9.0
      */
     public void setCustomerNumber(Integer customerNumber) {
         this.customerNumber = customerNumber;
