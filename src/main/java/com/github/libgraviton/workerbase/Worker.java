@@ -84,14 +84,16 @@ public class Worker {
         Channel channel = connection.createChannel();
 
         String exchangeName = this.properties.getProperty("queue.exchangeName");
-        String bindKey = this.properties.getProperty("queue.bindKey");
+        String[] bindKeys = this.properties.getProperty("queue.bindKey").split(",");
         
         channel.exchangeDeclare(exchangeName, "topic", true);
         String queueName = channel.queueDeclare().getQueue();
 
-        channel.queueBind(queueName, exchangeName, bindKey);
-
-        LOG.info("[*] Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey + "'. Waiting for messages...");
+        for (String bindKey : bindKeys) {
+            channel.queueBind(queueName, exchangeName, bindKey);
+            LOG.info("[*] Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey);
+        }
+        LOG.info("[*] Waiting for messages...");
 
         channel.basicQos(2);
         channel.basicConsume(queueName, true, this.getWorkerConsumer(channel, worker));
