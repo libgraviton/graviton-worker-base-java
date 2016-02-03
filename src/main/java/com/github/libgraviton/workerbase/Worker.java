@@ -92,7 +92,7 @@ public class Worker {
         for (String bindKey : bindKeys) {
             bindKey = bindKey.trim();
             channel.queueBind(queueName, exchangeName, bindKey);
-            LOG.info("[*] Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey);
+            LOG.info("[*] Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey + "'");
         }
         LOG.info("[*] Waiting for messages...");
 
