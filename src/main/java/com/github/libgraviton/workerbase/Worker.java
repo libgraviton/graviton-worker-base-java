@@ -90,6 +90,7 @@ public class Worker {
         String queueName = channel.queueDeclare().getQueue();
 
         for (String bindKey : bindKeys) {
+            bindKey = bindKey.trim();
             channel.queueBind(queueName, exchangeName, bindKey);
             LOG.info("[*] Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey);
         }
