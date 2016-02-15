@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FilenameUtils;
@@ -84,13 +86,12 @@ public class Worker {
         Channel channel = connection.createChannel();
 
         String exchangeName = this.properties.getProperty("queue.exchangeName");
-        String[] bindKeys = this.properties.getProperty("queue.bindKey").split(",");
+        List<String> bindKeys = Arrays.asList(this.properties.getProperty("queue.bindKey").split(","));
         
         channel.exchangeDeclare(exchangeName, "topic", true);
         String queueName = channel.queueDeclare().getQueue();
 
         for (String bindKey : bindKeys) {
-            bindKey = bindKey.trim();
             channel.queueBind(queueName, exchangeName, bindKey);
             LOG.info("[*] Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey + "'");
         }

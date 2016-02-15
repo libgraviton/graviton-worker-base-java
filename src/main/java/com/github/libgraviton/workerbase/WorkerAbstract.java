@@ -352,7 +352,7 @@ public abstract class WorkerAbstract {
         
         for (String subscriptionKey: subscriptionKeys) {
             WorkerRegisterSubscription subObj = new WorkerRegisterSubscription();
-            subObj.setEvent(subscriptionKey.trim());
+            subObj.setEvent(subscriptionKey);
             subscriptions.add(subObj);
         }
         
