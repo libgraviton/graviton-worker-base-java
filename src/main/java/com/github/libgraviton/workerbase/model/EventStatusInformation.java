@@ -10,6 +10,7 @@ public class EventStatusInformation {
 
     public String workerId;
     public String content;
+    public String action;
     public String type;
     public String $ref;    
     
@@ -44,6 +45,22 @@ public class EventStatusInformation {
      */
     public void setContent(String content) {
         this.content = content;
+    }
+    /**
+     * <p>Getter for the field <code>action</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
+    public String getAction() {
+        return action;
+    }
+    /**
+     * <p>Setter for the field <code>action</code>.</p>
+     *
+     * @param action a {@link java.lang.String} object.
+     */
+    public void setAction(String action) {
+        this.action = action;
     }
     /**
      * <p>Getter for the field <code>type</code>.</p>
