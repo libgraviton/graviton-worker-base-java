@@ -13,6 +13,7 @@ public class EventStatus {
     public String id;
     public String createDate;
     public String eventName;
+    public GravitonRef eventResource;
     public ArrayList<EventStatusStatus> status;
     public ArrayList<EventStatusInformation> information;
     
@@ -64,6 +65,18 @@ public class EventStatus {
     public void setEventName(String eventName) {
         this.eventName = eventName;
     }
+    /**
+     * <p>Getter for the field <code>eventResource</code>.</p>
+     *
+     * @return a {@link GravitonRef} object.
+     */
+    public GravitonRef getEventResource() { return eventResource; }
+    /**
+     * <p>Setter for the field <code>eventResource</code>.</p>
+     *
+     * @param eventResource a {@link GravitonRef} object.
+     */
+    public void setEventResource(GravitonRef eventResource) { this.eventResource = eventResource; }
     /**
      * <p>Getter for the field <code>status</code>.</p>
      *
