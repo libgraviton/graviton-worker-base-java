@@ -53,11 +53,11 @@ public class WorkerConsumer extends DefaultConsumer {
         String message = new String(body, "UTF-8");
         LOG.info("[x] Received '" + envelope.getRoutingKey() + "':'" + message + "'");
 
-        // deserialize        
-        QueueEvent qevent = JSON.std.beanFrom(QueueEvent.class, message);
+        // deserialize
+        QueueEvent queueEvent = JSON.std.beanFrom(QueueEvent.class, message);
         
         // give to worker
-        this.worker.handleDelivery(consumerTag, qevent);
+        worker.handleDelivery(consumerTag, queueEvent);
     }
 
 

@@ -51,7 +51,7 @@ public class Worker {
      * @throws java.lang.Exception if any.
      */
     public Worker(WorkerAbstract worker) throws Exception {
-        this.loadProperties();
+        loadProperties();
         worker.initialize(properties);
         worker.onStartUp();
         this.worker = worker;
@@ -63,8 +63,8 @@ public class Worker {
      * @throws java.lang.Exception if any.
      */
     public void run() throws Exception {
-        this.applyVcapConfig();
-        this.connectToQueue();
+        applyVcapConfig();
+        connectToQueue();
     }
 
     /**
@@ -73,20 +73,19 @@ public class Worker {
      * @throws java.io.IOException
      */
     private void connectToQueue() throws IOException {
-
-        ConnectionFactory factory = this.getConnectionFactory();
-        factory.setHost(this.properties.getProperty("queue.host"));
-        factory.setPort(Integer.parseInt(this.properties.getProperty("queue.port")));
-        factory.setUsername(this.properties.getProperty("queue.username"));
-        factory.setPassword(this.properties.getProperty("queue.password"));
-        factory.setVirtualHost(this.properties.getProperty("queue.vhost"));
+        ConnectionFactory factory = getConnectionFactory();
+        factory.setHost(properties.getProperty("queue.host"));
+        factory.setPort(Integer.parseInt(properties.getProperty("queue.port")));
+        factory.setUsername(properties.getProperty("queue.username"));
+        factory.setPassword(properties.getProperty("queue.password"));
+        factory.setVirtualHost(properties.getProperty("queue.vhost"));
         factory.setAutomaticRecoveryEnabled(true);
 
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        String exchangeName = this.properties.getProperty("queue.exchangeName");
-        List<String> bindKeys = Arrays.asList(this.properties.getProperty("queue.bindKey").split(","));
+        String exchangeName = properties.getProperty("queue.exchangeName");
+        List<String> bindKeys = Arrays.asList(properties.getProperty("queue.bindKey").split(","));
         
         channel.exchangeDeclare(exchangeName, "topic", true);
         String queueName = channel.queueDeclare().getQueue();
@@ -98,7 +97,7 @@ public class Worker {
         LOG.info("[*] Waiting for messages...");
 
         channel.basicQos(2);
-        channel.basicConsume(queueName, true, this.getWorkerConsumer(channel, worker));
+        channel.basicConsume(queueName, true, getWorkerConsumer(channel, worker));
     }
     
     /**
@@ -126,13 +125,13 @@ public class Worker {
      * loads the properties
      */
     private void loadProperties() {
-        this.properties = new Properties();
+        properties = new Properties();
         try {
             
             // load defaults
-            InputStream defaultProps = this.getClass().getClassLoader().getResourceAsStream("default.properties");
-            this.properties.load(defaultProps);
-            defaultProps.close();
+            InputStream defaultProperties = this.getClass().getClassLoader().getResourceAsStream("default.properties");
+            properties.load(defaultProperties);
+            defaultProperties.close();
             
             // overrides?
             try {
@@ -147,12 +146,12 @@ public class Worker {
                     propertiesPath = System.getProperty("propFile");
                 }
                 
-                FileInputStream appProps = new FileInputStream(propertiesPath);
-                this.properties.load(appProps);
-                appProps.close();
+                FileInputStream appProperties = new FileInputStream(propertiesPath);
+                properties.load(appProperties);
+                appProperties.close();
 
                 // let system properties override everything..
-                this.properties.putAll(System.getProperties());
+                properties.putAll(System.getProperties());
 
                 LOG.info(" [*] Loaded app.properties from " + propertiesPath);
                 
@@ -178,14 +177,14 @@ public class Worker {
             DeferredMap vcapConf = (DeferredMap) JSON.std.anyFrom(vcap);
             if (vcapConf.containsKey("rabbitmq-3.0")) {
                 @SuppressWarnings("unchecked")
-                DeferredMap vcapCreds = (DeferredMap) ((ArrayList<DeferredMap>) vcapConf.get("rabbitmq-3.0")).get(0);
+                DeferredMap vcapCreds = ((ArrayList<DeferredMap>) vcapConf.get("rabbitmq-3.0")).get(0);
                 vcapCreds = (DeferredMap) vcapCreds.get("credentials");
 
-                this.properties.setProperty("queue.host", vcapCreds.get("host").toString());
-                this.properties.setProperty("queue.port", vcapCreds.get("port").toString());
-                this.properties.setProperty("queue.username", vcapCreds.get("username").toString());
-                this.properties.setProperty("queue.password", vcapCreds.get("password").toString());
-                this.properties.setProperty("queue.vhost", vcapCreds.get("vhost").toString());
+                properties.setProperty("queue.host", vcapCreds.get("host").toString());
+                properties.setProperty("queue.port", vcapCreds.get("port").toString());
+                properties.setProperty("queue.username", vcapCreds.get("username").toString());
+                properties.setProperty("queue.password", vcapCreds.get("password").toString());
+                properties.setProperty("queue.vhost", vcapCreds.get("vhost").toString());
             }
         }
     }

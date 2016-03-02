@@ -27,16 +27,16 @@ public class TestWorkerException extends WorkerAbstract {
         }
     }
     
-    public boolean isConcerningRequest(QueueEvent qevent) {
+    public boolean shouldHandleRequest(QueueEvent qevent) {
         return true;
     }
     
-    public Boolean doAutoUpdateStatus()
+    public Boolean shouldAutoUpdateStatus()
     {
         return this.doAutoStuff;
     }
    
-    public Boolean doAutoRegister()
+    public Boolean shouldAutoRegister()
     {
         return this.doAutoStuff;
     }

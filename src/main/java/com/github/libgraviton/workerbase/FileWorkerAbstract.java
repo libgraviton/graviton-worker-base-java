@@ -7,6 +7,7 @@ package com.github.libgraviton.workerbase;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.model.GravitonFile;
@@ -37,23 +38,21 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
      * @return file instance
      */
     public GravitonFile getGravitonFile(String url) throws Exception {
-        HttpResponse<String> fileObj = Unirest.get(url).header("Accept", "application/json").asString();
-        return JSON.std.beanFrom(GravitonFile.class, fileObj.getBody());        
+        HttpResponse<String> response = Unirest.get(url).header("Accept", "application/json").asString();
+        return JSON.std.beanFrom(GravitonFile.class, response.getBody());
     }    
     
     /**
      * checks if a certain action is present in the metadata.action array
      *
-     * @param fileObj a {@link com.github.libgraviton.workerbase.model.GravitonFile} object.
+     * @param gravitonFile a {@link com.github.libgraviton.workerbase.model.GravitonFile} object.
      * @param action a {@link java.lang.String} object.
      * @return true if yes, false if not
      */
-    public Boolean isActionCommandPresent(GravitonFile fileObj, String action) {
-        GravitonFileMetadata metadata = fileObj.getMetadata();
+    public Boolean isActionCommandPresent(GravitonFile gravitonFile, String action) {
+        GravitonFileMetadata metadata = gravitonFile.getMetadata();
         for (GravitonFileMetadataAction singleAction: metadata.getAction()) {
-            if (singleAction.getCommand() != null &&
-                    singleAction.getCommand().equals(action)
-                    ) {
+            if (singleAction.getCommand() != null && singleAction.getCommand().equals(action) ) {
                 return true;
             }            
         }
@@ -70,25 +69,21 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
      */
     public void removeFileActionCommand(String documentUrl, String action) throws Exception {
         // we will re-fetch again just to be sure.. this *really* should use PATCH ;-)
-        GravitonFile fileObj = this.getGravitonFile(documentUrl);
-        GravitonFileMetadata metadata = fileObj.getMetadata();
-        ArrayList<GravitonFileMetadataAction> metadataAction = metadata.getAction();
-        
-        boolean hasBeenRemoved = false;
-        Iterator<GravitonFileMetadataAction> iter = metadataAction.iterator();
-        
-        while (iter.hasNext()) {
-            GravitonFileMetadataAction singleAction = iter.next();
-            if (singleAction.getCommand() != null &&
-                    singleAction.getCommand().equals(action)
-                    ) {
-                iter.remove();
-                hasBeenRemoved = true;
+        GravitonFile gravitonFile = getGravitonFile(documentUrl);
+        GravitonFileMetadata metadata = gravitonFile.getMetadata();
+        List<GravitonFileMetadataAction> metadataActions = metadata.getAction();
+        List<GravitonFileMetadataAction> matchingActions = new ArrayList<>();
+
+        for (GravitonFileMetadataAction metadataAction : metadataActions) {
+            if (action.equals(metadataAction.getCommand())) {
+                matchingActions.add(metadataAction);
             }
         }
-        
-        if (hasBeenRemoved) {
-            Unirest.put(documentUrl).header("Content-Type", "application/json").body(JSON.std.asString(fileObj)).asString();
+
+        if (matchingActions.size() > 0) {
+            metadataActions.removeAll(matchingActions);
+
+            Unirest.put(documentUrl).header("Content-Type", "application/json").body(JSON.std.asString(gravitonFile)).asString();
             LOG.info("[*] Removed action property from " + documentUrl);
         }        
     }

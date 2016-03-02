@@ -18,7 +18,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
-import com.github.libgraviton.workerbase.PagingResponseIterator;
 import com.github.libgraviton.workerbase.model.GravitonFile;
 import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;

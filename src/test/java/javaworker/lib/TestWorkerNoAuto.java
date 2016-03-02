@@ -29,17 +29,17 @@ public class TestWorkerNoAuto extends WorkerAbstract {
      * 
      * @return boolean true if not, false if yes
      */
-    public boolean isConcerningRequest(QueueEvent qevent) {
+    public boolean shouldHandleRequest(QueueEvent qevent) {
         this.concerningRequestCalled = true;
         return this.isConcerningRequest;
     }
     
-    public Boolean doAutoUpdateStatus()
+    public Boolean shouldAutoUpdateStatus()
     {
         return false;
     }
     
-    public Boolean doAutoRegister()
+    public Boolean shouldAutoRegister()
     {
         return false;
     }    

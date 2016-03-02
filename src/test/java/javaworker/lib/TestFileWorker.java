@@ -33,7 +33,7 @@ public class TestFileWorker extends FileWorkerAbstract {
      * 
      * @return boolean true if not, false if yes
      */
-    public boolean isConcerningRequest(QueueEvent qevent) {
+    public boolean shouldHandleRequest(QueueEvent qevent) {
         this.concerningRequestCalled = true;
         return true;
     }

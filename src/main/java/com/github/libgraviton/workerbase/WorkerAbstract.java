@@ -6,12 +6,15 @@ package com.github.libgraviton.workerbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.model.*;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,7 +116,7 @@ public abstract class WorkerAbstract {
      * @param body queueevent object
      * @return boolean true if not, false if yes
      */
-    abstract public boolean isConcerningRequest(QueueEvent body);
+    abstract public boolean shouldHandleRequest(QueueEvent body);
     
     /**
      * initializes this worker, will be called by the library
@@ -123,47 +126,49 @@ public abstract class WorkerAbstract {
      */
     public final void initialize(Properties properties) throws Exception {
         this.properties = properties;
-        this.workerId = this.properties.getProperty("graviton.workerId");
+        workerId = properties.getProperty("graviton.workerId");
 
-        if (this.doAutoRegister()) this.registerWorker();
+        if (shouldAutoRegister()) {
+            registerWorker();
+        }
     }
 
     /**
      * outer function that will be called on an queue event
      *
      * @param consumerTag consumer tag (aka routing key)
-     * @param qevent queue event
+     * @param queueEvent queue event
      * @throws java.io.IOException if any.
      */
-    public final void handleDelivery(String consumerTag, QueueEvent qevent)
+    public final void handleDelivery(String consumerTag, QueueEvent queueEvent)
             throws IOException {
 
-        String statusUrl = qevent.getStatus().get$ref();
+        String statusUrl = queueEvent.getStatus().get$ref();
         
-        if (this.isConcerningRequest(qevent) == false) {
+        if (!shouldHandleRequest(queueEvent)) {
             return;
         }
         
-        if (this.doAutoUpdateStatus()) {
+        if (shouldAutoUpdateStatus()) {
             status = WorkerStatus.WORKING;
-            this.updateStatusAtUrl(statusUrl);
+            updateStatusAtUrl(statusUrl);
         }
 
         try {
             // call the worker
-            this.handleRequest(qevent);
+            handleRequest(queueEvent);
             
-            if (this.doAutoUpdateStatus()) {
+            if (shouldAutoUpdateStatus()) {
                 status = WorkerStatus.DONE;
-                this.updateStatusAtUrl(statusUrl);
+                updateStatusAtUrl(statusUrl);
             }
             
         } catch (Exception e) {
             LOG.error("Error in worker: " + workerId, e);
 
-            if (this.doAutoUpdateStatus()) {
+            if (shouldAutoUpdateStatus()) {
                 status = WorkerStatus.FAILED;
-                this.updateStatusAtUrl(statusUrl, e.toString());
+                updateStatusAtUrl(statusUrl, e.toString());
             }
             
         }
@@ -174,7 +179,7 @@ public abstract class WorkerAbstract {
      *
      * @return true if yes, false if not
      */
-    public Boolean doAutoUpdateStatus()
+    public Boolean shouldAutoUpdateStatus()
     {
         return true;
     }
@@ -184,7 +189,7 @@ public abstract class WorkerAbstract {
      *
      * @return true if yes, false if not
      */
-    public Boolean doAutoRegister()
+    public Boolean shouldAutoRegister()
     {
         return true;
     }
@@ -192,7 +197,7 @@ public abstract class WorkerAbstract {
     /**
      * will be called after we're initialized, can contain some initial logic in the worker
      */
-    public void onStartUp()
+    public void onStartUp() throws WorkerException
     {
     }
 
@@ -274,51 +279,17 @@ public abstract class WorkerAbstract {
      */
     protected void updateStatusAtUrl(String statusUrl, EventStatusInformation informationEntry) {
         try {
-            HttpResponse<String> response = Unirest.get(statusUrl).header("Accept", "application/json").asString();
-
-            EventStatus eventStatus = JSON.std.beanFrom(EventStatus.class, response.getBody());
-
-            // modify our status in the status array
-            ArrayList<EventStatusStatus> statusObj = eventStatus.getStatus();
-            for (int i = 0; i < statusObj.size(); i++) {
-                EventStatusStatus statusEntry = statusObj.get(i);
-                if (statusEntry.getWorkerId().equals(this.workerId)) {
-                    statusEntry.setStatus(status);
-                    statusObj.set(i, statusEntry);
-                }
-            }
-
-            eventStatus.setStatus(statusObj);
-
-            // add information entry if present
-            if (informationEntry instanceof EventStatusInformation) {
-                // ensure list presence
-                if (!(eventStatus.getInformation() instanceof ArrayList<?>)) {
-                    eventStatus.setInformation(new ArrayList<EventStatusInformation>());
-                }
-                eventStatus.getInformation().add(informationEntry);
-            }
-
-            // send the new status to the backend
-            HttpResponse<String> putResp = Unirest.put(statusUrl).header("Content-Type", "application/json").body(JSON.std.asString(eventStatus)).asString();
-
-            LOG.info("[x] Updated status to '" + status + "'");
-
-            if (putResp.getStatus() == 204) {
-                lastStatusUpdateSuccessful = Boolean.TRUE;
-                LOG.info("[x] Updated status to '" + status + "' on '" + statusUrl + "'");
-            } else {
-                lastStatusUpdateSuccessful = Boolean.FALSE;
-                throw new WorkerException("Could not update status on backend! Returned status: " + putResp.getStatus() + ", backend body: " + putResp.getBody());
-            }
-
+            EventStatus eventStatus = getEventStatus(statusUrl);
+            modifyStatusForWorker(eventStatus);
+            addStatusInformation(informationEntry, eventStatus);
+            updateStatus(statusUrl, eventStatus);
         } catch (WorkerException e) {
             LOG.error("[F] Backend error on status update!", e);
         } catch (Exception e) {
             LOG.error("[F] Exception on status update!", e);
         }
     }
-    
+
     /**
      * registers our worker with the backend
      *
@@ -326,26 +297,26 @@ public abstract class WorkerAbstract {
      */
     protected void registerWorker() throws Exception {
 
-        WorkerRegister registerObj = new WorkerRegister();
-        registerObj.setId(this.workerId);
+        WorkerRegister workerRegister = new WorkerRegister();
+        workerRegister.setId(this.workerId);
         
-        String[] subscriptionKeys = this.properties.getProperty("graviton.subscription").split(",");
-        ArrayList<WorkerRegisterSubscription> subscriptions = new ArrayList<WorkerRegisterSubscription>();
+        List<String> subscriptionKeys = Arrays.asList(this.properties.getProperty("graviton.subscription").split(","));
+        ArrayList<WorkerRegisterSubscription> subscriptions = new ArrayList<>();
         
         for (String subscriptionKey: subscriptionKeys) {
-            WorkerRegisterSubscription subObj = new WorkerRegisterSubscription();
-            subObj.setEvent(subscriptionKey);
-            subscriptions.add(subObj);
+            WorkerRegisterSubscription subscription = new WorkerRegisterSubscription();
+            subscription.setEvent(subscriptionKey);
+            subscriptions.add(subscription);
         }
         
-        registerObj.setSubscription(subscriptions);
+        workerRegister.setSubscription(subscriptions);
         
         HttpResponse<String> response = 
                 Unirest.put(this.properties.getProperty("graviton.registerUrl"))
                 .routeParam("workerId", this.workerId)
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .body(JSON.std.asString(registerObj))
+                .body(JSON.std.asString(workerRegister))
                 .asString();
 
         LOG.info("[*] Worker register response code: " + response.getStatus());
@@ -355,6 +326,47 @@ public abstract class WorkerAbstract {
         } else {
             throw new WorkerException("Could not register worker on backend! Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
         }        
-    }    
+    }
+
+    private void updateStatus(String statusUrl, EventStatus eventStatus) throws UnirestException, IOException, WorkerException {
+        // send the new status to the backend
+        HttpResponse<String> response = Unirest.put(statusUrl).header("Content-Type", "application/json").body(JSON.std.asString(eventStatus)).asString();
+
+        LOG.info("[x] Updated status to '" + status + "'");
+
+        if (response.getStatus() == 204) {
+            lastStatusUpdateSuccessful = Boolean.TRUE;
+            LOG.info("[x] Updated status to '" + status + "' on '" + statusUrl + "'");
+        } else {
+            lastStatusUpdateSuccessful = Boolean.FALSE;
+            throw new WorkerException("Could not update status on backend! Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
+        }
+    }
+
+    private void addStatusInformation(EventStatusInformation informationEntry, EventStatus eventStatus) {
+        // add information entry if present
+        if (informationEntry != null) {
+            // ensure list presence
+            if (eventStatus.getInformation() == null) {
+                eventStatus.setInformation(new ArrayList<EventStatusInformation>());
+            }
+            eventStatus.getInformation().add(informationEntry);
+        }
+    }
+
+    private void modifyStatusForWorker(EventStatus eventStatus) {
+        // modify our status in the status array
+        ArrayList<EventStatusStatus> wokerStates = eventStatus.getStatus();
+        for (EventStatusStatus wokerState : wokerStates) {
+            if (wokerState.getWorkerId().equals(this.workerId)) {
+                wokerState.setStatus(status);
+            }
+        }
+    }
+
+    private EventStatus getEventStatus(String statusUrl) throws UnirestException, IOException {
+        HttpResponse<String> response = Unirest.get(statusUrl).header("Accept", "application/json").asString();
+        return JSON.std.beanFrom(EventStatus.class, response.getBody());
+    }
     
 }
