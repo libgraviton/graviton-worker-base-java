@@ -9,7 +9,7 @@ package com.github.libgraviton.workerbase.model;
 public class EventStatusStatus {
 
     public String workerId;
-    public String status;
+    public WorkerStatus status;
     
     /**
      * <p>Getter for the field <code>workerId</code>.</p>
@@ -30,17 +30,17 @@ public class EventStatusStatus {
     /**
      * <p>Getter for the field <code>status</code>.</p>
      *
-     * @return a {@link java.lang.String} object.
+     * @return a {@link WorkerStatus} object.
      */
-    public String getStatus() {
+    public WorkerStatus getStatus() {
         return status;
     }
     /**
      * <p>Setter for the field <code>status</code>.</p>
      *
-     * @param status a {@link java.lang.String} object.
+     * @param status a {@link WorkerStatus} object.
      */
-    public void setStatus(String status) {
+    public void setStatus(WorkerStatus status) {
         this.status = status;
     }
     

@@ -27,24 +27,6 @@ public abstract class WorkerAbstract {
     private static final Logger LOG = LoggerFactory.getLogger(WorkerAbstract.class);
 
     /**
-     * status constants
-     */
-    public static final String STATUS_WORKING = "working";
-    /** Constant <code>STATUS_DONE="done"</code> */
-    public static final String STATUS_DONE = "done";
-    /** Constant <code>STATUS_FAILED="failed"</code> */
-    public static final String STATUS_FAILED = "failed";
-
-    /** Constant <code>INFORMATION_TYPE_DEBUG="debug"</code> */
-    public static final String INFORMATION_TYPE_DEBUG = "debug";
-    /** Constant <code>INFORMATION_TYPE_INFO="info"</code> */
-    public static final String INFORMATION_TYPE_INFO = "info";
-    /** Constant <code>INFORMATION_TYPE_WARNING="warning"</code> */
-    public static final String INFORMATION_TYPE_WARNING = "warning";
-    /** Constant <code>INFORMATION_TYPE_ERROR="error"</code> */
-    public static final String INFORMATION_TYPE_ERROR = "error";
-
-    /**
      * properties
      */
     protected Properties properties;
@@ -55,9 +37,9 @@ public abstract class WorkerAbstract {
     protected String workerId;
 
     /**
-     * our worker state
+     * our worker status
      */
-    protected String state;
+    protected WorkerStatus status;
 
     /**
      * is worker registered
@@ -89,12 +71,12 @@ public abstract class WorkerAbstract {
     }
 
     /**
-     * <p>Getter for the field <code>state</code>.</p>
+     * <p>Getter for the field <code>status</code>.</p>
      *
      * @return a {@link java.lang.String} object.
      */
-    public String getState() {
-        return state;
+    public WorkerStatus getStatus() {
+        return status;
     }
 
     /**
@@ -163,7 +145,7 @@ public abstract class WorkerAbstract {
         }
         
         if (this.doAutoUpdateStatus()) {
-            state = STATUS_WORKING;
+            status = WorkerStatus.WORKING;
             this.updateStatusAtUrl(statusUrl);
         }
 
@@ -172,7 +154,7 @@ public abstract class WorkerAbstract {
             this.handleRequest(qevent);
             
             if (this.doAutoUpdateStatus()) {
-                state = STATUS_DONE;
+                status = WorkerStatus.DONE;
                 this.updateStatusAtUrl(statusUrl);
             }
             
@@ -180,7 +162,7 @@ public abstract class WorkerAbstract {
             LOG.error("Error in worker: " + workerId, e);
 
             if (this.doAutoUpdateStatus()) {
-                state = STATUS_FAILED;
+                status = WorkerStatus.FAILED;
                 this.updateStatusAtUrl(statusUrl, e.toString());
             }
             
@@ -220,10 +202,10 @@ public abstract class WorkerAbstract {
      * @param statusUrl status url
      * @param statusUrl status url
      * @param status status which status
-     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl)} after setting state variable.
+     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl)} after setting status variable.
      */
-    protected void setStatus(String statusUrl, String status) {
-        state = status;
+    protected void setStatus(String statusUrl, WorkerStatus status) {
+        this.status = status;
         this.updateStatusAtUrl(statusUrl);
     }
 
@@ -234,10 +216,10 @@ public abstract class WorkerAbstract {
      * @param statusUrl status url
      * @param status status which status
      * @param errorInformation error information message
-     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl, String errorInformation)} after setting state variable.
+     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl, String errorInformation)} after setting status variable.
      */
-    protected void setStatus(String statusUrl, String status, String errorInformation) {
-        state = status;
+    protected void setStatus(String statusUrl, WorkerStatus status, String errorInformation) {
+        this.status = status;
         this.updateStatusAtUrl(statusUrl, errorInformation);
     }
 
@@ -248,10 +230,10 @@ public abstract class WorkerAbstract {
      * @param statusUrl status url
      * @param status status which status
      * @param informationEntry an EventStatusInformation instance that will be added to the information array
-     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl, EventStatusInformation informationEntry)} after setting state variable.
+     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl, EventStatusInformation informationEntry)} after setting status variable.
      */
-    protected void setStatus(String statusUrl, String status, EventStatusInformation informationEntry) {
-        state = status;
+    protected void setStatus(String statusUrl, WorkerStatus status, EventStatusInformation informationEntry) {
+        this.status = status;
         this.updateStatusAtUrl(statusUrl, informationEntry);
     }
 
@@ -277,7 +259,7 @@ public abstract class WorkerAbstract {
         if (errorInformation.length() > 0) {
             statusInformation = new EventStatusInformation();
             statusInformation.setWorkerId(this.workerId);
-            statusInformation.setType(INFORMATION_TYPE_ERROR);
+            statusInformation.setType(WorkerInformationType.ERROR);
             statusInformation.setContent(errorInformation);
         }
         
@@ -301,7 +283,7 @@ public abstract class WorkerAbstract {
             for (int i = 0; i < statusObj.size(); i++) {
                 EventStatusStatus statusEntry = statusObj.get(i);
                 if (statusEntry.getWorkerId().equals(this.workerId)) {
-                    statusEntry.setStatus(state);
+                    statusEntry.setStatus(status);
                     statusObj.set(i, statusEntry);
                 }
             }
@@ -320,11 +302,11 @@ public abstract class WorkerAbstract {
             // send the new status to the backend
             HttpResponse<String> putResp = Unirest.put(statusUrl).header("Content-Type", "application/json").body(JSON.std.asString(eventStatus)).asString();
 
-            LOG.info("[x] Updated status to '" + state + "'");
+            LOG.info("[x] Updated status to '" + status + "'");
 
             if (putResp.getStatus() == 204) {
                 lastStatusUpdateSuccessful = Boolean.TRUE;
-                LOG.info("[x] Updated status to '" + state + "' on '" + statusUrl + "'");
+                LOG.info("[x] Updated status to '" + status + "' on '" + statusUrl + "'");
             } else {
                 lastStatusUpdateSuccessful = Boolean.FALSE;
                 throw new WorkerException("Could not update status on backend! Returned status: " + putResp.getStatus() + ", backend body: " + putResp.getBody());

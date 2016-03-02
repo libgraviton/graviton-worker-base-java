@@ -10,7 +10,7 @@ public class EventStatusInformation {
 
     public String workerId;
     public String content;
-    public String type;
+    public WorkerInformationType type;
     public String $ref;    
     
     /**
@@ -48,17 +48,17 @@ public class EventStatusInformation {
     /**
      * <p>Getter for the field <code>type</code>.</p>
      *
-     * @return a {@link java.lang.String} object.
+     * @return a {@link WorkerInformationType} object.
      */
-    public String getType() {
+    public WorkerInformationType getType() {
         return type;
     }
     /**
      * <p>Setter for the field <code>type</code>.</p>
      *
-     * @param type a {@link java.lang.String} object.
+     * @param type a {@link WorkerInformationType} object.
      */
-    public void setType(String type) {
+    public void setType(WorkerInformationType type) {
         this.type = type;
     }
     /**
