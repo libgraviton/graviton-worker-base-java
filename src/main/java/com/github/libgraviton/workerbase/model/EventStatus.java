@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase.model;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>EventStatus class.</p>
@@ -14,8 +14,8 @@ public class EventStatus {
     public String createDate;
     public String eventName;
     public GravitonRef eventResource;
-    public ArrayList<EventStatusStatus> status;
-    public ArrayList<EventStatusInformation> information;
+    public List<EventStatusStatus> status;
+    public List<EventStatusInformation> information;
     
     /**
      * <p>Getter for the field <code>id</code>.</p>
@@ -80,33 +80,33 @@ public class EventStatus {
     /**
      * <p>Getter for the field <code>status</code>.</p>
      *
-     * @return a {@link java.util.ArrayList} object.
+     * @return a {@link java.util.List} object.
      */
-    public ArrayList<EventStatusStatus> getStatus() {
+    public List<EventStatusStatus> getStatus() {
         return status;
     }
     /**
      * <p>Setter for the field <code>status</code>.</p>
      *
-     * @param status a {@link java.util.ArrayList} object.
+     * @param status a {@link java.util.List} object.
      */
-    public void setStatus(ArrayList<EventStatusStatus> status) {
+    public void setStatus(List<EventStatusStatus> status) {
         this.status = status;
     }
     /**
      * <p>Getter for the field <code>information</code>.</p>
      *
-     * @return a {@link java.util.ArrayList} object.
+     * @return a {@link java.util.List} object.
      */
-    public ArrayList<EventStatusInformation> getInformation() {
+    public List<EventStatusInformation> getInformation() {
         return information;
     }
     /**
      * <p>Setter for the field <code>information</code>.</p>
      *
-     * @param information a {@link java.util.ArrayList} object.
+     * @param information a {@link java.util.List} object.
      */
-    public void setInformation(ArrayList<EventStatusInformation> information) {
+    public void setInformation(List<EventStatusInformation> information) {
         this.information = information;
     }    
 }

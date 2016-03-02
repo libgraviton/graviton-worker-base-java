@@ -166,8 +166,7 @@ public class Worker {
 
     /**
      * Let's see if we have VCAP ENV vars that we should apply to configuration
-     * 
-     * @return void
+     *
      * @throws IOException
      * @throws JSONObjectException
      */

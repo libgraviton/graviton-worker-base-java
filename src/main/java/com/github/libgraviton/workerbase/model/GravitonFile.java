@@ -5,6 +5,7 @@
 package com.github.libgraviton.workerbase.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>GravitonFile class.</p>
@@ -28,7 +29,7 @@ public class GravitonFile {
     /**
      * links
      */
-    public ArrayList<GravitonFileLinks> links;
+    public List<GravitonFileLinks> links;
 
 
     /**
@@ -72,7 +73,7 @@ public class GravitonFile {
      *
      * @return The links
      */
-    public ArrayList<GravitonFileLinks> getLinks() {
+    public List<GravitonFileLinks> getLinks() {
         return links;
     }
 
@@ -80,11 +81,11 @@ public class GravitonFile {
      * Returns all links of a given type.
      *
      * @param type The type to filter the links by.
-     * @return An ArrayList holding all links matching the given type.
+     * @return A List holding all links matching the given type.
      * @since 0.7.0
      */
-    public ArrayList<GravitonFileLinks> getLinks(String type) {
-        ArrayList<GravitonFileLinks> links = new ArrayList<GravitonFileLinks>();
+    public List<GravitonFileLinks> getLinks(String type) {
+        List<GravitonFileLinks> links = new ArrayList<GravitonFileLinks>();
         for(GravitonFileLinks link : this.getLinks()) {
             if(link.getType().equals(type)) {
                 links.add(link);
@@ -98,7 +99,7 @@ public class GravitonFile {
      *
      * @param links The links to set
      */
-    public void setLinks(ArrayList<GravitonFileLinks> links) {
+    public void setLinks(List<GravitonFileLinks> links) {
         this.links = links;
     }
 }

@@ -140,8 +140,7 @@ public abstract class WorkerAbstract {
      * @param queueEvent queue event
      * @throws java.io.IOException if any.
      */
-    public final void handleDelivery(String consumerTag, QueueEvent queueEvent)
-            throws IOException {
+    public final void handleDelivery(String consumerTag, QueueEvent queueEvent) throws IOException {
 
         String statusUrl = queueEvent.getStatus().get$ref();
         
@@ -205,7 +204,6 @@ public abstract class WorkerAbstract {
      * convenience function to set the status
      *
      * @param statusUrl status url
-     * @param statusUrl status url
      * @param status status which status
      * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl)} after setting status variable.
      */
@@ -217,7 +215,6 @@ public abstract class WorkerAbstract {
     /**
      * Update status with a string based error information
      *
-     * @param statusUrl status url
      * @param statusUrl status url
      * @param status status which status
      * @param errorInformation error information message
@@ -231,7 +228,6 @@ public abstract class WorkerAbstract {
     /**
      * update the status to our backend
      *
-     * @param statusUrl status url
      * @param statusUrl status url
      * @param status status which status
      * @param informationEntry an EventStatusInformation instance that will be added to the information array
@@ -301,7 +297,7 @@ public abstract class WorkerAbstract {
         workerRegister.setId(this.workerId);
         
         List<String> subscriptionKeys = Arrays.asList(this.properties.getProperty("graviton.subscription").split(","));
-        ArrayList<WorkerRegisterSubscription> subscriptions = new ArrayList<>();
+        List<WorkerRegisterSubscription> subscriptions = new ArrayList<>();
         
         for (String subscriptionKey: subscriptionKeys) {
             WorkerRegisterSubscription subscription = new WorkerRegisterSubscription();
@@ -356,7 +352,7 @@ public abstract class WorkerAbstract {
 
     private void modifyStatusForWorker(EventStatus eventStatus) {
         // modify our status in the status array
-        ArrayList<EventStatusStatus> wokerStates = eventStatus.getStatus();
+        List<EventStatusStatus> wokerStates = eventStatus.getStatus();
         for (EventStatusStatus wokerState : wokerStates) {
             if (wokerState.getWorkerId().equals(this.workerId)) {
                 wokerState.setStatus(status);

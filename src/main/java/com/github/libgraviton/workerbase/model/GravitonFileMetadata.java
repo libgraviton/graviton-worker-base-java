@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase.model;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>GravitonFileMetadata class.</p>
@@ -14,9 +14,9 @@ public class GravitonFileMetadata {
     public String createDate;
     public String modificationDate;
     public String filename;
-    public ArrayList<GravitonFileMetadataAction> action;
     public String additionalInformation;
-    public ArrayList<GravitonFileMetadataAddProperty> additionalProperties;
+    public List<GravitonFileMetadataAction> action;
+    public List<GravitonFileMetadataAddProperty> additionalProperties;
     
     /**
      * <p>Getter for the field <code>size</code>.</p>
@@ -101,17 +101,17 @@ public class GravitonFileMetadata {
     /**
      * <p>Getter for the field <code>action</code>.</p>
      *
-     * @return a {@link java.util.ArrayList} object.
+     * @return a {@link java.util.List} object.
      */
-    public ArrayList<GravitonFileMetadataAction> getAction() {
+    public List<GravitonFileMetadataAction> getAction() {
         return action;
     }
     /**
      * <p>Setter for the field <code>action</code>.</p>
      *
-     * @param action a {@link java.util.ArrayList} object.
+     * @param action a {@link java.util.List} object.
      */
-    public void setAction(ArrayList<GravitonFileMetadataAction> action) {
+    public void setAction(List<GravitonFileMetadataAction> action) {
         this.action = action;
     }
     
@@ -138,20 +138,20 @@ public class GravitonFileMetadata {
     /**
      * <p>Getter for the field <code>additionalProperties</code>.</p>
      *
-     * @return a {@link java.util.ArrayList} object.
+     * @return a {@link java.util.List} object.
      * @since 0.7.0
      */
-    public ArrayList<GravitonFileMetadataAddProperty> getAdditionalProperties() {
+    public List<GravitonFileMetadataAddProperty> getAdditionalProperties() {
         return this.additionalProperties;
     }
 
     /**
      * <p>Setter for the field <code>additionalProperties</code>.</p>
      *
-     * @param additionalProperties a {@link java.util.ArrayList} object.
+     * @param additionalProperties a {@link java.util.List} object.
      * @since 0.7.0
      */
-    public void setAdditionalProperties(ArrayList<GravitonFileMetadataAddProperty> additionalProperties) {
+    public void setAdditionalProperties(List<GravitonFileMetadataAddProperty> additionalProperties) {
         this.additionalProperties = additionalProperties;
     }
     
