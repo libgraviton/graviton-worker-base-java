@@ -6,6 +6,9 @@ import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.model.file.GravitonFile;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class TestFileWorker extends FileWorkerAbstract {
 
     public boolean concerningRequestCalled = false;
@@ -23,8 +26,8 @@ public class TestFileWorker extends FileWorkerAbstract {
     public void handleRequest(QueueEvent queueEvent) throws WorkerException {
         try {
             fileObj = getGravitonFile(queueEvent.getDocument().get$ref());
-            actionPresent = isActionCommandPresent(this.fileObj, getAction(queueEvent));
-            removeFileActionCommand(queueEvent.getDocument().get$ref(), getAction(queueEvent));
+            actionPresent = isActionCommandPresent(this.fileObj, getActionsOfInterest(queueEvent).get(0));
+            removeFileActionCommand(queueEvent.getDocument().get$ref(), getActionsOfInterest(queueEvent).get(0));
         } catch (GravitonCommunicationException e) {
             e.printStackTrace();
         }
@@ -45,8 +48,8 @@ public class TestFileWorker extends FileWorkerAbstract {
     }
 
     @Override
-    public String getAction(QueueEvent queueEvent) {
-        return "doYourStuff";
+    public List<String> getActionsOfInterest(QueueEvent queueEvent) {
+        return Arrays.asList("doYourStuff");
     }
 
 }

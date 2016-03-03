@@ -13,10 +13,20 @@ public class WorkerFeedback {
     public InformationType type;
     public String $ref;
 
+    public WorkerFeedback() {
+    }
+
     public WorkerFeedback(String workerId, InformationType informationType, String content) {
         this.workerId = workerId;
         this.type = informationType;
         this.content = content;
+    }
+
+    public WorkerFeedback(String workerId, InformationType informationType, String content, String ref) {
+        this.workerId = workerId;
+        this.type = informationType;
+        this.content = content;
+        this.$ref = ref;
     }
 
     /**

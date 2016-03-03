@@ -29,7 +29,7 @@ public class GravitonFile {
     /**
      * links
      */
-    public List<Links> links;
+    public List<Link> links;
 
 
     /**
@@ -73,7 +73,7 @@ public class GravitonFile {
      *
      * @return The links
      */
-    public List<Links> getLinks() {
+    public List<Link> getLinks() {
         return links;
     }
 
@@ -84,9 +84,9 @@ public class GravitonFile {
      * @return A List holding all links matching the given type.
      * @since 0.7.0
      */
-    public List<Links> getLinks(String type) {
-        List<Links> links = new ArrayList<Links>();
-        for(Links link : this.getLinks()) {
+    public List<Link> getLinks(String type) {
+        List<Link> links = new ArrayList<Link>();
+        for(Link link : this.getLinks()) {
             if(link.getType().equals(type)) {
                 links.add(link);
             }
@@ -99,7 +99,7 @@ public class GravitonFile {
      *
      * @param links The links to set
      */
-    public void setLinks(List<Links> links) {
+    public void setLinks(List<Link> links) {
         this.links = links;
     }
 }

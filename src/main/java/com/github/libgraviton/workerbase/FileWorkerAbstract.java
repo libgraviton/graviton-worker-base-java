@@ -13,7 +13,6 @@ import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.github.libgraviton.workerbase.model.file.GravitonFile;
 import com.github.libgraviton.workerbase.model.file.Metadata;
 import com.github.libgraviton.workerbase.model.file.MetadataAction;
-import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.slf4j.Logger;
@@ -38,26 +37,30 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
 
     public boolean shouldHandleRequest(QueueEvent queueEvent) throws WorkerException {
         String documentUrl = queueEvent.getDocument().get$ref();
-        String action = getAction(queueEvent);
+        List<String> actions = getActionsOfInterest(queueEvent);
 
-        try {
-            if (!isActionCommandPresent(getGravitonFile(documentUrl), action)) {
-                return false;
+        Boolean actionOfInterestPresent = false;
+        for (String action: actions) {
+            try {
+                if (isActionCommandPresent(getGravitonFile(documentUrl), action)) {
+                    removeFileActionCommand(documentUrl, action);
+                    actionOfInterestPresent = true;
+                }
+            } catch (GravitonCommunicationException e) {
+                throw new WorkerException("Could not remove action '" + action + "' at url '" + documentUrl + "'.", e);
             }
-            removeFileActionCommand(documentUrl, action);
-            return true;
-        } catch (GravitonCommunicationException e) {
-            throw new WorkerException("Could not remove action '" + action + "' at url '" + documentUrl + "'.", e);
         }
+        return actionOfInterestPresent;
+
     }
 
     /**
-     * Get required action for worker.
+     * Get required action of interest for worker.
      *
      * @param queueEvent queueEvent
-     * @return action of interest
+     * @return actions of interest
      */
-    public abstract String getAction(QueueEvent queueEvent);
+    public abstract List<String> getActionsOfInterest(QueueEvent queueEvent);
 
     /**
      * gets file metadata from backend as a GravitonFile object
