@@ -77,7 +77,7 @@ public abstract class WorkerBaseTestCase {
         when(Unirest.put(anyString()))
             .thenReturn(requestBodyMock);
         
-        // GET /event/status mock        
+        // GET /event/status mock
         URL statusResponseUrl = this.getClass().getClassLoader().getResource("json/statusResponse.json");
         String statusResponseContent = FileUtils.readFileToString(new File(statusResponseUrl.getFile()));
         GetRequest getRequestStatus = mock(GetRequest.class);

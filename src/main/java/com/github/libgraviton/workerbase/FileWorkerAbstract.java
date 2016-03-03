@@ -6,9 +6,10 @@
 package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.jr.ob.JSON;
-import com.github.libgraviton.workerbase.model.GravitonFile;
-import com.github.libgraviton.workerbase.model.GravitonFileMetadata;
-import com.github.libgraviton.workerbase.model.GravitonFileMetadataAction;
+import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import com.github.libgraviton.workerbase.model.file.GravitonFile;
+import com.github.libgraviton.workerbase.model.file.GravitonFileMetadata;
+import com.github.libgraviton.workerbase.model.file.GravitonFileMetadataAction;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -51,7 +52,7 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
     /**
      * checks if a certain action is present in the metadata.action array
      *
-     * @param gravitonFile a {@link com.github.libgraviton.workerbase.model.GravitonFile} object.
+     * @param gravitonFile a {@link GravitonFile} object.
      * @param action a {@link java.lang.String} object.
      * @return true if yes, false if not
      */

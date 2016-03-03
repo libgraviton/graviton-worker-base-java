@@ -1,11 +1,11 @@
-package com.github.libgraviton.workerbase.model;
+package com.github.libgraviton.workerbase.model.status;
 
 /**
  * @author List of contributors
  *         https://github.com/libgraviton/graviton/graphs/contributors
  * @see <a href="http://swisscom.chm">http://swisscom.ch</a>
  */
-public enum WorkerStatus {
+public enum Status {
     OPEN("opened"),
     WORKING("working"),
     DONE("done"),
@@ -13,7 +13,7 @@ public enum WorkerStatus {
 
     private String value;
 
-    WorkerStatus(final String value) {
+    Status(final String value) {
         this.value = value;
     }
 

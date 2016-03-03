@@ -1,4 +1,6 @@
-package com.github.libgraviton.workerbase.model;
+package com.github.libgraviton.workerbase.model.status;
+
+import com.github.libgraviton.workerbase.model.GravitonRef;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +17,8 @@ public class EventStatus {
     public String createDate;
     public String eventName;
     public GravitonRef eventResource;
-    public List<EventStatusStatus> status;
-    public List<EventStatusInformation> information;
+    public List<WorkerStatus> status;
+    public List<WorkerFeedback> information;
     
     /**
      * <p>Getter for the field <code>id</code>.</p>
@@ -83,7 +85,7 @@ public class EventStatus {
      *
      * @return a {@link java.util.List} object.
      */
-    public List<EventStatusStatus> getStatus() {
+    public List<WorkerStatus> getStatus() {
         return status;
     }
     /**
@@ -91,7 +93,7 @@ public class EventStatus {
      *
      * @param status a {@link java.util.List} object.
      */
-    public void setStatus(List<EventStatusStatus> status) {
+    public void setStatus(List<WorkerStatus> status) {
         this.status = status;
     }
     /**
@@ -99,7 +101,7 @@ public class EventStatus {
      *
      * @return a {@link java.util.List} object.
      */
-    public List<EventStatusInformation> getInformation() {
+    public List<WorkerFeedback> getInformation() {
         return information;
     }
     /**
@@ -107,14 +109,14 @@ public class EventStatus {
      *
      * @param information a {@link java.util.List} object.
      */
-    public void setInformation(List<EventStatusInformation> information) {
+    public void setInformation(List<WorkerFeedback> information) {
         this.information = information;
     }
 
-    public void add(EventStatusInformation statusInformation) {
+    public void add(WorkerFeedback workerFeedback) {
         if (information == null) {
             information = new ArrayList<>();
         }
-        getInformation().add(statusInformation);
+        getInformation().add(workerFeedback);
     }
 }

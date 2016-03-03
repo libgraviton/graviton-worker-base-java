@@ -6,6 +6,7 @@ package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
+import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;

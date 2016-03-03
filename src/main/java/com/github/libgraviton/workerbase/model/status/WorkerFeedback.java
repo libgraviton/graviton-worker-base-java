@@ -1,12 +1,12 @@
-package com.github.libgraviton.workerbase.model;
+package com.github.libgraviton.workerbase.model.status;
 
 /**
- * <p>EventStatusInformation class.</p>
+ * <p>WorkerFeedback class.</p>
  *
  * @author Dario Nuevo
  * @version $Id: $Id
  */
-public class EventStatusInformation {
+public class WorkerFeedback {
 
     public String workerId;
     public String content;

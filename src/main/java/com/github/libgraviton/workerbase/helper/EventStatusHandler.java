@@ -1,9 +1,10 @@
-package com.github.libgraviton.workerbase;
+package com.github.libgraviton.workerbase.helper;
 
 import com.fasterxml.jackson.jr.ob.JSON;
-import com.github.libgraviton.workerbase.model.EventStatus;
-import com.github.libgraviton.workerbase.model.EventStatusStatus;
-import com.github.libgraviton.workerbase.model.WorkerStatus;
+import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import com.github.libgraviton.workerbase.model.status.EventStatus;
+import com.github.libgraviton.workerbase.model.status.WorkerStatus;
+import com.github.libgraviton.workerbase.model.status.Status;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -40,15 +41,15 @@ public class EventStatusHandler {
      * @param workerStatus the new status of the worker
      * @throws GravitonCommunicationException when status cannot be updated at Graviton
      */
-    public void update(EventStatus eventStatus, String workerId, WorkerStatus workerStatus) throws GravitonCommunicationException {
+    public void update(EventStatus eventStatus, String workerId, Status workerStatus) throws GravitonCommunicationException {
 
-        List<EventStatusStatus> status = eventStatus.getStatus();
+        List<WorkerStatus> status = eventStatus.getStatus();
 
         if (status == null) {
             throw new IllegalStateException("Got an invalid EventStatus status.");
         }
 
-        for (EventStatusStatus statusEntry : status) {
+        for (WorkerStatus statusEntry : status) {
             String currentWorkerId = statusEntry.getWorkerId();
             if(currentWorkerId != null && currentWorkerId.equals(workerId)) {
                 statusEntry.setStatus(workerStatus);

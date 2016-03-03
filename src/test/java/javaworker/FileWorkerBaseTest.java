@@ -18,7 +18,7 @@ import org.mockito.AdditionalMatchers;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.github.libgraviton.workerbase.model.GravitonFileMetadata;
+import com.github.libgraviton.workerbase.model.file.GravitonFileMetadata;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.request.GetRequest;

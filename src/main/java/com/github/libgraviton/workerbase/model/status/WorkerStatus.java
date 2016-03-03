@@ -1,15 +1,15 @@
-package com.github.libgraviton.workerbase.model;
+package com.github.libgraviton.workerbase.model.status;
 
 /**
- * <p>EventStatusStatus class.</p>
+ * <p>WorkerStatus class.</p>
  *
  * @author Dario Nuevo
  * @version $Id: $Id
  */
-public class EventStatusStatus {
+public class WorkerStatus {
 
     public String workerId;
-    public WorkerStatus status;
+    public Status status;
     
     /**
      * <p>Getter for the field <code>workerId</code>.</p>
@@ -30,17 +30,17 @@ public class EventStatusStatus {
     /**
      * <p>Getter for the field <code>status</code>.</p>
      *
-     * @return a {@link WorkerStatus} object.
+     * @return a {@link Status} object.
      */
-    public WorkerStatus getStatus() {
+    public Status getStatus() {
         return status;
     }
     /**
      * <p>Setter for the field <code>status</code>.</p>
      *
-     * @param status a {@link WorkerStatus} object.
+     * @param status a {@link Status} object.
      */
-    public void setStatus(WorkerStatus status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
     

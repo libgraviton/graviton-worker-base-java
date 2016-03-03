@@ -2,7 +2,7 @@
  * worker exception
  */
 
-package com.github.libgraviton.workerbase;
+package com.github.libgraviton.workerbase.exception;
 
 /**
  * <p>WorkerException class.</p>

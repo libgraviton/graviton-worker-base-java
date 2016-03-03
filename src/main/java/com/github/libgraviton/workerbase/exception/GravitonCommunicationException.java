@@ -1,4 +1,4 @@
-package com.github.libgraviton.workerbase;
+package com.github.libgraviton.workerbase.exception;
 
 /**
  * Exception for unsucessful communication with Graviton

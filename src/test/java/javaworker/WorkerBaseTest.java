@@ -16,7 +16,7 @@ import org.mockito.AdditionalMatchers;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.github.libgraviton.workerbase.WorkerException;
+import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.request.HttpRequestWithBody;
@@ -111,7 +111,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         verify(requestBodyMock, times(1)).body(
                 AdditionalMatchers.and(
                         contains("\"status\":\"failed\",\"workerId\":\"java-test\""),
-                        contains("\"content\":\"com.github.libgraviton.workerbase.WorkerException: Something bad happened!\"")
+                        contains("\"content\":\"com.github.libgraviton.workerbase.exception.WorkerException: Something bad happened!\"")
                         )
                 );        
     }

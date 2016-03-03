@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.github.libgraviton.workerbase.WorkerUtil;
+import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.mashape.unirest.http.Unirest;
 
 @RunWith(PowerMockRunner.class)

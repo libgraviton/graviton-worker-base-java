@@ -1,4 +1,4 @@
-package com.github.libgraviton.workerbase.model;
+package com.github.libgraviton.workerbase.model.file;
 
 /**
  * <p>GravitonFileMetadataAddProperty class.</p>

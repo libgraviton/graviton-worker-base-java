@@ -2,7 +2,7 @@
  * An instance of this class represents a file of graviton's file service.
  */
 
-package com.github.libgraviton.workerbase.model;
+package com.github.libgraviton.workerbase.model.file;
 
 import java.util.ArrayList;
 import java.util.List;

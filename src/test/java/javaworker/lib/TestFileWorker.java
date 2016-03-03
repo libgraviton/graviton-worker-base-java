@@ -1,9 +1,9 @@
 package javaworker.lib;
 
 import com.github.libgraviton.workerbase.FileWorkerAbstract;
-import com.github.libgraviton.workerbase.GravitonCommunicationException;
-import com.github.libgraviton.workerbase.WorkerException;
-import com.github.libgraviton.workerbase.model.GravitonFile;
+import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import com.github.libgraviton.workerbase.exception.WorkerException;
+import com.github.libgraviton.workerbase.model.file.GravitonFile;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
 public class TestFileWorker extends FileWorkerAbstract {

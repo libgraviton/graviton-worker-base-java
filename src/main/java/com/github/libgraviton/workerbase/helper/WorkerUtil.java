@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.github.libgraviton.workerbase;
+package com.github.libgraviton.workerbase.helper;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

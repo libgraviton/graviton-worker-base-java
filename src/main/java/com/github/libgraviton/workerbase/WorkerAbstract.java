@@ -5,7 +5,16 @@
 package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.jr.ob.JSON;
+import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import com.github.libgraviton.workerbase.exception.WorkerException;
+import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.model.*;
+import com.github.libgraviton.workerbase.model.register.WorkerRegister;
+import com.github.libgraviton.workerbase.model.register.WorkerRegisterSubscription;
+import com.github.libgraviton.workerbase.model.status.EventStatus;
+import com.github.libgraviton.workerbase.model.status.WorkerFeedback;
+import com.github.libgraviton.workerbase.model.status.WorkerInformationType;
+import com.github.libgraviton.workerbase.model.status.Status;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -105,28 +114,28 @@ public abstract class WorkerAbstract {
 
         try {
             if (shouldAutoUpdateStatus()) {
-                statusHandler.update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, WorkerStatus.WORKING);
+                statusHandler.update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, Status.WORKING);
             }
 
             // call the worker
             handleRequest(queueEvent);
             
             if (shouldAutoUpdateStatus()) {
-                statusHandler.update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, WorkerStatus.DONE);
+                statusHandler.update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, Status.DONE);
             }
         } catch (Exception e) {
             LOG.error("Error in worker: " + workerId, e);
 
             if (shouldAutoUpdateStatus()) {
                 try {
-                    EventStatusInformation statusInformation = new EventStatusInformation();
-                    statusInformation.setWorkerId(workerId);
-                    statusInformation.setType(WorkerInformationType.ERROR);
-                    statusInformation.setContent(e.toString());
+                    WorkerFeedback workerFeedback = new WorkerFeedback();
+                    workerFeedback.setWorkerId(workerId);
+                    workerFeedback.setType(WorkerInformationType.ERROR);
+                    workerFeedback.setContent(e.toString());
                     EventStatus eventStatus = statusHandler.getEventStatusFromUrl(statusUrl);
-                    eventStatus.add(statusInformation);
+                    eventStatus.add(workerFeedback);
 
-                    statusHandler.update(eventStatus, workerId, WorkerStatus.FAILED);
+                    statusHandler.update(eventStatus, workerId, Status.FAILED);
                 } catch (GravitonCommunicationException e1) {
                     // don't log again in case if previous exception was already a GravitonCommunicationException.
                     if (!(e instanceof GravitonCommunicationException)) {
