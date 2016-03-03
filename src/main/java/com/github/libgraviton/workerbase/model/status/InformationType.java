@@ -5,7 +5,7 @@ package com.github.libgraviton.workerbase.model.status;
  *         https://github.com/libgraviton/graviton/graphs/contributors
  * @see <a href="http://swisscom.chm">http://swisscom.ch</a>
  */
-public enum WorkerInformationType {
+public enum InformationType {
     DEBUG("debug"),
     INFO("info"),
     WARNING("warning"),
@@ -13,7 +13,7 @@ public enum WorkerInformationType {
 
     private String value;
 
-    WorkerInformationType(final String value) {
+    InformationType(final String value) {
         this.value = value;
     }
 

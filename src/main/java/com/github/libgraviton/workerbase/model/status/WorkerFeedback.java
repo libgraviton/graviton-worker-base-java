@@ -10,9 +10,15 @@ public class WorkerFeedback {
 
     public String workerId;
     public String content;
-    public WorkerInformationType type;
-    public String $ref;    
-    
+    public InformationType type;
+    public String $ref;
+
+    public WorkerFeedback(String workerId, InformationType informationType, String content) {
+        this.workerId = workerId;
+        this.type = informationType;
+        this.content = content;
+    }
+
     /**
      * <p>Getter for the field <code>workerId</code>.</p>
      *
@@ -48,17 +54,17 @@ public class WorkerFeedback {
     /**
      * <p>Getter for the field <code>type</code>.</p>
      *
-     * @return a {@link WorkerInformationType} object.
+     * @return a {@link InformationType} object.
      */
-    public WorkerInformationType getType() {
+    public InformationType getType() {
         return type;
     }
     /**
      * <p>Setter for the field <code>type</code>.</p>
      *
-     * @param type a {@link WorkerInformationType} object.
+     * @param type a {@link InformationType} object.
      */
-    public void setType(WorkerInformationType type) {
+    public void setType(InformationType type) {
         this.type = type;
     }
     /**

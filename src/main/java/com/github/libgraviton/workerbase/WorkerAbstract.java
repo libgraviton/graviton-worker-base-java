@@ -13,7 +13,7 @@ import com.github.libgraviton.workerbase.model.register.WorkerRegister;
 import com.github.libgraviton.workerbase.model.register.WorkerRegisterSubscription;
 import com.github.libgraviton.workerbase.model.status.EventStatus;
 import com.github.libgraviton.workerbase.model.status.WorkerFeedback;
-import com.github.libgraviton.workerbase.model.status.WorkerInformationType;
+import com.github.libgraviton.workerbase.model.status.InformationType;
 import com.github.libgraviton.workerbase.model.status.Status;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -112,14 +112,9 @@ public abstract class WorkerAbstract {
             LOG.error("Error in worker: " + workerId, e);
 
             if (shouldAutoUpdateStatus()) {
-                WorkerFeedback workerFeedback = new WorkerFeedback();
-                workerFeedback.setWorkerId(workerId);
-                workerFeedback.setType(WorkerInformationType.ERROR);
-                workerFeedback.setContent(e.toString());
-
                 try {
                     EventStatus eventStatus = statusHandler.getEventStatusFromUrl(statusUrl);
-                    eventStatus.add(workerFeedback);
+                    eventStatus.add(new WorkerFeedback(workerId, InformationType.ERROR, e.toString()));
                     statusHandler.update(eventStatus, workerId, Status.FAILED);
                 } catch (GravitonCommunicationException e1) {
                     // don't log again in case if previous exception was already a GravitonCommunicationException.
