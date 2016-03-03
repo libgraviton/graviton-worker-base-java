@@ -3,20 +3,20 @@ package com.github.libgraviton.workerbase.model.file;
 import java.util.List;
 
 /**
- * <p>GravitonFileMetadata class.</p>
+ * <p>Metadata class.</p>
  *
  * @author Dario Nuevo
  * @version $Id: $Id
  */
-public class GravitonFileMetadata {
+public class Metadata {
     public Integer size;
     public String mime;
     public String createDate;
     public String modificationDate;
     public String filename;
     public String additionalInformation;
-    public List<GravitonFileMetadataAction> action;
-    public List<GravitonFileMetadataAddProperty> additionalProperties;
+    public List<MetadataAction> action;
+    public List<MetadataAddProperty> additionalProperties;
     
     /**
      * <p>Getter for the field <code>size</code>.</p>
@@ -103,7 +103,7 @@ public class GravitonFileMetadata {
      *
      * @return a {@link java.util.List} object.
      */
-    public List<GravitonFileMetadataAction> getAction() {
+    public List<MetadataAction> getAction() {
         return action;
     }
     /**
@@ -111,7 +111,7 @@ public class GravitonFileMetadata {
      *
      * @param action a {@link java.util.List} object.
      */
-    public void setAction(List<GravitonFileMetadataAction> action) {
+    public void setAction(List<MetadataAction> action) {
         this.action = action;
     }
     
@@ -141,7 +141,7 @@ public class GravitonFileMetadata {
      * @return a {@link java.util.List} object.
      * @since 0.7.0
      */
-    public List<GravitonFileMetadataAddProperty> getAdditionalProperties() {
+    public List<MetadataAddProperty> getAdditionalProperties() {
         return this.additionalProperties;
     }
 
@@ -151,7 +151,7 @@ public class GravitonFileMetadata {
      * @param additionalProperties a {@link java.util.List} object.
      * @since 0.7.0
      */
-    public void setAdditionalProperties(List<GravitonFileMetadataAddProperty> additionalProperties) {
+    public void setAdditionalProperties(List<MetadataAddProperty> additionalProperties) {
         this.additionalProperties = additionalProperties;
     }
     

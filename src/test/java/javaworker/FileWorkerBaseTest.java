@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import java.io.File;
 import java.net.URL;
 
+import com.github.libgraviton.workerbase.model.file.Metadata;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +19,6 @@ import org.mockito.AdditionalMatchers;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.github.libgraviton.workerbase.model.file.GravitonFileMetadata;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.request.GetRequest;
@@ -92,7 +92,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         
         assertEquals(0, testWorker.fileObj.metadata.getAction().size());
         
-        assertThat(testWorker.fileObj.getMetadata(), instanceOf(GravitonFileMetadata.class));
+        assertThat(testWorker.fileObj.getMetadata(), instanceOf(Metadata.class));
         
         assertFalse(testWorker.actionPresent);
     }

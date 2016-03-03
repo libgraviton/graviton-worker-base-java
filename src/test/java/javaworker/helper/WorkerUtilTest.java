@@ -1,6 +1,8 @@
-package javaworker;
+package javaworker.helper;
 
 import static org.junit.Assert.*;
+
+import javaworker.WorkerBaseTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;

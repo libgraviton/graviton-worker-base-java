@@ -3,6 +3,14 @@
  */
 package com.github.libgraviton.workerbase.helper;
 
+import com.fasterxml.jackson.jr.ob.JSON;
+import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import com.github.libgraviton.workerbase.model.file.GravitonFile;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
@@ -32,5 +40,21 @@ public class WorkerUtil {
                 .replace("~", "%7E")
                 .replace(",", "%2C");
         return encoded;
+    }
+
+    /**
+     * gets file metadata from backend as a GravitonFile object
+     *
+     * @param fileUrl the url of the object
+     * @throws GravitonCommunicationException if file could not be fetched.
+     * @return file instance
+     */
+    public static GravitonFile getGravitonFile(String fileUrl) throws GravitonCommunicationException {
+        try {
+            HttpResponse<String> response = Unirest.get(fileUrl).header("Accept", "application/json").asString();
+            return JSON.std.beanFrom(GravitonFile.class, response.getBody());
+        } catch (UnirestException | IOException e) {
+            throw new GravitonCommunicationException("Unable to GET graviton file from '" + fileUrl + "'.", e);
+        }
     }
 }

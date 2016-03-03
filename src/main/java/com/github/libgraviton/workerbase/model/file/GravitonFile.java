@@ -24,12 +24,12 @@ public class GravitonFile {
     /**
      * metadata
      */
-    public GravitonFileMetadata metadata;
+    public Metadata metadata;
 
     /**
      * links
      */
-    public List<GravitonFileLinks> links;
+    public List<Links> links;
 
 
     /**
@@ -55,7 +55,7 @@ public class GravitonFile {
      *
      * @return The metadata
      */
-    public GravitonFileMetadata getMetadata() {
+    public Metadata getMetadata() {
         return metadata;
     }
 
@@ -64,7 +64,7 @@ public class GravitonFile {
      *
      * @param metadata The metadata to set
      */
-    public void setMetadata(GravitonFileMetadata metadata) {
+    public void setMetadata(Metadata metadata) {
         this.metadata = metadata;
     }
 
@@ -73,7 +73,7 @@ public class GravitonFile {
      *
      * @return The links
      */
-    public List<GravitonFileLinks> getLinks() {
+    public List<Links> getLinks() {
         return links;
     }
 
@@ -84,9 +84,9 @@ public class GravitonFile {
      * @return A List holding all links matching the given type.
      * @since 0.7.0
      */
-    public List<GravitonFileLinks> getLinks(String type) {
-        List<GravitonFileLinks> links = new ArrayList<GravitonFileLinks>();
-        for(GravitonFileLinks link : this.getLinks()) {
+    public List<Links> getLinks(String type) {
+        List<Links> links = new ArrayList<Links>();
+        for(Links link : this.getLinks()) {
             if(link.getType().equals(type)) {
                 links.add(link);
             }
@@ -99,7 +99,7 @@ public class GravitonFile {
      *
      * @param links The links to set
      */
-    public void setLinks(List<GravitonFileLinks> links) {
+    public void setLinks(List<Links> links) {
         this.links = links;
     }
 }

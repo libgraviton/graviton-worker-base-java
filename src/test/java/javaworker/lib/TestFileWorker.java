@@ -23,8 +23,8 @@ public class TestFileWorker extends FileWorkerAbstract {
     public void handleRequest(QueueEvent queueEvent) throws WorkerException {
         try {
             fileObj = getGravitonFile(queueEvent.getDocument().get$ref());
-            actionPresent = isActionCommandPresent(this.fileObj, "doYourStuff");
-            removeFileActionCommand(queueEvent.getDocument().get$ref(), "doYourStuff");
+            actionPresent = isActionCommandPresent(this.fileObj, getAction(queueEvent));
+            removeFileActionCommand(queueEvent.getDocument().get$ref(), getAction(queueEvent));
         } catch (GravitonCommunicationException e) {
             e.printStackTrace();
         }
@@ -43,5 +43,10 @@ public class TestFileWorker extends FileWorkerAbstract {
         concerningRequestCalled = true;
         return true;
     }
-    
+
+    @Override
+    public String getAction(QueueEvent queueEvent) {
+        return "doYourStuff";
+    }
+
 }

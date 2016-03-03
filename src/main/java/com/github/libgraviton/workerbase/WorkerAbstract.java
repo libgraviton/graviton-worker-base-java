@@ -73,8 +73,9 @@ public abstract class WorkerAbstract {
      *
      * @param body queueevent object
      * @return boolean true if not, false if yes
+     * @throws WorkerException whenever a worker is unable to determine if it should handle the request
      */
-    abstract public boolean shouldHandleRequest(QueueEvent body);
+    abstract public boolean shouldHandleRequest(QueueEvent body) throws WorkerException;
     
     /**
      * initializes this worker, will be called by the library
@@ -105,36 +106,20 @@ public abstract class WorkerAbstract {
     public final void handleDelivery(String consumerTag, QueueEvent queueEvent) throws IOException {
 
         String statusUrl = queueEvent.getStatus().get$ref();
-        
-        if (!shouldHandleRequest(queueEvent)) {
-            return;
-        }
-
-        statusHandler = new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
-
         try {
-            if (shouldAutoUpdateStatus()) {
-                statusHandler.update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, Status.WORKING);
-            }
-
-            // call the worker
-            handleRequest(queueEvent);
-            
-            if (shouldAutoUpdateStatus()) {
-                statusHandler.update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, Status.DONE);
-            }
+            processDelivery(queueEvent, statusUrl);
         } catch (Exception e) {
             LOG.error("Error in worker: " + workerId, e);
 
             if (shouldAutoUpdateStatus()) {
+                WorkerFeedback workerFeedback = new WorkerFeedback();
+                workerFeedback.setWorkerId(workerId);
+                workerFeedback.setType(WorkerInformationType.ERROR);
+                workerFeedback.setContent(e.toString());
+
                 try {
-                    WorkerFeedback workerFeedback = new WorkerFeedback();
-                    workerFeedback.setWorkerId(workerId);
-                    workerFeedback.setType(WorkerInformationType.ERROR);
-                    workerFeedback.setContent(e.toString());
                     EventStatus eventStatus = statusHandler.getEventStatusFromUrl(statusUrl);
                     eventStatus.add(workerFeedback);
-
                     statusHandler.update(eventStatus, workerId, Status.FAILED);
                 } catch (GravitonCommunicationException e1) {
                     // don't log again in case if previous exception was already a GravitonCommunicationException.
@@ -143,6 +128,24 @@ public abstract class WorkerAbstract {
                     }
                 }
             }
+        }
+    }
+
+    private void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {
+        if (!shouldHandleRequest(queueEvent)) {
+            return;
+        }
+        statusHandler = new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
+
+        if (shouldAutoUpdateStatus()) {
+            statusHandler.update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, Status.WORKING);
+        }
+
+        // call the worker
+        handleRequest(queueEvent);
+
+        if (shouldAutoUpdateStatus()) {
+            statusHandler.update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, Status.DONE);
         }
     }
 
