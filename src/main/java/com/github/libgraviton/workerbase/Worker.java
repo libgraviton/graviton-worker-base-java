@@ -48,10 +48,14 @@ public class Worker {
      * constructor
      *
      * @param worker worker instance
-     * @throws java.lang.Exception if any.
+     * @throws WorkerException if setup failed.
      */
-    public Worker(WorkerAbstract worker) throws Exception {
-        loadProperties();
+    public Worker(WorkerAbstract worker) throws WorkerException {
+        try {
+            loadProperties();
+        } catch (IOException e) {
+            throw new WorkerException(e);
+        }
         worker.initialize(properties);
         worker.onStartUp();
         this.worker = worker;
@@ -60,9 +64,9 @@ public class Worker {
     /**
      * initializes all
      *
-     * @throws java.lang.Exception if any.
+     * @throws IOException if running the Worker failed.
      */
-    public void run() throws Exception {
+    public void run() throws IOException {
         applyVcapConfig();
         connectToQueue();
     }
@@ -92,9 +96,9 @@ public class Worker {
 
         for (String bindKey : bindKeys) {
             channel.queueBind(queueName, exchangeName, bindKey);
-            LOG.info("[*] Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey + "'");
+            LOG.info("Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey + "'");
         }
-        LOG.info("[*] Waiting for messages...");
+        LOG.info("Waiting for messages...");
 
         channel.basicQos(2);
         channel.basicConsume(queueName, true, getWorkerConsumer(channel, worker));
@@ -124,53 +128,38 @@ public class Worker {
     /**
      * loads the properties
      */
-    private void loadProperties() {
+    private void loadProperties() throws IOException {
         properties = new Properties();
-        try {
-            
-            // load defaults
-            InputStream defaultProperties = this.getClass().getClassLoader().getResourceAsStream("default.properties");
+        // load defaults
+        try (InputStream defaultProperties = getClass().getClassLoader().getResourceAsStream("default.properties")) {
             properties.load(defaultProperties);
-            defaultProperties.close();
-            
-            // overrides?
-            try {
-            
-                String propertiesPath;
-                if (System.getProperty("propFile", "").equals("")) {
-                    String currentPath = Worker.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-                    String decodedPath = URLDecoder.decode(currentPath, "UTF-8");
-                    String propertiesBasename = FilenameUtils.getFullPath(decodedPath);
-                    propertiesPath = propertiesBasename + "app.properties";
-                } else {
-                    propertiesPath = System.getProperty("propFile");
-                }
-                
-                FileInputStream appProperties = new FileInputStream(propertiesPath);
-                properties.load(appProperties);
-                appProperties.close();
-
-                // let system properties override everything..
-                properties.putAll(System.getProperties());
-
-                LOG.info(" [*] Loaded app.properties from " + propertiesPath);
-                
-            } catch (FileNotFoundException e) {
-                // no problem..
-            }
-            
-        } catch (Exception e1) {
-            LOG.error("Could not load properties", e1);
         }
+
+        // overrides?
+        String propertiesPath;
+        if (System.getProperty("propFile", "").equals("")) {
+            propertiesPath = "etc/app.properties";
+        } else {
+            propertiesPath = System.getProperty("propFile");
+        }
+
+        try (FileInputStream appProperties = new FileInputStream(propertiesPath)) {
+            properties.load(appProperties);
+        } catch (IOException e) {
+            LOG.debug("No overriding properties found at '" + propertiesPath + "'.");
+        }
+
+        // let system properties override everything..
+        properties.putAll(System.getProperties());
+
+        LOG.info("Loaded app.properties from " + propertiesPath);
     }
 
     /**
      * Let's see if we have VCAP ENV vars that we should apply to configuration
      *
-     * @throws IOException
-     * @throws JSONObjectException
      */
-    private void applyVcapConfig() throws Exception {
+    private void applyVcapConfig() throws IOException {
         String vcap = this.getVcap();
         if (vcap != null) {
             DeferredMap vcapConf = (DeferredMap) JSON.std.anyFrom(vcap);
@@ -194,7 +183,7 @@ public class Worker {
      * @return properties
      */
     public Properties getProperties() {
-        return this.properties;
+        return properties;
     }
     
     /**

@@ -50,7 +50,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         
         verify(stringResponse, times(4)).getStatus();
         
-        assertTrue(testWorker.concerningRequestCalled);
+        assertTrue(testWorker.shouldHandleRequestCalled);
 
         QueueEvent queueEvent = testWorker.getHandledQueueEvent();
         assertEquals("documents.core.app.create", queueEvent.getEvent());
@@ -199,10 +199,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
         workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes()); 
-
-        // TODO mwegener
-        assertFalse(testWorker.getLastStatusUpdateSuccessful());
-    }    
+    }
     
     @Test
     public void testVcapConfiguration() throws Exception {

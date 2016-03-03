@@ -29,85 +29,34 @@ public abstract class WorkerAbstract {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerAbstract.class);
 
-    /**
-     * properties
-     */
     protected Properties properties;
-    
-    /**
-     * our worker id
-     */
+
     protected String workerId;
 
-    /**
-     * our worker status
-     */
-    protected WorkerStatus status;
+    protected EventStatusHandler statusHandler;
 
-    /**
-     * is worker registered
-     */
     protected Boolean isRegistered = Boolean.FALSE;
 
-    /**
-     * was last status update successfully sent to backend
-     */
-    protected Boolean lastStatusUpdateSuccessful = Boolean.TRUE;
-
-
-    /**
-     * <p>Getter for the field <code>properties</code>.</p>
-     *
-     * @return a {@link java.util.Properties} object.
-     */
     public Properties getProperties() {
         return properties;
     }
 
-    /**
-     * <p>Getter for the field <code>workerId</code>.</p>
-     *
-     * @return a {@link java.lang.String} object.
-     */
     public String getWorkerId() {
         return workerId;
     }
 
-    /**
-     * <p>Getter for the field <code>status</code>.</p>
-     *
-     * @return a {@link java.lang.String} object.
-     */
-    public WorkerStatus getStatus() {
-        return status;
-    }
-
-    /**
-     * <p>getRegistered.</p>
-     *
-     * @return a {@link java.lang.Boolean} object.
-     */
     public Boolean getRegistered() {
         return isRegistered;
     }
 
-    /**
-     * <p>Getter for the field <code>lastStatusUpdateSuccessful</code>.</p>
-     *
-     * @return a {@link java.lang.Boolean} object.
-     */
-    public Boolean getLastStatusUpdateSuccessful() {
-        return lastStatusUpdateSuccessful;
-    }
-        
+
     /**
      * worker logic is implemented here
      *
      * @param body message body as object
-     * @throws WorkerException if any.
-     * @throws java.lang.Exception if any.
+     * @throws WorkerException whenever a worker is unable to finish its task.
      */
-    abstract public void handleRequest(QueueEvent body) throws Exception;
+    abstract public void handleRequest(QueueEvent body) throws WorkerException;
     
     /**
      * Here, the worker should decide if this requests concerns him in the first
@@ -122,14 +71,18 @@ public abstract class WorkerAbstract {
      * initializes this worker, will be called by the library
      *
      * @param properties properties
-     * @throws java.lang.Exception if any.
+     * @throws WorkerException when a problem occurs that prevents the Worker from working properly
      */
-    public final void initialize(Properties properties) throws Exception {
+    public final void initialize(Properties properties) throws WorkerException {
         this.properties = properties;
         workerId = properties.getProperty("graviton.workerId");
 
         if (shouldAutoRegister()) {
-            registerWorker();
+            try {
+                register();
+            } catch (GravitonCommunicationException e) {
+                throw new WorkerException(e);
+            }
         }
     }
 
@@ -147,32 +100,43 @@ public abstract class WorkerAbstract {
         if (!shouldHandleRequest(queueEvent)) {
             return;
         }
-        
-        if (shouldAutoUpdateStatus()) {
-            status = WorkerStatus.WORKING;
-            updateStatusAtUrl(statusUrl);
-        }
+
+        statusHandler = new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
 
         try {
+            if (shouldAutoUpdateStatus()) {
+                statusHandler.update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, WorkerStatus.WORKING);
+            }
+
             // call the worker
             handleRequest(queueEvent);
             
             if (shouldAutoUpdateStatus()) {
-                status = WorkerStatus.DONE;
-                updateStatusAtUrl(statusUrl);
+                statusHandler.update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, WorkerStatus.DONE);
             }
-            
         } catch (Exception e) {
             LOG.error("Error in worker: " + workerId, e);
 
             if (shouldAutoUpdateStatus()) {
-                status = WorkerStatus.FAILED;
-                updateStatusAtUrl(statusUrl, e.toString());
+                try {
+                    EventStatusInformation statusInformation = new EventStatusInformation();
+                    statusInformation.setWorkerId(this.workerId);
+                    statusInformation.setType(WorkerInformationType.ERROR);
+                    statusInformation.setContent(e.toString());
+                    EventStatus eventStatus = statusHandler.getEventStatusFromUrl(statusUrl);
+                    eventStatus.add(statusInformation);
+
+                    statusHandler.update(eventStatus, workerId, WorkerStatus.FAILED);
+                } catch (GravitonCommunicationException e1) {
+                    // don't log again in case if previous exception was already a GravitonCommunicationException.
+                    if (!(e instanceof GravitonCommunicationException)) {
+                        LOG.error("Unable to update worker status at '" + statusUrl + "'.");
+                    }
+                }
             }
-            
         }
-    }    
-    
+    }
+
     /**
      * can be overriden by worker implementation. should the lib automatically update the EventStatus in the backend?
      *
@@ -192,177 +156,58 @@ public abstract class WorkerAbstract {
     {
         return true;
     }
-    
+
     /**
-     * will be called after we're initialized, can contain some initial logic in the worker
+     * will be called after we're initialized, can contain some initial logic in the worker.
+     *
+     * @throws WorkerException when a problem occurs that prevents the Worker from working properly
      */
     public void onStartUp() throws WorkerException
     {
     }
 
     /**
-     * convenience function to set the status
-     *
-     * @param statusUrl status url
-     * @param status status which status
-     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl)} after setting status variable.
-     */
-    protected void setStatus(String statusUrl, WorkerStatus status) {
-        this.status = status;
-        this.updateStatusAtUrl(statusUrl);
-    }
-
-    /**
-     * Update status with a string based error information
-     *
-     * @param statusUrl status url
-     * @param status status which status
-     * @param errorInformation error information message
-     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl, String errorInformation)} after setting status variable.
-     */
-    protected void setStatus(String statusUrl, WorkerStatus status, String errorInformation) {
-        this.status = status;
-        this.updateStatusAtUrl(statusUrl, errorInformation);
-    }
-
-    /**
-     * update the status to our backend
-     *
-     * @param statusUrl status url
-     * @param status status which status
-     * @param informationEntry an EventStatusInformation instance that will be added to the information array
-     * @deprecated replaced by {@link #updateStatusAtUrl(String statusUrl, EventStatusInformation informationEntry)} after setting status variable.
-     */
-    protected void setStatus(String statusUrl, WorkerStatus status, EventStatusInformation informationEntry) {
-        this.status = status;
-        this.updateStatusAtUrl(statusUrl, informationEntry);
-    }
-
-    /**
-     * convenience function to update the status
-     *
-     * @param statusUrl status url
-     */
-    protected void updateStatusAtUrl(String statusUrl) {
-        this.updateStatusAtUrl(statusUrl, "");
-    }
-
-    /**
-     * Update status with a string based error information
-     *
-     * @param statusUrl url to status document
-     * @param errorInformation error information message
-     */
-    protected void updateStatusAtUrl(String statusUrl, String errorInformation) {
-        
-        EventStatusInformation statusInformation = null;
-        
-        if (errorInformation.length() > 0) {
-            statusInformation = new EventStatusInformation();
-            statusInformation.setWorkerId(this.workerId);
-            statusInformation.setType(WorkerInformationType.ERROR);
-            statusInformation.setContent(errorInformation);
-        }
-        
-        this.updateStatusAtUrl(statusUrl, statusInformation);
-    }
-    
-    /**
-     * update the status to our backend
-     *
-     * @param statusUrl url to status document
-     * @param informationEntry an EventStatusInformation instance that will be added to the information array
-     */
-    protected void updateStatusAtUrl(String statusUrl, EventStatusInformation informationEntry) {
-        try {
-            EventStatus eventStatus = getEventStatus(statusUrl);
-            modifyStatusForWorker(eventStatus);
-            addStatusInformation(informationEntry, eventStatus);
-            updateStatus(statusUrl, eventStatus);
-        } catch (WorkerException e) {
-            LOG.error("[F] Backend error on status update!", e);
-        } catch (Exception e) {
-            LOG.error("[F] Exception on status update!", e);
-        }
-    }
-
-    /**
      * registers our worker with the backend
      *
-     * @throws java.lang.Exception if any.
+     * @throws GravitonCommunicationException when registering worker is not possible
      */
-    protected void registerWorker() throws Exception {
+    protected void register() throws GravitonCommunicationException {
 
         WorkerRegister workerRegister = new WorkerRegister();
-        workerRegister.setId(this.workerId);
-        
-        List<String> subscriptionKeys = Arrays.asList(this.properties.getProperty("graviton.subscription").split(","));
+        workerRegister.setId(workerId);
+        workerRegister.setSubscription(getSubscriptions());
+
+        HttpResponse<String> response;
+        String registrationUrl = properties.getProperty("graviton.registerUrl");
+        try {
+            response = Unirest.put(registrationUrl)
+                .routeParam("workerId", workerId)
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .body(JSON.std.asString(workerRegister))
+                .asString();
+        } catch (UnirestException | IOException e) {
+            throw new GravitonCommunicationException("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'.", e);
+        }
+
+        LOG.info("Worker register response code: " + response.getStatus());
+
+        if (response.getStatus() == 204) {
+            isRegistered = Boolean.TRUE;
+        } else {
+            throw new GravitonCommunicationException("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'. Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
+        }        
+    }
+
+    private List<WorkerRegisterSubscription> getSubscriptions() {
+        List<String> subscriptionKeys = Arrays.asList(properties.getProperty("graviton.subscription").split(","));
         List<WorkerRegisterSubscription> subscriptions = new ArrayList<>();
-        
+
         for (String subscriptionKey: subscriptionKeys) {
             WorkerRegisterSubscription subscription = new WorkerRegisterSubscription();
             subscription.setEvent(subscriptionKey);
             subscriptions.add(subscription);
         }
-        
-        workerRegister.setSubscription(subscriptions);
-        
-        HttpResponse<String> response = 
-                Unirest.put(this.properties.getProperty("graviton.registerUrl"))
-                .routeParam("workerId", this.workerId)
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .body(JSON.std.asString(workerRegister))
-                .asString();
-
-        LOG.info("[*] Worker register response code: " + response.getStatus());
-
-        if (response.getStatus() == 204) {
-            isRegistered = Boolean.TRUE;
-        } else {
-            throw new WorkerException("Could not register worker on backend! Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
-        }        
+        return subscriptions;
     }
-
-    private void updateStatus(String statusUrl, EventStatus eventStatus) throws UnirestException, IOException, WorkerException {
-        // send the new status to the backend
-        HttpResponse<String> response = Unirest.put(statusUrl).header("Content-Type", "application/json").body(JSON.std.asString(eventStatus)).asString();
-
-        LOG.info("[x] Updated status to '" + status + "'");
-
-        if (response.getStatus() == 204) {
-            lastStatusUpdateSuccessful = Boolean.TRUE;
-            LOG.info("[x] Updated status to '" + status + "' on '" + statusUrl + "'");
-        } else {
-            lastStatusUpdateSuccessful = Boolean.FALSE;
-            throw new WorkerException("Could not update status on backend! Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
-        }
-    }
-
-    private void addStatusInformation(EventStatusInformation informationEntry, EventStatus eventStatus) {
-        // add information entry if present
-        if (informationEntry != null) {
-            // ensure list presence
-            if (eventStatus.getInformation() == null) {
-                eventStatus.setInformation(new ArrayList<EventStatusInformation>());
-            }
-            eventStatus.getInformation().add(informationEntry);
-        }
-    }
-
-    private void modifyStatusForWorker(EventStatus eventStatus) {
-        // modify our status in the status array
-        List<EventStatusStatus> wokerStates = eventStatus.getStatus();
-        for (EventStatusStatus wokerState : wokerStates) {
-            if (wokerState.getWorkerId().equals(this.workerId)) {
-                wokerState.setStatus(status);
-            }
-        }
-    }
-
-    private EventStatus getEventStatus(String statusUrl) throws UnirestException, IOException {
-        HttpResponse<String> response = Unirest.get(statusUrl).header("Accept", "application/json").asString();
-        return JSON.std.beanFrom(EventStatus.class, response.getBody());
-    }
-    
 }

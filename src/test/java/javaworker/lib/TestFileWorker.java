@@ -1,6 +1,7 @@
 package javaworker.lib;
 
 import com.github.libgraviton.workerbase.FileWorkerAbstract;
+import com.github.libgraviton.workerbase.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.WorkerException;
 import com.github.libgraviton.workerbase.model.GravitonFile;
 import com.github.libgraviton.workerbase.model.QueueEvent;
@@ -15,26 +16,31 @@ public class TestFileWorker extends FileWorkerAbstract {
     /**
      * worker logic is implemented here
      * 
-     * @param body message body as object
+     * @param queueEvent message body as object
      * 
      * @throws WorkerException
      */
-    public void handleRequest(QueueEvent qevent) throws Exception {
-        this.fileObj = this.getGravitonFile(qevent.getDocument().get$ref());        
-        this.actionPresent = this.isActionCommandPresent(this.fileObj, "doYourStuff");
-        this.removeFileActionCommand(qevent.getDocument().get$ref(), "doYourStuff");
+    public void handleRequest(QueueEvent queueEvent) throws WorkerException {
+        try {
+            fileObj = getGravitonFile(queueEvent.getDocument().get$ref());
+            actionPresent = isActionCommandPresent(this.fileObj, "doYourStuff");
+            removeFileActionCommand(queueEvent.getDocument().get$ref(), "doYourStuff");
+        } catch (GravitonCommunicationException e) {
+            e.printStackTrace();
+        }
+
     }
     
     /**
      * Here, the worker should decide if this requests concerns him in the first
      * place. If false is returned, we ignore the message..
      * 
-     * @param body message body as object
+     * @param queueEvent message body as object
      * 
      * @return boolean true if not, false if yes
      */
-    public boolean shouldHandleRequest(QueueEvent qevent) {
-        this.concerningRequestCalled = true;
+    public boolean shouldHandleRequest(QueueEvent queueEvent) {
+        concerningRequestCalled = true;
         return true;
     }
     

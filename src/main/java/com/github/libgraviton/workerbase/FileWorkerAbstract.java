@@ -5,16 +5,19 @@
 
 package com.github.libgraviton.workerbase;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import com.fasterxml.jackson.jr.ob.JSON;
+import com.fasterxml.jackson.jr.ob.JSONObjectException;
 import com.github.libgraviton.workerbase.model.GravitonFile;
 import com.github.libgraviton.workerbase.model.GravitonFileMetadata;
 import com.github.libgraviton.workerbase.model.GravitonFileMetadataAction;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,13 +36,18 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
     /**
      * gets file metadata from backend as a GravitonFile object
      *
-     * @param url the url of the object
-     * @throws java.lang.Exception if any.
+     * @param fileUrl the url of the object
+     * @throws GravitonCommunicationException if file could not be fetched.
      * @return file instance
      */
-    public GravitonFile getGravitonFile(String url) throws Exception {
-        HttpResponse<String> response = Unirest.get(url).header("Accept", "application/json").asString();
-        return JSON.std.beanFrom(GravitonFile.class, response.getBody());
+    public GravitonFile getGravitonFile(String fileUrl) throws GravitonCommunicationException {
+        try {
+            HttpResponse<String> response = Unirest.get(fileUrl).header("Accept", "application/json").asString();
+            return JSON.std.beanFrom(GravitonFile.class, response.getBody());
+        } catch (UnirestException | IOException e) {
+            throw new GravitonCommunicationException("Unable to GET graviton file from '" + fileUrl + "'.", e);
+        }
+
     }    
     
     /**
@@ -65,9 +73,9 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
      *
      * @param documentUrl document url
      * @param action action string to remove
-     * @throws java.lang.Exception if any.
+     * @throws GravitonCommunicationException when file action command could not be removed at Graviton
      */
-    public void removeFileActionCommand(String documentUrl, String action) throws Exception {
+    public void removeFileActionCommand(String documentUrl, String action) throws GravitonCommunicationException {
         // we will re-fetch again just to be sure.. this *really* should use PATCH ;-)
         GravitonFile gravitonFile = getGravitonFile(documentUrl);
         GravitonFileMetadata metadata = gravitonFile.getMetadata();
@@ -83,8 +91,13 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
         if (matchingActions.size() > 0) {
             metadataActions.removeAll(matchingActions);
 
-            Unirest.put(documentUrl).header("Content-Type", "application/json").body(JSON.std.asString(gravitonFile)).asString();
-            LOG.info("[*] Removed action property from " + documentUrl);
+            try {
+                Unirest.put(documentUrl).header("Content-Type", "application/json").body(JSON.std.asString(gravitonFile)).asString();
+            } catch (UnirestException | IOException e) {
+                throw new GravitonCommunicationException("Unable to remove file action command '" + action + "' from '" + documentUrl + "'.", e);
+            }
+
+            LOG.info("Removed action property from " + documentUrl);
         }        
     }
 }

@@ -1,5 +1,6 @@
 package com.github.libgraviton.workerbase.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -108,5 +109,12 @@ public class EventStatus {
      */
     public void setInformation(List<EventStatusInformation> information) {
         this.information = information;
-    }    
+    }
+
+    public void add(EventStatusInformation statusInformation) {
+        if (information == null) {
+            information = new ArrayList<>();
+        }
+        getInformation().add(statusInformation);
+    }
 }

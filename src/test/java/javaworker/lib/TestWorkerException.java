@@ -14,16 +14,16 @@ public class TestWorkerException extends WorkerAbstract {
     /**
      * worker logic is implemented here
      * 
-     * @param body message body as object
+     * @param queueEvent message body as object
      * 
      * @throws WorkerException
      */
-    public void handleRequest(QueueEvent qevent) throws Exception {
+    public void handleRequest(QueueEvent queueEvent) throws WorkerException {
         this.handleRequestCalled = true;
         if (this.throwWorkerException) {
             throw new WorkerException("Something bad happened!");
         } else {
-            throw new Exception("Another thing happened!");
+            throw new IllegalArgumentException("Another thing happened!");
         }
     }
     

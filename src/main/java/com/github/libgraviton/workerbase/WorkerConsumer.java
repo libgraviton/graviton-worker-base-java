@@ -51,7 +51,7 @@ public class WorkerConsumer extends DefaultConsumer {
     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
             throws IOException {
         String message = new String(body, "UTF-8");
-        LOG.info("[x] Received '" + envelope.getRoutingKey() + "':'" + message + "'");
+        LOG.info("Received '" + envelope.getRoutingKey() + "':'" + message + "'");
 
         // deserialize
         QueueEvent queueEvent = JSON.std.beanFrom(QueueEvent.class, message);
