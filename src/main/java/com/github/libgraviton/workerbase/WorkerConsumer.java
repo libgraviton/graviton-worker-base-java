@@ -4,8 +4,6 @@
 
 package com.github.libgraviton.workerbase;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.rabbitmq.client.AMQP;
@@ -14,6 +12,8 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
  * <p>WorkerConsumer class.</p>

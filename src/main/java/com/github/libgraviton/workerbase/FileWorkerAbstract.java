@@ -5,13 +5,7 @@
 
 package com.github.libgraviton.workerbase;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import com.fasterxml.jackson.jr.ob.JSON;
-import com.fasterxml.jackson.jr.ob.JSONObjectException;
 import com.github.libgraviton.workerbase.model.GravitonFile;
 import com.github.libgraviton.workerbase.model.GravitonFileMetadata;
 import com.github.libgraviton.workerbase.model.GravitonFileMetadataAction;
@@ -20,6 +14,10 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>Abstract FileWorkerAbstract class.</p>

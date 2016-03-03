@@ -4,12 +4,6 @@
 
 package com.github.libgraviton.workerbase;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.model.*;
 import com.mashape.unirest.http.HttpResponse;
@@ -17,6 +11,12 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * <p>Abstract WorkerAbstract class.</p>
@@ -120,7 +120,7 @@ public abstract class WorkerAbstract {
             if (shouldAutoUpdateStatus()) {
                 try {
                     EventStatusInformation statusInformation = new EventStatusInformation();
-                    statusInformation.setWorkerId(this.workerId);
+                    statusInformation.setWorkerId(workerId);
                     statusInformation.setType(WorkerInformationType.ERROR);
                     statusInformation.setContent(e.toString());
                     EventStatus eventStatus = statusHandler.getEventStatusFromUrl(statusUrl);
