@@ -115,7 +115,7 @@ public abstract class WorkerAbstract {
                 try {
                     EventStatus eventStatus = statusHandler.getEventStatusFromUrl(statusUrl);
                     eventStatus.add(new WorkerFeedback(workerId, InformationType.ERROR, e.toString()));
-                    statusHandler.update(eventStatus, workerId, Status.FAILED);
+                    update(eventStatus, workerId, Status.FAILED);
                 } catch (GravitonCommunicationException e1) {
                     // don't log again in case if previous exception was already a GravitonCommunicationException.
                     if (!(e instanceof GravitonCommunicationException)) {
@@ -126,22 +126,26 @@ public abstract class WorkerAbstract {
         }
     }
 
-    private void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {
+    protected void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {
         if (!shouldHandleRequest(queueEvent)) {
             return;
         }
         statusHandler = new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
 
         if (shouldAutoUpdateStatus()) {
-            statusHandler.update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, Status.WORKING);
+            update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, Status.WORKING);
         }
 
         // call the worker
         handleRequest(queueEvent);
 
         if (shouldAutoUpdateStatus()) {
-            statusHandler.update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, Status.DONE);
+            update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, Status.DONE);
         }
+    }
+
+    protected void update(EventStatus eventStatus, String workerId, Status status) throws GravitonCommunicationException {
+        statusHandler.update(eventStatus, workerId, status);
     }
 
     /**
@@ -206,7 +210,7 @@ public abstract class WorkerAbstract {
         }        
     }
 
-    private List<WorkerRegisterSubscription> getSubscriptions() {
+    protected List<WorkerRegisterSubscription> getSubscriptions() {
         List<String> subscriptionKeys = Arrays.asList(properties.getProperty("graviton.subscription").split(","));
         List<WorkerRegisterSubscription> subscriptions = new ArrayList<>();
 
