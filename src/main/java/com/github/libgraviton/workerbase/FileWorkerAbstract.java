@@ -35,19 +35,15 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
 
     private GravitonFile gravitonFile;
 
-    public boolean shouldHandleRequest(QueueEvent queueEvent) throws WorkerException {
+    public boolean shouldHandleRequest(QueueEvent queueEvent) throws WorkerException, GravitonCommunicationException {
         String documentUrl = queueEvent.getDocument().get$ref();
         List<String> actions = getActionsOfInterest(queueEvent);
 
         Boolean actionOfInterestPresent = false;
         for (String action: actions) {
-            try {
-                if (isActionCommandPresent(getGravitonFile(documentUrl), action)) {
-                    removeFileActionCommand(documentUrl, action);
-                    actionOfInterestPresent = true;
-                }
-            } catch (GravitonCommunicationException e) {
-                throw new WorkerException("Could not remove action '" + action + "' at url '" + documentUrl + "'.", e);
+            if (isActionCommandPresent(getGravitonFile(documentUrl), action)) {
+                removeFileActionCommand(documentUrl, action);
+                actionOfInterestPresent = true;
             }
         }
         return actionOfInterestPresent;

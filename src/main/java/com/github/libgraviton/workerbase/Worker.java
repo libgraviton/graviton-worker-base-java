@@ -6,6 +6,7 @@ package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
+import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -47,8 +48,9 @@ public class Worker {
      *
      * @param worker worker instance
      * @throws WorkerException if setup failed.
+     * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
      */
-    public Worker(WorkerAbstract worker) throws WorkerException {
+    public Worker(WorkerAbstract worker) throws WorkerException, GravitonCommunicationException {
         try {
             loadProperties();
         } catch (IOException e) {

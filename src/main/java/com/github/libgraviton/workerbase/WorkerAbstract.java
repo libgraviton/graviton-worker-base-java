@@ -64,8 +64,9 @@ public abstract class WorkerAbstract {
      *
      * @param body message body as object
      * @throws WorkerException whenever a worker is unable to finish its task.
+     * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
      */
-    abstract public void handleRequest(QueueEvent body) throws WorkerException;
+    abstract public void handleRequest(QueueEvent body) throws WorkerException, GravitonCommunicationException;
     
     /**
      * Here, the worker should decide if this requests concerns him in the first
@@ -74,25 +75,23 @@ public abstract class WorkerAbstract {
      * @param body queueevent object
      * @return boolean true if not, false if yes
      * @throws WorkerException whenever a worker is unable to determine if it should handle the request
+     * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
      */
-    abstract public boolean shouldHandleRequest(QueueEvent body) throws WorkerException;
+    abstract public boolean shouldHandleRequest(QueueEvent body) throws WorkerException, GravitonCommunicationException;
     
     /**
      * initializes this worker, will be called by the library
      *
      * @param properties properties
      * @throws WorkerException when a problem occurs that prevents the Worker from working properly
+     * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
      */
-    public final void initialize(Properties properties) throws WorkerException {
+    public final void initialize(Properties properties) throws WorkerException, GravitonCommunicationException  {
         this.properties = properties;
         workerId = properties.getProperty("graviton.workerId");
 
         if (shouldAutoRegister()) {
-            try {
-                register();
-            } catch (GravitonCommunicationException e) {
-                throw new WorkerException(e);
-            }
+            register();
         }
     }
 

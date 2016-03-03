@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import java.io.File;
 import java.net.URL;
 
+import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -134,10 +135,10 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     }
     
     @SuppressWarnings("unchecked")
-    @Test (expected = WorkerException.class)
+    @Test (expected = GravitonCommunicationException.class)
     public void testWorkerRegistrationError() throws Exception {
         
-        /*** change mocking so we get 400 status on worker registration -> worker shall throw WorkerException ***/
+        /*** change mocking so we get 400 status on worker registration -> worker shall throw GravitonCommunicationException ***/
         RequestBodyEntity bodyEntityRegister = mock(RequestBodyEntity.class);
         
         HttpResponse<String> stringResponseRegister = (HttpResponse<String>) mock(HttpResponse.class);
@@ -168,7 +169,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     @Test
     public void testBackenStatusUpdateError() throws Exception {
         
-        /*** change mocking so we get 400 status on worker registration -> worker shall throw WorkerException ***/
+        /*** change mocking so we get 400 status on worker registration -> worker shall throw GravitonCommunicationException ***/
         RequestBodyEntity bodyEntityRegister = mock(RequestBodyEntity.class);
         
         HttpResponse<String> stringResponseRegister = (HttpResponse<String>) mock(HttpResponse.class);
@@ -194,7 +195,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker = getWrappedWorker(testWorker);
         worker.run();
         
-        // let worker throw WorkerException        
+        // let worker throw CommunicationException
         Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
