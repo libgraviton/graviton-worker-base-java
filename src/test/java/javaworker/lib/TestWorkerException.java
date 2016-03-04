@@ -6,7 +6,6 @@ import com.github.libgraviton.workerbase.model.QueueEvent;
 
 public class TestWorkerException extends WorkerAbstract {
 
-    public boolean concerningRequestCalled = false;
     public boolean handleRequestCalled = false;
     public boolean throwWorkerException = true;
     public boolean doAutoStuff = true;

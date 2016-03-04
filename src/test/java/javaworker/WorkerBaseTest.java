@@ -9,6 +9,7 @@ import java.net.URL;
 
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +18,6 @@ import org.mockito.AdditionalMatchers;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.request.HttpRequestWithBody;
@@ -215,12 +215,23 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         .thenReturn(vcapCreds);        
         
         worker.run();
-        
+
         assertEquals("test", worker.getProperties().getProperty("queue.host"));
         assertEquals("32321", worker.getProperties().getProperty("queue.port"));
         assertEquals("hansuser", worker.getProperties().getProperty("queue.username"));
         assertEquals("hans22", worker.getProperties().getProperty("queue.password"));
         assertEquals("hanshost", worker.getProperties().getProperty("queue.vhost"));        
+    }
+
+    @Test(expected = GravitonCommunicationException.class)
+    public void testFailedWorkerRegistration() throws Exception {
+        when(Unirest.put(contains("/event/worker")).body(anyString()).asString())
+                .thenThrow(new UnirestException("Something strange but beautiful happened"));
+
+        TestWorkerException testWorker = new TestWorkerException();
+        worker = getWrappedWorker(testWorker);
+        worker.run();
+
     }
 
 }

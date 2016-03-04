@@ -8,7 +8,6 @@ import static org.mockito.Mockito.*;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
-import static org.powermock.api.mockito.PowerMockito.verifyZeroInteractions;
 
 import java.io.File;
 import java.net.URL;
@@ -26,8 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalMatchers;
-import org.mockito.BDDMockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -94,6 +91,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         
         assertEquals("16f52c4b00523e2ba27480ce6905ed1d", testWorker.fileObj.getId());
         assertEquals("dude", testWorker.fileObj.getLinks().get(0).getType());
+        assertEquals(testWorker.fileObj.getLinks().get(0), testWorker.fileObj.getLinks("dude").get(0));
         assertEquals("http://localhost:8000/dude", testWorker.fileObj.getLinks().get(0).get$ref());
         assertEquals(new Integer(200), testWorker.fileObj.metadata.getSize());
         assertEquals("image/jpeg", testWorker.fileObj.metadata.getMime());

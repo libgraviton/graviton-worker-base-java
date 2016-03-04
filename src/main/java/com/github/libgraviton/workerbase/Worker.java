@@ -138,11 +138,9 @@ public class Worker {
         }
 
         // overrides?
-        String propertiesPath;
-        if (System.getProperty("propFile", "").equals("")) {
+        String propertiesPath = System.getProperty("propFile");
+        if (propertiesPath.equals("")) {
             propertiesPath = DEFAULT_APPLICATION_PROPERTIES_PATH;
-        } else {
-            propertiesPath = System.getProperty("propFile");
         }
 
         try (FileInputStream appProperties = new FileInputStream(propertiesPath)) {
