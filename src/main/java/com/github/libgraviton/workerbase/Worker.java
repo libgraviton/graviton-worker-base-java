@@ -34,6 +34,7 @@ public class Worker {
     private static final Logger LOG = LoggerFactory.getLogger(Worker.class);
 
     private static final String DEFAULT_APPLICATION_PROPERTIES_PATH = "etc/app.properties";
+    private static final String SYSTEM_PROPERTY = "propFile";
 
     /**
      * properties
@@ -138,8 +139,8 @@ public class Worker {
         }
 
         // overrides?
-        String propertiesPath = System.getProperty("propFile");
-        if (propertiesPath.equals("")) {
+        String propertiesPath = System.getProperty(SYSTEM_PROPERTY);
+        if (propertiesPath == null) {
             propertiesPath = DEFAULT_APPLICATION_PROPERTIES_PATH;
         }
 
