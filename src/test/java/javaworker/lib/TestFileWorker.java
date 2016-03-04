@@ -12,7 +12,8 @@ import java.util.List;
 public class TestFileWorker extends FileWorkerAbstract {
 
     public boolean concerningRequestCalled = false;
-    
+    public boolean shouldHandleRequestMocked = true;
+
     public GravitonFile fileObj;
     public boolean actionPresent;
     
@@ -33,18 +34,21 @@ public class TestFileWorker extends FileWorkerAbstract {
         }
 
     }
-    
+
     /**
      * Here, the worker should decide if this requests concerns him in the first
      * place. If false is returned, we ignore the message..
-     * 
+     *
      * @param queueEvent message body as object
-     * 
+     *
      * @return boolean true if not, false if yes
      */
-    public boolean shouldHandleRequest(QueueEvent queueEvent) {
-        concerningRequestCalled = true;
-        return true;
+    public boolean shouldHandleRequest(QueueEvent queueEvent) throws WorkerException, GravitonCommunicationException {
+        if (shouldHandleRequestMocked) {
+            concerningRequestCalled = true;
+            return true;
+        }
+        return super.shouldHandleRequest(queueEvent);
     }
 
     @Override

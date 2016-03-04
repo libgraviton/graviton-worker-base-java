@@ -85,7 +85,7 @@ public class GravitonFile {
      * @since 0.7.0
      */
     public List<Link> getLinks(String type) {
-        List<Link> links = new ArrayList<Link>();
+        List<Link> links = new ArrayList<>();
         for(Link link : this.getLinks()) {
             if(link.getType().equals(type)) {
                 links.add(link);

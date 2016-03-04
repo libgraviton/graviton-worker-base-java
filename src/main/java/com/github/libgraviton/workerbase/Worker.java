@@ -32,7 +32,7 @@ import java.util.Properties;
 public class Worker {
 
     private static final Logger LOG = LoggerFactory.getLogger(Worker.class);
-    
+
     private static final String DEFAULT_APPLICATION_PROPERTIES_PATH = "etc/app.properties";
 
     /**

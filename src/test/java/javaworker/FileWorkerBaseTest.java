@@ -6,16 +6,28 @@ import static org.mockito.Matchers.contains;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.Mockito.*;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.verifyStatic;
+import static org.powermock.api.mockito.PowerMockito.verifyZeroInteractions;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 
+import com.github.libgraviton.workerbase.helper.WorkerUtil;
+import com.github.libgraviton.workerbase.model.GravitonRef;
+import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.github.libgraviton.workerbase.model.file.GravitonFile;
 import com.github.libgraviton.workerbase.model.file.Metadata;
+import com.github.libgraviton.workerbase.model.file.MetadataAction;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalMatchers;
+import org.mockito.BDDMockito;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -28,7 +40,7 @@ import com.rabbitmq.client.Envelope;
 import javaworker.lib.TestFileWorker;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({com.rabbitmq.client.ConnectionFactory.class,Unirest.class})
+@PrepareForTest({com.rabbitmq.client.ConnectionFactory.class,Unirest.class, WorkerUtil.class})
 public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
     @SuppressWarnings("unchecked")
@@ -127,6 +139,79 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
                         contains("\"command\":\"anotherCommand\"")
                         )
                 );           
+    }
+
+    @Test
+    public void testCachedGravitonFileFetching() throws Exception {
+        GravitonFile file = new GravitonFile();
+        file.setId("someTestId");
+        mockStatic(WorkerUtil.class);
+        when(WorkerUtil.getGravitonFile(anyString())).thenReturn(file);
+
+        String file1Url = "testFile1";
+        String file2Url = "testFile2";
+        TestFileWorker testFileWorker = new TestFileWorker();
+
+        GravitonFile firstFile = testFileWorker.getGravitonFile(file1Url);
+        verifyStatic();
+        assertEquals(file, firstFile);
+
+        testFileWorker.getGravitonFile(file1Url);
+        verifyStatic(never());
+
+        testFileWorker.getGravitonFile(file2Url);
+        verifyStatic();
+    }
+
+    @Test
+    public void testShouldHandleRequestWithoutActions() throws Exception {
+        TestFileWorker testFileWorker = spy(new TestFileWorker());
+        testFileWorker.shouldHandleRequestMocked = false;
+        QueueEvent queueEvent = new QueueEvent();
+        GravitonRef gravitonRef = new GravitonRef();
+        String documentUrl = "testDocumentUrl";
+        gravitonRef.set$ref(documentUrl);
+        queueEvent.setDocument(new GravitonRef());
+        List<String> noActions = Arrays.asList();
+
+        doReturn(noActions).when(testFileWorker).getActionsOfInterest(queueEvent);
+        doNothing().when(testFileWorker).removeFileActionCommand(eq(documentUrl), anyString());
+
+        assertFalse(testFileWorker.shouldHandleRequest(queueEvent));
+        verify(testFileWorker, never()).removeFileActionCommand(eq(documentUrl), anyString());
+    }
+
+    @Test
+    public void testShouldHandleRequestWithActions() throws Exception {
+        TestFileWorker testFileWorker = spy(new TestFileWorker());
+        testFileWorker.shouldHandleRequestMocked = false;
+        QueueEvent queueEvent = new QueueEvent();
+        GravitonRef gravitonRef = new GravitonRef();
+        String documentUrl = "testDocumentUrl";
+        gravitonRef.set$ref(documentUrl);
+        queueEvent.setDocument(gravitonRef);
+        String action1 = "action1";
+        String action2 = "action2";
+        List<String> noActions = Arrays.asList(action1, action2);
+
+        GravitonFile file = new GravitonFile();
+        file.setId("someTestId");
+        Metadata metadata = new Metadata();
+        MetadataAction metadataAction1 = new MetadataAction();
+        metadataAction1.setCommand(action1);
+        MetadataAction metadataAction2 = new MetadataAction();
+        metadataAction2.setCommand(action2);
+        metadata.setAction(Arrays.asList(metadataAction1, metadataAction2));
+        file.setMetadata(metadata);
+
+        mockStatic(WorkerUtil.class);
+        when(WorkerUtil.getGravitonFile(anyString())).thenReturn(file);
+
+        doReturn(noActions).when(testFileWorker).getActionsOfInterest(queueEvent);
+        doNothing().when(testFileWorker).removeFileActionCommand(eq(documentUrl), anyString());
+
+        assertTrue(testFileWorker.shouldHandleRequest(queueEvent));
+        verify(testFileWorker, times(2)).removeFileActionCommand(eq(documentUrl), anyString());
     }
 
 }
