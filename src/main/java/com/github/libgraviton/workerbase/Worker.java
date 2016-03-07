@@ -4,24 +4,23 @@
 
 package com.github.libgraviton.workerbase;
 
+import com.fasterxml.jackson.jr.ob.JSON;
+import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
+import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import com.github.libgraviton.workerbase.exception.WorkerException;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-
-import org.apache.commons.io.FilenameUtils;
-
-import com.fasterxml.jackson.jr.ob.JSON;
-import com.fasterxml.jackson.jr.ob.JSONObjectException;
-import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
-import com.rabbitmq.client.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * <p>Worker class.</p>
@@ -33,6 +32,9 @@ import org.slf4j.LoggerFactory;
 public class Worker {
 
     private static final Logger LOG = LoggerFactory.getLogger(Worker.class);
+
+    private static final String DEFAULT_APPLICATION_PROPERTIES_PATH = "etc/app.properties";
+    private static final String SYSTEM_PROPERTY = "propFile";
 
     /**
      * properties
@@ -48,10 +50,15 @@ public class Worker {
      * constructor
      *
      * @param worker worker instance
-     * @throws java.lang.Exception if any.
+     * @throws WorkerException if setup failed.
+     * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
      */
-    public Worker(WorkerAbstract worker) throws Exception {
-        this.loadProperties();
+    public Worker(WorkerAbstract worker) throws WorkerException, GravitonCommunicationException {
+        try {
+            loadProperties();
+        } catch (IOException e) {
+            throw new WorkerException(e);
+        }
         worker.initialize(properties);
         worker.onStartUp();
         this.worker = worker;
@@ -60,11 +67,11 @@ public class Worker {
     /**
      * initializes all
      *
-     * @throws java.lang.Exception if any.
+     * @throws IOException if running the Worker failed.
      */
-    public void run() throws Exception {
-        this.applyVcapConfig();
-        this.connectToQueue();
+    public void run() throws IOException {
+        applyVcapConfig();
+        connectToQueue();
     }
 
     /**
@@ -73,32 +80,31 @@ public class Worker {
      * @throws java.io.IOException
      */
     private void connectToQueue() throws IOException {
-
-        ConnectionFactory factory = this.getConnectionFactory();
-        factory.setHost(this.properties.getProperty("queue.host"));
-        factory.setPort(Integer.parseInt(this.properties.getProperty("queue.port")));
-        factory.setUsername(this.properties.getProperty("queue.username"));
-        factory.setPassword(this.properties.getProperty("queue.password"));
-        factory.setVirtualHost(this.properties.getProperty("queue.vhost"));
+        ConnectionFactory factory = getConnectionFactory();
+        factory.setHost(properties.getProperty("queue.host"));
+        factory.setPort(Integer.parseInt(properties.getProperty("queue.port")));
+        factory.setUsername(properties.getProperty("queue.username"));
+        factory.setPassword(properties.getProperty("queue.password"));
+        factory.setVirtualHost(properties.getProperty("queue.vhost"));
         factory.setAutomaticRecoveryEnabled(true);
 
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        String exchangeName = this.properties.getProperty("queue.exchangeName");
-        List<String> bindKeys = Arrays.asList(this.properties.getProperty("queue.bindKey").split(","));
+        String exchangeName = properties.getProperty("queue.exchangeName");
+        List<String> bindKeys = Arrays.asList(properties.getProperty("queue.bindKey").split(","));
         
         channel.exchangeDeclare(exchangeName, "topic", true);
         String queueName = channel.queueDeclare().getQueue();
 
         for (String bindKey : bindKeys) {
             channel.queueBind(queueName, exchangeName, bindKey);
-            LOG.info("[*] Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey + "'");
+            LOG.info("Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey + "'");
         }
-        LOG.info("[*] Waiting for messages...");
+        LOG.info("Waiting for messages...");
 
         channel.basicQos(2);
-        channel.basicConsume(queueName, true, this.getWorkerConsumer(channel, worker));
+        channel.basicConsume(queueName, true, getWorkerConsumer(channel, worker));
     }
     
     /**
@@ -125,67 +131,49 @@ public class Worker {
     /**
      * loads the properties
      */
-    private void loadProperties() {
-        this.properties = new Properties();
-        try {
-            
-            // load defaults
-            InputStream defaultProps = this.getClass().getClassLoader().getResourceAsStream("default.properties");
-            this.properties.load(defaultProps);
-            defaultProps.close();
-            
-            // overrides?
-            try {
-            
-                String propertiesPath;
-                if (System.getProperty("propFile", "").equals("")) {
-                    String currentPath = Worker.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-                    String decodedPath = URLDecoder.decode(currentPath, "UTF-8");
-                    String propertiesBasename = FilenameUtils.getFullPath(decodedPath);
-                    propertiesPath = propertiesBasename + "app.properties";
-                } else {
-                    propertiesPath = System.getProperty("propFile");
-                }
-                
-                FileInputStream appProps = new FileInputStream(propertiesPath);
-                this.properties.load(appProps);
-                appProps.close();
-
-                // let system properties override everything..
-                this.properties.putAll(System.getProperties());
-
-                LOG.info(" [*] Loaded app.properties from " + propertiesPath);
-                
-            } catch (FileNotFoundException e) {
-                // no problem..
-            }
-            
-        } catch (Exception e1) {
-            LOG.error("Could not load properties", e1);
+    private void loadProperties() throws IOException {
+        properties = new Properties();
+        // load defaults
+        try (InputStream defaultProperties = getClass().getClassLoader().getResourceAsStream("default.properties")) {
+            properties.load(defaultProperties);
         }
+
+        // overrides?
+        String propertiesPath = System.getProperty(SYSTEM_PROPERTY);
+        if (propertiesPath == null) {
+            propertiesPath = DEFAULT_APPLICATION_PROPERTIES_PATH;
+        }
+
+        try (FileInputStream appProperties = new FileInputStream(propertiesPath)) {
+            properties.load(appProperties);
+        } catch (IOException e) {
+            LOG.debug("No overriding properties found at '" + propertiesPath + "'.");
+        }
+
+        // let system properties override everything..
+        properties.putAll(System.getProperties());
+
+        LOG.info("Loaded app.properties from " + propertiesPath);
     }
 
     /**
      * Let's see if we have VCAP ENV vars that we should apply to configuration
-     * 
-     * @return void
-     * @throws IOException
-     * @throws JSONObjectException
+     *
      */
-    private void applyVcapConfig() throws Exception {
+    private void applyVcapConfig() throws IOException {
         String vcap = this.getVcap();
         if (vcap != null) {
             DeferredMap vcapConf = (DeferredMap) JSON.std.anyFrom(vcap);
             if (vcapConf.containsKey("rabbitmq-3.0")) {
                 @SuppressWarnings("unchecked")
-                DeferredMap vcapCreds = (DeferredMap) ((ArrayList<DeferredMap>) vcapConf.get("rabbitmq-3.0")).get(0);
+                DeferredMap vcapCreds = ((ArrayList<DeferredMap>) vcapConf.get("rabbitmq-3.0")).get(0);
                 vcapCreds = (DeferredMap) vcapCreds.get("credentials");
 
-                this.properties.setProperty("queue.host", vcapCreds.get("host").toString());
-                this.properties.setProperty("queue.port", vcapCreds.get("port").toString());
-                this.properties.setProperty("queue.username", vcapCreds.get("username").toString());
-                this.properties.setProperty("queue.password", vcapCreds.get("password").toString());
-                this.properties.setProperty("queue.vhost", vcapCreds.get("vhost").toString());
+                properties.setProperty("queue.host", vcapCreds.get("host").toString());
+                properties.setProperty("queue.port", vcapCreds.get("port").toString());
+                properties.setProperty("queue.username", vcapCreds.get("username").toString());
+                properties.setProperty("queue.password", vcapCreds.get("password").toString());
+                properties.setProperty("queue.vhost", vcapCreds.get("vhost").toString());
             }
         }
     }
@@ -196,7 +184,7 @@ public class Worker {
      * @return properties
      */
     public Properties getProperties() {
-        return this.properties;
+        return properties;
     }
     
     /**

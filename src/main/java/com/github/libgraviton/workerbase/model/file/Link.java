@@ -1,12 +1,12 @@
-package com.github.libgraviton.workerbase.model;
+package com.github.libgraviton.workerbase.model.file;
 
 /**
- * <p>GravitonFileLinks class.</p>
+ * <p>Link class.</p>
  *
  * @author Dario Nuevo
  * @version $Id: $Id
  */
-public class GravitonFileLinks {
+public class Link {
     public String type;
     public String $ref;
     

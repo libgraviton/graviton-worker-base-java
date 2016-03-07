@@ -1,12 +1,12 @@
-package com.github.libgraviton.workerbase.model;
+package com.github.libgraviton.workerbase.model.file;
 
 /**
- * <p>GravitonFileMetadataAction class.</p>
+ * <p>MetadataAction class.</p>
  *
  * @author Dario Nuevo
  * @version $Id: $Id
  */
-public class GravitonFileMetadataAction {
+public class MetadataAction {
     public String command;
     
     /**

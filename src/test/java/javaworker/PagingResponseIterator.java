@@ -1,7 +1,7 @@
 /**
  * iterator implementation that makes using Graviton pagination a breeze
  */
-package com.github.libgraviton.workerbase;
+package javaworker;
 
 import java.net.URLDecoder;
 import java.util.Iterator;

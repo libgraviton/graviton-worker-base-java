@@ -4,8 +4,6 @@
 
 package com.github.libgraviton.workerbase;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.rabbitmq.client.AMQP;
@@ -14,6 +12,8 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
  * <p>WorkerConsumer class.</p>
@@ -51,13 +51,13 @@ public class WorkerConsumer extends DefaultConsumer {
     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
             throws IOException {
         String message = new String(body, "UTF-8");
-        LOG.info("[x] Received '" + envelope.getRoutingKey() + "':'" + message + "'");
+        LOG.info("Received '" + envelope.getRoutingKey() + "':'" + message + "'");
 
-        // deserialize        
-        QueueEvent qevent = JSON.std.beanFrom(QueueEvent.class, message);
+        // deserialize
+        QueueEvent queueEvent = JSON.std.beanFrom(QueueEvent.class, message);
         
         // give to worker
-        this.worker.handleDelivery(consumerTag, qevent);
+        worker.handleDelivery(consumerTag, queueEvent);
     }
 
 

@@ -7,7 +7,9 @@ import static org.mockito.Mockito.*;
 import java.io.File;
 import java.net.URL;
 
+import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +18,6 @@ import org.mockito.AdditionalMatchers;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.github.libgraviton.workerbase.WorkerException;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.request.HttpRequestWithBody;
@@ -50,7 +51,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         
         verify(stringResponse, times(4)).getStatus();
         
-        assertTrue(testWorker.concerningRequestCalled);
+        assertTrue(testWorker.shouldHandleRequestCalled);
 
         QueueEvent queueEvent = testWorker.getHandledQueueEvent();
         assertEquals("documents.core.app.create", queueEvent.getEvent());
@@ -111,7 +112,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         verify(requestBodyMock, times(1)).body(
                 AdditionalMatchers.and(
                         contains("\"status\":\"failed\",\"workerId\":\"java-test\""),
-                        contains("\"content\":\"com.github.libgraviton.workerbase.WorkerException: Something bad happened!\"")
+                        contains("\"content\":\"com.github.libgraviton.workerbase.exception.WorkerException: Something bad happened!\"")
                         )
                 );        
     }
@@ -134,10 +135,10 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     }
     
     @SuppressWarnings("unchecked")
-    @Test (expected = WorkerException.class)
+    @Test (expected = GravitonCommunicationException.class)
     public void testWorkerRegistrationError() throws Exception {
         
-        /*** change mocking so we get 400 status on worker registration -> worker shall throw WorkerException ***/
+        /*** change mocking so we get 400 status on worker registration -> worker shall throw GravitonCommunicationException ***/
         RequestBodyEntity bodyEntityRegister = mock(RequestBodyEntity.class);
         
         HttpResponse<String> stringResponseRegister = (HttpResponse<String>) mock(HttpResponse.class);
@@ -168,7 +169,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     @Test
     public void testBackenStatusUpdateError() throws Exception {
         
-        /*** change mocking so we get 400 status on worker registration -> worker shall throw WorkerException ***/
+        /*** change mocking so we get 400 status on worker registration -> worker shall throw GravitonCommunicationException ***/
         RequestBodyEntity bodyEntityRegister = mock(RequestBodyEntity.class);
         
         HttpResponse<String> stringResponseRegister = (HttpResponse<String>) mock(HttpResponse.class);
@@ -194,15 +195,12 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker = getWrappedWorker(testWorker);
         worker.run();
         
-        // let worker throw WorkerException        
+        // let worker throw CommunicationException
         Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
         workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes()); 
-
-        // TODO mwegener
-        assertFalse(testWorker.getLastStatusUpdateSuccessful());
-    }    
+    }
     
     @Test
     public void testVcapConfiguration() throws Exception {
@@ -217,12 +215,23 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         .thenReturn(vcapCreds);        
         
         worker.run();
-        
+
         assertEquals("test", worker.getProperties().getProperty("queue.host"));
         assertEquals("32321", worker.getProperties().getProperty("queue.port"));
         assertEquals("hansuser", worker.getProperties().getProperty("queue.username"));
         assertEquals("hans22", worker.getProperties().getProperty("queue.password"));
         assertEquals("hanshost", worker.getProperties().getProperty("queue.vhost"));        
+    }
+
+    @Test(expected = GravitonCommunicationException.class)
+    public void testFailedWorkerRegistration() throws Exception {
+        when(Unirest.put(contains("/event/worker")).body(anyString()).asString())
+                .thenThrow(new UnirestException("Something strange but beautiful happened"));
+
+        TestWorkerException testWorker = new TestWorkerException();
+        worker = getWrappedWorker(testWorker);
+        worker.run();
+
     }
 
 }

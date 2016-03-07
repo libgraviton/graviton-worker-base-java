@@ -1,12 +1,11 @@
 package javaworker.lib;
 
 import com.github.libgraviton.workerbase.WorkerAbstract;
-import com.github.libgraviton.workerbase.WorkerException;
+import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
 public class TestWorkerException extends WorkerAbstract {
 
-    public boolean concerningRequestCalled = false;
     public boolean handleRequestCalled = false;
     public boolean throwWorkerException = true;
     public boolean doAutoStuff = true;
@@ -14,29 +13,29 @@ public class TestWorkerException extends WorkerAbstract {
     /**
      * worker logic is implemented here
      * 
-     * @param body message body as object
+     * @param queueEvent message body as object
      * 
      * @throws WorkerException
      */
-    public void handleRequest(QueueEvent qevent) throws Exception {
+    public void handleRequest(QueueEvent queueEvent) throws WorkerException {
         this.handleRequestCalled = true;
         if (this.throwWorkerException) {
             throw new WorkerException("Something bad happened!");
         } else {
-            throw new Exception("Another thing happened!");
+            throw new IllegalArgumentException("Another thing happened!");
         }
     }
     
-    public boolean isConcerningRequest(QueueEvent qevent) {
+    public boolean shouldHandleRequest(QueueEvent qevent) {
         return true;
     }
     
-    public Boolean doAutoUpdateStatus()
+    public Boolean shouldAutoUpdateStatus()
     {
         return this.doAutoStuff;
     }
    
-    public Boolean doAutoRegister()
+    public Boolean shouldAutoRegister()
     {
         return this.doAutoStuff;
     }

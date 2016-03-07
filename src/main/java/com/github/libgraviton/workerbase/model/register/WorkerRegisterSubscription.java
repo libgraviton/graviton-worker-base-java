@@ -1,4 +1,4 @@
-package com.github.libgraviton.workerbase.model;
+package com.github.libgraviton.workerbase.model.register;
 
 /**
  * <p>WorkerRegisterSubscription class.</p>

@@ -1,12 +1,12 @@
-package com.github.libgraviton.workerbase.model;
+package com.github.libgraviton.workerbase.model.file;
 
 /**
- * <p>GravitonFileMetadataAddProperty class.</p>
+ * <p>MetadataAddProperty class.</p>
  *
  * @author Samuel Ackermann
  * @version $Id: $Id
  */
-public class GravitonFileMetadataAddProperty {
+public class MetadataAddProperty {
     public String name;
     public String value;
 
