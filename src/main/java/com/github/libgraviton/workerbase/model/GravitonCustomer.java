@@ -76,9 +76,6 @@ public class GravitonCustomer {
      * @return a boolean.
      */
     public boolean isCoreCustomer() {
-        boolean retVal = false;
-        if (this.recordOrigin instanceof String && this.recordOrigin.equals("core"))
-            retVal = true;
-        return retVal;
+        return RecordOrigin.CORE.equals(recordOrigin);
     }
 }

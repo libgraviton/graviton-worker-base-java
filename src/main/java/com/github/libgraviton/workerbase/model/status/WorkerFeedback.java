@@ -1,18 +1,34 @@
-package com.github.libgraviton.workerbase.model;
+package com.github.libgraviton.workerbase.model.status;
 
 /**
- * <p>EventStatusInformation class.</p>
+ * <p>WorkerFeedback class.</p>
  *
  * @author Dario Nuevo
  * @version $Id: $Id
  */
-public class EventStatusInformation {
+public class WorkerFeedback {
 
     public String workerId;
     public String content;
-    public String type;
-    public String $ref;    
-    
+    public InformationType type;
+    public String $ref;
+
+    public WorkerFeedback() {
+    }
+
+    public WorkerFeedback(String workerId, InformationType informationType, String content) {
+        this.workerId = workerId;
+        this.type = informationType;
+        this.content = content;
+    }
+
+    public WorkerFeedback(String workerId, InformationType informationType, String content, String ref) {
+        this.workerId = workerId;
+        this.type = informationType;
+        this.content = content;
+        this.$ref = ref;
+    }
+
     /**
      * <p>Getter for the field <code>workerId</code>.</p>
      *
@@ -48,17 +64,17 @@ public class EventStatusInformation {
     /**
      * <p>Getter for the field <code>type</code>.</p>
      *
-     * @return a {@link java.lang.String} object.
+     * @return a {@link InformationType} object.
      */
-    public String getType() {
+    public InformationType getType() {
         return type;
     }
     /**
      * <p>Setter for the field <code>type</code>.</p>
      *
-     * @param type a {@link java.lang.String} object.
+     * @param type a {@link InformationType} object.
      */
-    public void setType(String type) {
+    public void setType(InformationType type) {
         this.type = type;
     }
     /**

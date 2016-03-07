@@ -1,6 +1,9 @@
-package com.github.libgraviton.workerbase.model;
+package com.github.libgraviton.workerbase.model.status;
+
+import com.github.libgraviton.workerbase.model.GravitonRef;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>EventStatus class.</p>
@@ -14,8 +17,8 @@ public class EventStatus {
     public String createDate;
     public String eventName;
     public GravitonRef eventResource;
-    public ArrayList<EventStatusStatus> status;
-    public ArrayList<EventStatusInformation> information;
+    public List<WorkerStatus> status;
+    public List<WorkerFeedback> information;
     
     /**
      * <p>Getter for the field <code>id</code>.</p>
@@ -80,33 +83,40 @@ public class EventStatus {
     /**
      * <p>Getter for the field <code>status</code>.</p>
      *
-     * @return a {@link java.util.ArrayList} object.
+     * @return a {@link java.util.List} object.
      */
-    public ArrayList<EventStatusStatus> getStatus() {
+    public List<WorkerStatus> getStatus() {
         return status;
     }
     /**
      * <p>Setter for the field <code>status</code>.</p>
      *
-     * @param status a {@link java.util.ArrayList} object.
+     * @param status a {@link java.util.List} object.
      */
-    public void setStatus(ArrayList<EventStatusStatus> status) {
+    public void setStatus(List<WorkerStatus> status) {
         this.status = status;
     }
     /**
      * <p>Getter for the field <code>information</code>.</p>
      *
-     * @return a {@link java.util.ArrayList} object.
+     * @return a {@link java.util.List} object.
      */
-    public ArrayList<EventStatusInformation> getInformation() {
+    public List<WorkerFeedback> getInformation() {
         return information;
     }
     /**
      * <p>Setter for the field <code>information</code>.</p>
      *
-     * @param information a {@link java.util.ArrayList} object.
+     * @param information a {@link java.util.List} object.
      */
-    public void setInformation(ArrayList<EventStatusInformation> information) {
+    public void setInformation(List<WorkerFeedback> information) {
         this.information = information;
-    }    
+    }
+
+    public void add(WorkerFeedback workerFeedback) {
+        if (information == null) {
+            information = new ArrayList<>();
+        }
+        getInformation().add(workerFeedback);
+    }
 }

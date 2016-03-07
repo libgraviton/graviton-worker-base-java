@@ -1,6 +1,6 @@
-package com.github.libgraviton.workerbase.model;
+package com.github.libgraviton.workerbase.model.register;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>WorkerRegister class.</p>
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class WorkerRegister {
 
     public String id;
-    public ArrayList<WorkerRegisterSubscription> subscription;
+    public List<WorkerRegisterSubscription> subscription;
     
     /**
      * <p>Getter for the field <code>id</code>.</p>
@@ -32,17 +32,17 @@ public class WorkerRegister {
     /**
      * <p>Getter for the field <code>subscription</code>.</p>
      *
-     * @return a {@link java.util.ArrayList} object.
+     * @return a {@link java.util.List} object.
      */
-    public ArrayList<WorkerRegisterSubscription> getSubscription() {
+    public List<WorkerRegisterSubscription> getSubscription() {
         return subscription;
     }
     /**
      * <p>Setter for the field <code>subscription</code>.</p>
      *
-     * @param subscription a {@link java.util.ArrayList} object.
+     * @param subscription a {@link java.util.List} object.
      */
-    public void setSubscription(ArrayList<WorkerRegisterSubscription> subscription) {
+    public void setSubscription(List<WorkerRegisterSubscription> subscription) {
         this.subscription = subscription;
     }
     

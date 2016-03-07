@@ -1,12 +1,12 @@
 package javaworker.lib;
 
 import com.github.libgraviton.workerbase.WorkerAbstract;
-import com.github.libgraviton.workerbase.WorkerException;
+import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
 public class TestWorker extends WorkerAbstract {
 
-    public boolean concerningRequestCalled = false;
+    public boolean shouldHandleRequestCalled = false;
 
     protected QueueEvent handledQueueEvent;
     
@@ -30,8 +30,8 @@ public class TestWorker extends WorkerAbstract {
      * 
      * @return boolean true if not, false if yes
      */
-    public boolean isConcerningRequest(QueueEvent qevent) {
-        this.concerningRequestCalled = true;
+    public boolean shouldHandleRequest(QueueEvent qevent) {
+        this.shouldHandleRequestCalled = true;
         return true;
     }
 
