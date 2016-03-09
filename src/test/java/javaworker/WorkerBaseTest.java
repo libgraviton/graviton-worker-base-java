@@ -65,6 +65,30 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         // done
         verify(requestBodyMock, times(1)).body(contains("\"status\":\"done\",\"workerId\":\"java-test\""));
     }
+
+    @Test
+    public void testStatusUpdateOnShouldNotHandleRequest() throws Exception {
+        TestWorker testWorker = spy(new TestWorker());
+        doReturn(false).when(testWorker).shouldHandleRequest(any(QueueEvent.class));
+        worker = getWrappedWorker(testWorker);
+        worker.run();
+
+        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
+        URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
+        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+
+        verify(stringResponse, times(3)).getStatus();
+
+        verify(testWorker, times(1)).shouldHandleRequest(any(QueueEvent.class));
+
+        // register
+        verify(requestBodyMock, times(1)).body(contains("{\"id\":\"java-test\""));
+        // working
+        verify(requestBodyMock, never()).body(contains("\"status\":\"working\",\"workerId\":\"java-test\""));
+        // done
+        verify(requestBodyMock, times(1)).body(contains("\"status\":\"done\",\"workerId\":\"java-test\""));
+    }
     
     @Test
     public void testNoAutoWorker() throws Exception {

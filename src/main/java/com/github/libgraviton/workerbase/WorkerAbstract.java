@@ -85,6 +85,7 @@ public abstract class WorkerAbstract {
      * @param properties properties
      * @throws WorkerException when a problem occurs that prevents the Worker from working properly
      * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
+     *
      */
     public final void initialize(Properties properties) throws WorkerException, GravitonCommunicationException  {
         this.properties = properties;
@@ -126,20 +127,23 @@ public abstract class WorkerAbstract {
     }
 
     protected void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {
+        statusHandler = new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
+        EventStatus eventStatus = statusHandler.getEventStatusFromUrl(statusUrl);
         if (!shouldHandleRequest(queueEvent)) {
+            // set status to done if the worker doesn't care about the event
+            update(eventStatus, workerId, Status.DONE);
             return;
         }
-        statusHandler = new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
 
         if (shouldAutoUpdateStatus()) {
-            update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, Status.WORKING);
+            update(eventStatus, workerId, Status.WORKING);
         }
 
         // call the worker
         handleRequest(queueEvent);
 
         if (shouldAutoUpdateStatus()) {
-            update(statusHandler.getEventStatusFromUrl(statusUrl), workerId, Status.DONE);
+            update(eventStatus, workerId, Status.DONE);
         }
     }
 
