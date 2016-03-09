@@ -1,7 +1,7 @@
 /**
  * iterator implementation that makes using Graviton pagination a breeze
  */
-package javaworker;
+package com.github.libgraviton.workerbase;
 
 import java.net.URLDecoder;
 import java.util.Iterator;
@@ -98,7 +98,7 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
      * @throws java.lang.Exception if any.
      */
     public PagingResponseIterator(String requestUrl) throws Exception {
-        this.init(requestUrl);
+        init(requestUrl);
     }
 
     /**
@@ -110,7 +110,7 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
      */
     public PagingResponseIterator(Class<T> typeParameterClass, String requestUrl) throws Exception {
         this.typeParameterClass = typeParameterClass;
-        this.init(requestUrl);
+        init(requestUrl);
     }
 
     /**
@@ -120,8 +120,8 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
      * @throws Exception
      */
     private void init(String requestUrl) throws Exception {
-        this.fetch(requestUrl);
-        this.parseLinkHeader();
+        fetch(requestUrl);
+        parseLinkHeader();
     }
 
     /**
@@ -134,22 +134,22 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
     protected T computeNext() {
 
         // can we fetch the next?
-        if (!this.resultSet.hasNext() && this.nextUrl != null) {
+        if (!resultSet.hasNext() && nextUrl != null) {
             try {
-                this.fetch(this.nextUrl);
+                fetch(nextUrl);
 
                 // reset next url
-                this.nextUrl = null;
+                nextUrl = null;
 
                 // check for next url
-                this.parseLinkHeader();
+                parseLinkHeader();
             } catch (Exception e) {
                 return endOfData();
             }
         }
 
-        if (this.resultSet.hasNext()) {
-            return this.resultSet.next();
+        if (resultSet.hasNext()) {
+            return resultSet.next();
         }
 
         return endOfData();
@@ -163,13 +163,13 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
      */
     @SuppressWarnings("unchecked")
     private void fetch(String fetchUrl) throws Exception {
-        this.response = Unirest.get(fetchUrl).header("Accept", "application/json").asString();
+        response = Unirest.get(fetchUrl).header("Accept", "application/json").asString();
 
-        if (this.typeParameterClass instanceof Class<?>) {
-            this.resultSet = (Iterator<T>) JSON.std.listOfFrom(this.typeParameterClass, this.response.getBody())
+        if (typeParameterClass != null) {
+            resultSet = JSON.std.listOfFrom(typeParameterClass, response.getBody())
                     .iterator();
         } else {
-            this.resultSet = (Iterator<T>) JSON.std.listFrom(this.response.getBody()).iterator();
+            resultSet = (Iterator<T>) JSON.std.listFrom(response.getBody()).iterator();
         }
     }
 
@@ -179,16 +179,16 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
      */
     private void parseLinkHeader() throws Exception {
         Pattern pattern = Pattern.compile("\\<(.*)\\>; rel\\=\\\"next\\\"");
-        Headers headers = this.response.getHeaders();
+        Headers headers = response.getHeaders();
 
-        if (headers.containsKey("link")) {
-            String linkHeader = headers.get("link").get(0);
+        if (headers.containsKey("Link")) {
+            String linkHeader = headers.get("Link").get(0);
             String[] headerParts = linkHeader.split(",");
             Matcher matcher;
             for (String singleLinkHeader : headerParts) {
                 matcher = pattern.matcher(singleLinkHeader);
                 if (matcher.matches()) {
-                    this.nextUrl = URLDecoder.decode(matcher.group(1), "UTF-8");
+                    nextUrl = URLDecoder.decode(matcher.group(1), "UTF-8");
                 }
             }
         }
