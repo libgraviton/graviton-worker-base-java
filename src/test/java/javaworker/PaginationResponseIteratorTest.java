@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.libgraviton.workerbase.PagingResponseIterator;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +37,7 @@ public class PaginationResponseIteratorTest extends WorkerBaseTestCase {
         this.baseMock();
         
         URL fileResponseUrl = this.getClass().getClassLoader().getResource("json/fileResourceCollection.json");
+        assert fileResponseUrl != null;
         String fileResponseContent = FileUtils.readFileToString(new File(fileResponseUrl.getFile()));
         GetRequest getRequestStatus = mock(GetRequest.class);        
         
@@ -44,13 +46,13 @@ public class PaginationResponseIteratorTest extends WorkerBaseTestCase {
                 "<http://localhost/file/?limit(1%2C1)>; rel=\"last\"," +
                 "<http://localhost/file/?limit(1)>; rel=\"self\"");
         Headers headers = new Headers();
-        headers.put("link", headerList);
+        headers.put("Link", headerList);
         
         List<String> headerListNoMore = new ArrayList<String>();
         headerListNoMore.add("<http://localhost/file/?limit(2%2C1)>; rel=\"last\"," +
                 "<http://localhost/file/?limit(1)>; rel=\"self\"");
         Headers headersNoMore = new Headers();
-        headersNoMore.put("link", headerListNoMore);
+        headersNoMore.put("Link", headerListNoMore);
         
         fileStatusResponse = (HttpResponse<String>) mock(HttpResponse.class);
         when(fileStatusResponse.getHeaders())
@@ -79,7 +81,7 @@ public class PaginationResponseIteratorTest extends WorkerBaseTestCase {
         int counter = 0;
         while (pr.hasNext()) {
             singleElement = pr.next();
-            assertTrue((singleElement instanceof DeferredMap));
+            assertTrue((singleElement != null));
             counter++;
         }
         
@@ -100,7 +102,7 @@ public class PaginationResponseIteratorTest extends WorkerBaseTestCase {
         int counter = 0;
         while (pr.hasNext()) {
             singleElement = pr.next();
-            assertTrue((singleElement instanceof GravitonFile));
+            assertTrue((singleElement != null));
             assertFalse((singleElement.getId() == null));
             counter++;
         }
