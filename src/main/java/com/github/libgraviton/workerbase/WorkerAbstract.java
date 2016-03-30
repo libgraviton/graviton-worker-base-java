@@ -128,27 +128,30 @@ public abstract class WorkerAbstract {
 
     protected void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {
         statusHandler = new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
-        EventStatus eventStatus = statusHandler.getEventStatusFromUrl(statusUrl);
         if (!shouldHandleRequest(queueEvent)) {
             // set status to done if the worker doesn't care about the event
-            update(eventStatus, workerId, Status.DONE);
+            update(statusUrl, workerId, Status.DONE);
             return;
         }
 
         if (shouldAutoUpdateStatus()) {
-            update(eventStatus, workerId, Status.WORKING);
+            update(statusUrl, workerId, Status.WORKING);
         }
 
         // call the worker
         handleRequest(queueEvent);
 
         if (shouldAutoUpdateStatus()) {
-            update(eventStatus, workerId, Status.DONE);
+            update(statusUrl, workerId, Status.DONE);
         }
     }
 
     protected void update(EventStatus eventStatus, String workerId, Status status) throws GravitonCommunicationException {
         statusHandler.update(eventStatus, workerId, status);
+    }
+
+    protected void update(String eventStatusUrl, String workerId, Status status) throws GravitonCommunicationException {
+        statusHandler.update(statusHandler.getEventStatusFromUrl(eventStatusUrl), workerId, status);
     }
 
     /**
