@@ -8,6 +8,7 @@ package com.github.libgraviton.workerbase.model;
  */
 public class QueueEvent {
     public String event;
+    public String coreUserId;
     public GravitonRef document;
     public GravitonRef status;
     
@@ -58,7 +59,23 @@ public class QueueEvent {
      */
     public void setStatus(GravitonRef status) {
         this.status = status;
-    }   
+    }
+    /**
+     * <p>Getter for the field <code>coreUserId</code>.</p>
+     *
+     * @return String
+     */
+    public String getCoreUserId() {
+        return coreUserId;
+    }
+    /**
+     * <p>Setter for the field <code>coreUserId</code>.</p>
+     *
+     * @param coreUserId a {@link java.lang.String} object.
+     */
+    public void setCoreUserId(String coreUserId) {
+        this.coreUserId = coreUserId;
+    }
     
     
 }

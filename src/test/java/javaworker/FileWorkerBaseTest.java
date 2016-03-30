@@ -170,6 +170,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         String documentUrl = "testDocumentUrl";
         gravitonRef.set$ref(documentUrl);
         queueEvent.setDocument(new GravitonRef());
+        queueEvent.setCoreUserId("someId123");
         List<String> noActions = Arrays.asList();
 
         doReturn(noActions).when(testFileWorker).getActionsOfInterest(queueEvent);
@@ -188,6 +189,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         String documentUrl = "testDocumentUrl";
         gravitonRef.set$ref(documentUrl);
         queueEvent.setDocument(gravitonRef);
+        queueEvent.setCoreUserId("someId123");
         String action1 = "action1";
         String action2 = "action2";
         List<String> noActions = Arrays.asList(action1, action2);
@@ -210,6 +212,8 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
         assertTrue(testFileWorker.shouldHandleRequest(queueEvent));
         verify(testFileWorker, times(2)).removeFileActionCommand(eq(documentUrl), anyString());
+
+        assertEquals("someId123", queueEvent.getCoreUserId());
     }
 
 }
