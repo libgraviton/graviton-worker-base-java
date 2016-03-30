@@ -38,6 +38,7 @@ public abstract class WorkerBaseTestCase {
     protected ConnectionFactory connectionFactory;
     protected RequestBodyEntity bodyEntity;
     protected HttpRequestWithBody requestBodyMock;
+    protected HttpResponse<String> statusResponse;
     
     @SuppressWarnings("unchecked")
     @Before
@@ -81,7 +82,7 @@ public abstract class WorkerBaseTestCase {
         URL statusResponseUrl = this.getClass().getClassLoader().getResource("json/statusResponse.json");
         String statusResponseContent = FileUtils.readFileToString(new File(statusResponseUrl.getFile()));
         GetRequest getRequestStatus = mock(GetRequest.class);
-        HttpResponse<String> statusResponse = (HttpResponse<String>) mock(HttpResponse.class);
+        statusResponse = (HttpResponse<String>) mock(HttpResponse.class);
         when(statusResponse.getBody())
             .thenReturn(statusResponseContent);        
         when(getRequestStatus.header(anyString(), anyString()))
