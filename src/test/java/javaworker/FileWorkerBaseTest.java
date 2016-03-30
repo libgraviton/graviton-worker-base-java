@@ -212,6 +212,8 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
         assertTrue(testFileWorker.shouldHandleRequest(queueEvent));
         verify(testFileWorker, times(2)).removeFileActionCommand(eq(documentUrl), anyString());
+
+        assertEquals("someId123", queueEvent.getCoreUserId());
     }
 
 }
