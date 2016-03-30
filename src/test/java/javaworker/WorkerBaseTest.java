@@ -50,20 +50,23 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
         
         verify(stringResponse, times(4)).getStatus();
-        
+
         assertTrue(testWorker.shouldHandleRequestCalled);
 
         QueueEvent queueEvent = testWorker.getHandledQueueEvent();
         assertEquals("documents.core.app.create", queueEvent.getEvent());
         assertEquals("http://localhost/core/app/admin", queueEvent.getDocument().get$ref());
         assertEquals("http://localhost/event/status/mystatus", queueEvent.getStatus().get$ref());
-        
+
         // register
         verify(requestBodyMock, times(1)).body(contains("{\"id\":\"java-test\""));
         // working
         verify(requestBodyMock, times(1)).body(contains("\"status\":\"working\",\"workerId\":\"java-test\""));
         // done
         verify(requestBodyMock, times(1)).body(contains("\"status\":\"done\",\"workerId\":\"java-test\""));
+
+        // check if event status will be fetched before every update
+        verify(statusResponse, times(2)).getBody();
     }
 
     @Test
