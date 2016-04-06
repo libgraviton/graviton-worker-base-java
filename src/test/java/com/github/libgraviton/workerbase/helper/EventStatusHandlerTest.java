@@ -1,7 +1,6 @@
-package javaworker.helper;
+package com.github.libgraviton.workerbase.helper;
 
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
-import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.model.status.EventStatus;
 import com.github.libgraviton.workerbase.model.status.Status;
 import com.github.libgraviton.workerbase.model.status.WorkerStatus;
@@ -24,7 +23,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.contains;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 

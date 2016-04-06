@@ -1,4 +1,4 @@
-package javaworker;
+package com.github.libgraviton.workerbase;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
@@ -7,9 +7,7 @@ import static org.mockito.Mockito.*;
 import java.io.File;
 import java.net.URL;
 
-import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.model.QueueEvent;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,9 +23,9 @@ import com.mashape.unirest.request.body.RequestBodyEntity;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Envelope;
 
-import javaworker.lib.TestWorker;
-import javaworker.lib.TestWorkerException;
-import javaworker.lib.TestWorkerNoAuto;
+import com.github.libgraviton.workerbase.lib.TestWorker;
+import com.github.libgraviton.workerbase.lib.TestWorkerException;
+import com.github.libgraviton.workerbase.lib.TestWorkerNoAuto;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({com.rabbitmq.client.ConnectionFactory.class,Unirest.class})
@@ -162,37 +160,6 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     }
     
     @SuppressWarnings("unchecked")
-    @Test (expected = GravitonCommunicationException.class)
-    public void testWorkerRegistrationError() throws Exception {
-        
-        /*** change mocking so we get 400 status on worker registration -> worker shall throw GravitonCommunicationException ***/
-        RequestBodyEntity bodyEntityRegister = mock(RequestBodyEntity.class);
-        
-        HttpResponse<String> stringResponseRegister = (HttpResponse<String>) mock(HttpResponse.class);
-        when(stringResponseRegister.getStatus())
-            .thenReturn(400);            
-        when(bodyEntityRegister.asString())
-        .thenReturn(stringResponseRegister); 
-
-        HttpRequestWithBody registerBodyMock = mock(HttpRequestWithBody.class);
-        
-        when(registerBodyMock.routeParam(anyString(), anyString()))
-            .thenReturn(registerBodyMock);
-        when(registerBodyMock.header(anyString(), anyString()))
-        .thenReturn(registerBodyMock);
-        when(registerBodyMock.body(anyString()))
-            .thenReturn(bodyEntityRegister);
-
-        // PUT mock
-        when(Unirest.put(contains("/event/worker")))
-            .thenReturn(registerBodyMock);    
-        
-        TestWorker testWorker = new TestWorker();
-        worker = getWrappedWorker(testWorker);
-        worker.run();
-    }
-    
-    @SuppressWarnings("unchecked")
     @Test
     public void testBackenStatusUpdateError() throws Exception {
         
@@ -248,17 +215,6 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         assertEquals("hansuser", worker.getProperties().getProperty("queue.username"));
         assertEquals("hans22", worker.getProperties().getProperty("queue.password"));
         assertEquals("hanshost", worker.getProperties().getProperty("queue.vhost"));        
-    }
-
-    @Test(expected = GravitonCommunicationException.class)
-    public void testFailedWorkerRegistration() throws Exception {
-        when(Unirest.put(contains("/event/worker")).body(anyString()).asString())
-                .thenThrow(new UnirestException("Something strange but beautiful happened"));
-
-        TestWorkerException testWorker = new TestWorkerException();
-        worker = getWrappedWorker(testWorker);
-        worker.run();
-
     }
 
 }

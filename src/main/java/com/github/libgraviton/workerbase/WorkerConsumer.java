@@ -6,10 +6,7 @@ package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.model.QueueEvent;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +57,15 @@ public class WorkerConsumer extends DefaultConsumer {
         worker.handleDelivery(consumerTag, queueEvent);
     }
 
+    @Override
+    public void handleConsumeOk(String consumerTag) {
+        LOG.info("Connection to message queue established.");
+        LOG.info("Waiting for messages...");
+    }
 
+    @Override
+    public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
+        LOG.info("Lost connection to message queue. Starting connection recovery.");
+    }
 
 }
