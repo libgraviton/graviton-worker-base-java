@@ -18,7 +18,6 @@ public class QueueExceptionHandler extends DefaultExceptionHandler {
 
     @Override
     public void handleConnectionRecoveryException(Connection conn, Throwable exception) {
-        //super.handleConnectionRecoveryException(conn, exception);
         LOG.warn("Message queue connection recovery not yet successful. Retry again...");
     }
 }
