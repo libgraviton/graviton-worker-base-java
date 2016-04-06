@@ -57,7 +57,7 @@ public class QueueManager {
         factory.setVirtualHost(properties.getProperty("queue.vhost"));
         factory.setAutomaticRecoveryEnabled(true);
         factory.setNetworkRecoveryInterval(retryAfterSeconds * 1000);
-        factory.setExceptionHandler(new NiosQueueExceptionHandler());
+        factory.setExceptionHandler(new QueueExceptionHandler());
 
         return factory;
     }
