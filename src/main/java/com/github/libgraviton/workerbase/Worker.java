@@ -11,6 +11,8 @@ import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.PropertiesLoader;
 import com.github.libgraviton.workerbase.mq.QueueManager;
 import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,6 +26,8 @@ import java.util.Properties;
  * @version $Id: $Id
  */
 public class Worker {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Worker.class);
 
     /**
      * properties
@@ -60,7 +64,7 @@ public class Worker {
         try {
             applyVcapConfig();
         } catch (IOException e) {
-            // TODO mwegener - handle exception
+            LOG.warn("Unable to load vcap config. Skip this step.");
         }
         QueueManager queueManager = getQueueManager();
         queueManager.connect();

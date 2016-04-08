@@ -23,10 +23,9 @@ public class WorkerConsumer extends DefaultConsumer {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerConsumer.class);
 
-    /**
-     * worker
-     */
     private WorkerAbstract worker;
+
+    private String queueName;
 
     /**
      * constructor
@@ -34,9 +33,10 @@ public class WorkerConsumer extends DefaultConsumer {
      * @param channel channel
      * @param worker worker
      */
-    public WorkerConsumer(Channel channel, WorkerAbstract worker) {
+    public WorkerConsumer(Channel channel, WorkerAbstract worker, String queueName) {
         super(channel);                
         this.worker = worker;
+        this.queueName = queueName;
     }
 
     /**
@@ -59,13 +59,13 @@ public class WorkerConsumer extends DefaultConsumer {
 
     @Override
     public void handleConsumeOk(String consumerTag) {
-        LOG.info("Connection to message queue established.");
+        LOG.info("Connection to message queue '" + queueName +"' established.");
         LOG.info("Waiting for messages...");
     }
 
     @Override
     public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
-        LOG.info("Lost connection to message queue. Starting connection recovery.");
+        LOG.info("Lost connection to message queue '" + queueName + "'. Starting connection recovery.");
     }
 
 }

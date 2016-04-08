@@ -45,7 +45,7 @@ public class WorkerQueueConnector extends QueueConnector {
             }
 
             channel.basicQos(2);
-            channel.basicConsume(queueName, true, new WorkerConsumer(channel, worker));
+            channel.basicConsume(queueName, true, new WorkerConsumer(channel, worker, exchangeName));
         } catch (IOException e) {
             throw new QueueConnectionException("Cannot connect to message queue.", exchangeName, e);
         }

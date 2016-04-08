@@ -203,19 +203,14 @@ public abstract class WorkerAbstract {
                 .body(JSON.std.asString(workerRegister))
                 .asString();
         } catch (UnirestException | IOException e) {
-            LOG.warn("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'.");
-            // TODO try registering later
-            return;
-            //throw new GravitonCommunicationException("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'.", e);
+            throw new GravitonCommunicationException("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'.", e);
         }
 
         LOG.debug("Worker register response code: " + response.getStatus());
         if (response.getStatus() == 204) {
             isRegistered = Boolean.TRUE;
         } else {
-            LOG.warn("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'. Response status was '" + response.getStatus() + "'.");
-            // TODO try registering later
-            //throw new GravitonCommunicationException("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'. Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
+            throw new GravitonCommunicationException("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'. Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
         }        
     }
 
