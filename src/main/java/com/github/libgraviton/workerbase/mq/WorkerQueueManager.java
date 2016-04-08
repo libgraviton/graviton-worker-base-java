@@ -2,7 +2,6 @@ package com.github.libgraviton.workerbase.mq;
 
 import com.github.libgraviton.workerbase.WorkerAbstract;
 import com.rabbitmq.client.ConnectionFactory;
-import com.sun.corba.se.impl.ior.WireObjectKeyTemplate;
 
 import java.util.Arrays;
 import java.util.List;
