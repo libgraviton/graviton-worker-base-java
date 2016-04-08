@@ -8,6 +8,7 @@ import java.io.PrintStream;
 import java.net.URL;
 
 import com.github.libgraviton.workerbase.mq.QueueManager;
+import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.powermock.api.mockito.PowerMockito;
@@ -90,9 +91,9 @@ public abstract class WorkerBaseTestCase {
         worker = spy(new Worker(testWorker));
         workerConsumer = PowerMockito.spy(new WorkerConsumer(queueChannel, testWorker));
 
-        QueueManager queueManager = mock(QueueManager.class);
+        WorkerQueueManager queueManager = mock(WorkerQueueManager.class);
         when(worker.getQueueManager()).thenReturn(queueManager);
-        doNothing().when(queueManager).connect(any(WorkerAbstract.class));
+        doNothing().when(queueManager).connect();
         
         return worker;
     }

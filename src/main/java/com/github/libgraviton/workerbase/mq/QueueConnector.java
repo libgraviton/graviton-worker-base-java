@@ -1,15 +1,7 @@
 package com.github.libgraviton.workerbase.mq;
 
-import com.github.libgraviton.workerbase.WorkerAbstract;
-import com.github.libgraviton.workerbase.WorkerConsumer;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * <p>QueueConnector</p>
@@ -18,53 +10,33 @@ import java.util.List;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-public class QueueConnector implements Runnable {
+public abstract class QueueConnector implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(QueueConnector.class);
 
     private int retryAfterSeconds = 10;
 
-    private WorkerAbstract worker;
-
-    private ConnectionFactory factory;
-
-    private String exchangeName;
-
-    private List<String> bindKeys;
-
     @Override
     public void run() {
-        LOG.debug("Start connecting to to message queue at '" + factory.getHost() + ":" + factory.getPort() + "'.");
+        LOG.debug("Start connecting to to message queue '" + getQueueName() + "'.");
 
         Boolean isConnected = Boolean.FALSE;
         while (!isConnected) {
-            isConnected = connect();
+            isConnected = connectAttempt();
         }
     }
 
     /**
      * Connecting to message queue. Will be retried until successful.
+     * @return true if connection attempt was successful
      */
-    protected Boolean connect() {
+    public Boolean connectAttempt() {
         try {
-            Connection connection = factory.newConnection();
-            Channel channel = connection.createChannel();
-
-            channel.exchangeDeclare(exchangeName, "topic", true);
-            String queueName = channel.queueDeclare().getQueue();
-
-            for (String bindKey : bindKeys) {
-                channel.queueBind(queueName, exchangeName, bindKey);
-                LOG.info("Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey + "'.");
-            }
-
-            channel.basicQos(2);
-            channel.basicConsume(queueName, true, new WorkerConsumer(channel, worker));
-
+            connect();
             // successfully connected
             return true;
-        } catch (IOException e) {
-            LOG.warn("Unable to connect to message queue at '" + factory.getHost() + ":" + factory.getPort() + "'. Retry again...");
+        } catch (QueueConnectionException e) {
+            LOG.warn("Unable to connect to message queue '" + e.getQueueName() + "'. Retry again...");
             try {
                 Thread.sleep(retryAfterSeconds * 1000);
             } catch (InterruptedException ie) {
@@ -79,19 +51,7 @@ public class QueueConnector implements Runnable {
         this.retryAfterSeconds = retryAfterSeconds;
     }
 
-    public void setWorker(WorkerAbstract worker) {
-        this.worker = worker;
-    }
+    protected abstract void connect() throws QueueConnectionException;
 
-    public void setFactory(ConnectionFactory factory) {
-        this.factory = factory;
-    }
-
-    public void setExchangeName(String exchangeName) {
-        this.exchangeName = exchangeName;
-    }
-
-    public void setBindKeys(List<String> bindKeys) {
-        this.bindKeys = bindKeys;
-    }
+    public abstract String getQueueName();
 }

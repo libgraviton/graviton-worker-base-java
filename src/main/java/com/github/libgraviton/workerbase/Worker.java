@@ -8,19 +8,12 @@ import com.fasterxml.jackson.jr.ob.JSON;
 import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
+import com.github.libgraviton.workerbase.helper.PropertiesLoader;
 import com.github.libgraviton.workerbase.mq.QueueManager;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -31,11 +24,6 @@ import java.util.Properties;
  * @version $Id: $Id
  */
 public class Worker {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Worker.class);
-
-    private static final String DEFAULT_APPLICATION_PROPERTIES_PATH = "etc/app.properties";
-    private static final String SYSTEM_PROPERTY = "propFile";
 
     /**
      * properties
@@ -56,7 +44,7 @@ public class Worker {
      */
     public Worker(WorkerAbstract worker) throws WorkerException, GravitonCommunicationException {
         try {
-            loadProperties();
+            properties = PropertiesLoader.load();
         } catch (IOException e) {
             throw new WorkerException(e);
         }
@@ -75,35 +63,7 @@ public class Worker {
             // TODO mwegener - handle exception
         }
         QueueManager queueManager = getQueueManager();
-        queueManager.connect(worker);
-    }
-
-    /**
-     * loads the properties
-     */
-    private void loadProperties() throws IOException {
-        properties = new Properties();
-        // load defaults
-        try (InputStream defaultProperties = getClass().getClassLoader().getResourceAsStream("default.properties")) {
-            properties.load(defaultProperties);
-        }
-
-        // overrides?
-        String propertiesPath = System.getProperty(SYSTEM_PROPERTY);
-        if (propertiesPath == null) {
-            propertiesPath = DEFAULT_APPLICATION_PROPERTIES_PATH;
-        }
-
-        try (FileInputStream appProperties = new FileInputStream(propertiesPath)) {
-            properties.load(appProperties);
-        } catch (IOException e) {
-            LOG.debug("No overriding properties found at '" + propertiesPath + "'.");
-        }
-
-        // let system properties override everything..
-        properties.putAll(System.getProperties());
-
-        LOG.info("Loaded app.properties from " + propertiesPath);
+        queueManager.connect();
     }
 
     /**
@@ -129,7 +89,9 @@ public class Worker {
     }
 
     public QueueManager getQueueManager() {
-        return new QueueManager(properties);
+        WorkerQueueManager workerQueueManager = new WorkerQueueManager(properties);
+        workerQueueManager.setWorker(worker);
+        return new WorkerQueueManager(properties);
     }
     
     /**
