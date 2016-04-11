@@ -95,7 +95,7 @@ public class Worker {
     public QueueManager getQueueManager() {
         WorkerQueueManager workerQueueManager = new WorkerQueueManager(properties);
         workerQueueManager.setWorker(worker);
-        return new WorkerQueueManager(properties);
+        return workerQueueManager;
     }
     
     /**
