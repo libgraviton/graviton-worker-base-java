@@ -1,47 +1,41 @@
-package javaworker.lib;
+package com.github.libgraviton.workerbase.lib;
 
 import com.github.libgraviton.workerbase.WorkerAbstract;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
-public class TestWorkerNoAuto extends WorkerAbstract {
+public class TestWorker extends WorkerAbstract {
 
-    public boolean concerningRequestCalled = false;
-    public boolean handleRequestCalled = false;
-    public boolean isConcerningRequest = true;
+    public boolean shouldHandleRequestCalled = false;
+
+    protected QueueEvent handledQueueEvent;
     
     /**
      * worker logic is implemented here
      * 
-     * @param body message body as object
+     * @param qevent queue event from request
      * 
      * @throws WorkerException
      */
     public void handleRequest(QueueEvent qevent) throws WorkerException {
-        this.handleRequestCalled = true;
+        handledQueueEvent = qevent;
     }
-    
+
     /**
+
      * Here, the worker should decide if this requests concerns him in the first
      * place. If false is returned, we ignore the message..
      * 
-     * @param body message body as object
+     * @param qevent queue event from request
      * 
      * @return boolean true if not, false if yes
      */
     public boolean shouldHandleRequest(QueueEvent qevent) {
-        this.concerningRequestCalled = true;
-        return this.isConcerningRequest;
+        this.shouldHandleRequestCalled = true;
+        return true;
     }
-    
-    public Boolean shouldAutoUpdateStatus()
-    {
-        return false;
+
+    public QueueEvent getHandledQueueEvent() {
+        return handledQueueEvent;
     }
-    
-    public Boolean shouldAutoRegister()
-    {
-        return false;
-    }    
-    
 }

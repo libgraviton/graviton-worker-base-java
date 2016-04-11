@@ -101,9 +101,8 @@ public abstract class WorkerAbstract {
      *
      * @param consumerTag consumer tag (aka routing key)
      * @param queueEvent queue event
-     * @throws java.io.IOException if any.
      */
-    public final void handleDelivery(String consumerTag, QueueEvent queueEvent) throws IOException {
+    public final void handleDelivery(String consumerTag, QueueEvent queueEvent) {
 
         String statusUrl = queueEvent.getStatus().get$ref();
         try {
@@ -207,8 +206,7 @@ public abstract class WorkerAbstract {
             throw new GravitonCommunicationException("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'.", e);
         }
 
-        LOG.info("Worker register response code: " + response.getStatus());
-
+        LOG.debug("Worker register response code: " + response.getStatus());
         if (response.getStatus() == 204) {
             isRegistered = Boolean.TRUE;
         } else {

@@ -1,11 +1,13 @@
 package com.github.libgraviton.workerbase.helper;
 
 import com.fasterxml.jackson.jr.ob.JSON;
+import com.fasterxml.jackson.jr.ob.JSONObjectException;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.model.status.EventStatus;
 import com.github.libgraviton.workerbase.model.status.WorkerStatus;
 import com.github.libgraviton.workerbase.model.status.Status;
 import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequestWithBody;
@@ -89,8 +91,8 @@ public class EventStatusHandler {
      * @throws GravitonCommunicationException when there are less or more than 1 EventStatus match.
      */
     public EventStatus getEventStatusByFilter(String filter) throws GravitonCommunicationException {
-        JSONArray statusDocuments = findEventStatus(filter);
-        int statusCount = statusDocuments.length();
+        List<EventStatus> statusDocuments = findEventStatus(filter);
+        int statusCount = statusDocuments.size();
 
         if (statusCount == 0) {
             throw new GravitonCommunicationException("No corresponding event status found for filter '" + filter + "'.");
@@ -100,11 +102,7 @@ public class EventStatusHandler {
             throw new GravitonCommunicationException("Multiple event status matches found for filter '" + filter + "'.");
         }
 
-        try {
-            return JSON.std.beanFrom(EventStatus.class, statusDocuments.get(0).toString());
-        } catch (IOException e) {
-            throw new GravitonCommunicationException("Invalid event status found for filter '" + filter + "'.", e);
-        }
+        return statusDocuments.get(0);
     }
 
     /**
@@ -116,15 +114,13 @@ public class EventStatusHandler {
      *
      * @throws GravitonCommunicationException when Event Status cannot be retrieved from Graviton
      */
-    public JSONArray findEventStatus(String filter) throws GravitonCommunicationException {
-        // TODO refactor from JSONArray to List<EventStatus>
+    public List<EventStatus> findEventStatus(String filter) throws GravitonCommunicationException {
         try {
-            return Unirest.get(eventStatusBaseUrl + filter)
+            HttpResponse<String> response = Unirest.get(eventStatusBaseUrl + filter)
                     .header("Accept", "application/json")
-                    .asJson()
-                    .getBody()
-                    .getArray();
-        } catch (UnirestException e) {
+                    .asString();
+            return JSON.std.listOfFrom(EventStatus.class, response.getBody());
+        } catch (UnirestException | IOException e) {
             throw new GravitonCommunicationException("Could not GET matching EventStatus for filter '" + filter + "'.", e);
         }
     }

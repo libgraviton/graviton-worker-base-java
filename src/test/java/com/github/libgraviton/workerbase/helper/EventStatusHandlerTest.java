@@ -1,7 +1,6 @@
-package javaworker.helper;
+package com.github.libgraviton.workerbase.helper;
 
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
-import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.model.status.EventStatus;
 import com.github.libgraviton.workerbase.model.status.Status;
 import com.github.libgraviton.workerbase.model.status.WorkerStatus;
@@ -18,11 +17,12 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.contains;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
@@ -97,7 +97,7 @@ public class EventStatusHandlerTest {
     public void testGetEventStatusByFilterWithNoMatchingResponse() throws GravitonCommunicationException {
         EventStatusHandler statusHandler = spy(new EventStatusHandler(eventStatusUrl));
 
-        JSONArray statusDocuments = new JSONArray();
+        List<EventStatus> statusDocuments = new ArrayList<>();
         doReturn(statusDocuments).when(statusHandler).findEventStatus(filterTemplate);
         statusHandler.getEventStatusByFilter(filterTemplate);
     }
@@ -106,9 +106,9 @@ public class EventStatusHandlerTest {
     public void testGetEventStatusByFilterWithMultipleMatchingResponse() throws GravitonCommunicationException {
         EventStatusHandler statusHandler = spy(new EventStatusHandler(eventStatusUrl));
 
-        JSONArray statusDocuments = new JSONArray();
-        statusDocuments.put(new JSONObject());
-        statusDocuments.put(new JSONObject());
+        List<EventStatus> statusDocuments = new ArrayList<>();
+        statusDocuments.add(new EventStatus());
+        statusDocuments.add(new EventStatus());
 
         doReturn(statusDocuments).when(statusHandler).findEventStatus(filterTemplate);
         statusHandler.getEventStatusByFilter(filterTemplate);
@@ -118,8 +118,9 @@ public class EventStatusHandlerTest {
     public void testGetEventStatusByFilterWithOneMatchingResponse() throws GravitonCommunicationException {
         EventStatusHandler statusHandler = spy(new EventStatusHandler(eventStatusUrl));
 
-        JSONArray statusDocuments = new JSONArray();
-        statusDocuments.put(new JSONObject());
+        List<EventStatus> statusDocuments = new ArrayList<>();
+        statusDocuments.add(new EventStatus());
+
         doReturn(statusDocuments).when(statusHandler).findEventStatus(filterTemplate);
         statusHandler.getEventStatusByFilter(filterTemplate);
     }
