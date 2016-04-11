@@ -15,10 +15,6 @@ public class PropertiesLoader {
     private static final String DEFAULT_APPLICATION_PROPERTIES_PATH = "etc/app.properties";
     private static final String SYSTEM_PROPERTY = "propFile";
 
-    private PropertiesLoader() {
-
-    }
-
     public static Properties load() throws IOException {
         Properties properties = new Properties();
         // load defaults

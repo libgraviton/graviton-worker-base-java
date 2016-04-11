@@ -71,4 +71,20 @@ public class WorkerQueueConnector extends QueueConnector {
     public void setBindKeys(List<String> bindKeys) {
         this.bindKeys = bindKeys;
     }
+
+    public WorkerAbstract getWorker() {
+        return worker;
+    }
+
+    public ConnectionFactory getFactory() {
+        return factory;
+    }
+
+    public String getExchangeName() {
+        return exchangeName;
+    }
+
+    public List<String> getBindKeys() {
+        return bindKeys;
+    }
 }

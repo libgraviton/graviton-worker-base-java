@@ -18,6 +18,7 @@ public class QueueExceptionHandler extends DefaultExceptionHandler {
 
     @Override
     public void handleConnectionRecoveryException(Connection conn, Throwable exception) {
+        // Only log output. WorkerQueueManager already configures setAutomaticRecoveryEnabled on the connection factory.
         LOG.warn("Message queue connection recovery not yet successful. Retry again...");
     }
 }
