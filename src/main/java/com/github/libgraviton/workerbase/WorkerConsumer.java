@@ -32,6 +32,7 @@ public class WorkerConsumer extends DefaultConsumer {
      *
      * @param channel channel
      * @param worker worker
+     * @param queueName queueName
      */
     public WorkerConsumer(Channel channel, WorkerAbstract worker, String queueName) {
         super(channel);                
