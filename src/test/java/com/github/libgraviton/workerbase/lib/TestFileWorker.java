@@ -1,4 +1,4 @@
-package javaworker.lib;
+package com.github.libgraviton.workerbase.lib;
 
 import com.github.libgraviton.workerbase.FileWorkerAbstract;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;

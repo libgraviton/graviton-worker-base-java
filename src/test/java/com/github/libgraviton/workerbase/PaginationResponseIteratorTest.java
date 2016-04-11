@@ -1,4 +1,4 @@
-package javaworker;
+package com.github.libgraviton.workerbase;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
@@ -10,7 +10,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.libgraviton.workerbase.PagingResponseIterator;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;

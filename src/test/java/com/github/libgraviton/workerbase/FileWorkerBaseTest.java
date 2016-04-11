@@ -1,4 +1,4 @@
-package javaworker;
+package com.github.libgraviton.workerbase;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
@@ -34,7 +34,7 @@ import com.mashape.unirest.request.GetRequest;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Envelope;
 
-import javaworker.lib.TestFileWorker;
+import com.github.libgraviton.workerbase.lib.TestFileWorker;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({com.rabbitmq.client.ConnectionFactory.class,Unirest.class, WorkerUtil.class})

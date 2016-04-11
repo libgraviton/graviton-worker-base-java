@@ -8,18 +8,14 @@ import com.fasterxml.jackson.jr.ob.JSON;
 import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
+import com.github.libgraviton.workerbase.helper.PropertiesLoader;
+import com.github.libgraviton.workerbase.mq.QueueManager;
+import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -32,9 +28,6 @@ import java.util.Properties;
 public class Worker {
 
     private static final Logger LOG = LoggerFactory.getLogger(Worker.class);
-
-    private static final String DEFAULT_APPLICATION_PROPERTIES_PATH = "etc/app.properties";
-    private static final String SYSTEM_PROPERTY = "propFile";
 
     /**
      * properties
@@ -55,7 +48,7 @@ public class Worker {
      */
     public Worker(WorkerAbstract worker) throws WorkerException, GravitonCommunicationException {
         try {
-            loadProperties();
+            properties = PropertiesLoader.load();
         } catch (IOException e) {
             throw new WorkerException(e);
         }
@@ -65,95 +58,16 @@ public class Worker {
     }
     
     /**
-     * initializes all
-     *
-     * @throws IOException if running the Worker failed.
+     * setup worker
      */
-    public void run() throws IOException {
-        applyVcapConfig();
-        connectToQueue();
-    }
-
-    /**
-     * connects to the queue
-     * 
-     * @throws java.io.IOException
-     */
-    private void connectToQueue() throws IOException {
-        ConnectionFactory factory = getConnectionFactory();
-        factory.setHost(properties.getProperty("queue.host"));
-        factory.setPort(Integer.parseInt(properties.getProperty("queue.port")));
-        factory.setUsername(properties.getProperty("queue.username"));
-        factory.setPassword(properties.getProperty("queue.password"));
-        factory.setVirtualHost(properties.getProperty("queue.vhost"));
-        factory.setAutomaticRecoveryEnabled(true);
-
-        Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
-
-        String exchangeName = properties.getProperty("queue.exchangeName");
-        List<String> bindKeys = Arrays.asList(properties.getProperty("queue.bindKey").split(","));
-        
-        channel.exchangeDeclare(exchangeName, "topic", true);
-        String queueName = channel.queueDeclare().getQueue();
-
-        for (String bindKey : bindKeys) {
-            channel.queueBind(queueName, exchangeName, bindKey);
-            LOG.info("Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey + "'");
-        }
-        LOG.info("Waiting for messages...");
-
-        channel.basicQos(2);
-        channel.basicConsume(queueName, true, getWorkerConsumer(channel, worker));
-    }
-    
-    /**
-     * function to return the connection factory
-     *
-     * @return connection factory
-     */
-    public ConnectionFactory getConnectionFactory()
-    {
-        return new ConnectionFactory();
-    }
-    
-    /**
-     * return our WorkerConsumer
-     *
-     * @param channel rabbitmq channel
-     * @param worker the worker
-     * @return worker consumer
-     */
-    public WorkerConsumer getWorkerConsumer(Channel channel, WorkerAbstract worker) {
-        return new WorkerConsumer(channel, worker);
-    }
-
-    /**
-     * loads the properties
-     */
-    private void loadProperties() throws IOException {
-        properties = new Properties();
-        // load defaults
-        try (InputStream defaultProperties = getClass().getClassLoader().getResourceAsStream("default.properties")) {
-            properties.load(defaultProperties);
-        }
-
-        // overrides?
-        String propertiesPath = System.getProperty(SYSTEM_PROPERTY);
-        if (propertiesPath == null) {
-            propertiesPath = DEFAULT_APPLICATION_PROPERTIES_PATH;
-        }
-
-        try (FileInputStream appProperties = new FileInputStream(propertiesPath)) {
-            properties.load(appProperties);
+    public void run() {
+        try {
+            applyVcapConfig();
         } catch (IOException e) {
-            LOG.debug("No overriding properties found at '" + propertiesPath + "'.");
+            LOG.warn("Unable to load vcap config. Skip this step.");
         }
-
-        // let system properties override everything..
-        properties.putAll(System.getProperties());
-
-        LOG.info("Loaded app.properties from " + propertiesPath);
+        QueueManager queueManager = getQueueManager();
+        queueManager.connect();
     }
 
     /**
@@ -176,6 +90,12 @@ public class Worker {
                 properties.setProperty("queue.vhost", vcapCreds.get("vhost").toString());
             }
         }
+    }
+
+    public QueueManager getQueueManager() {
+        WorkerQueueManager workerQueueManager = new WorkerQueueManager(properties);
+        workerQueueManager.setWorker(worker);
+        return workerQueueManager;
     }
     
     /**

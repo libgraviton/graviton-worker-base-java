@@ -1,4 +1,4 @@
-package javaworker;
+package com.github.libgraviton.workerbase;
 
 import static org.mockito.Mockito.*;
 
@@ -7,22 +7,18 @@ import java.io.File;
 import java.io.PrintStream;
 import java.net.URL;
 
+import com.github.libgraviton.workerbase.mq.QueueManager;
+import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.powermock.api.mockito.PowerMockito;
-import com.github.libgraviton.workerbase.Worker;
-import com.github.libgraviton.workerbase.WorkerAbstract;
-import com.github.libgraviton.workerbase.WorkerConsumer;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.request.GetRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
-import com.rabbitmq.client.AMQP.Queue.DeclareOk;
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 
 public abstract class WorkerBaseTestCase {
     
@@ -35,7 +31,6 @@ public abstract class WorkerBaseTestCase {
     protected HttpResponse<JsonNode> jsonResponse;
     protected HttpResponse<String> stringResponse;
     protected Channel queueChannel;
-    protected ConnectionFactory connectionFactory;
     protected RequestBodyEntity bodyEntity;
     protected HttpRequestWithBody requestBodyMock;
     protected HttpResponse<String> statusResponse;
@@ -48,7 +43,6 @@ public abstract class WorkerBaseTestCase {
         System.setErr(new PrintStream(errContent));
         
         PowerMockito.mockStatic(Unirest.class);
-        PowerMockito.mock(com.rabbitmq.client.ConnectionFactory.class);
         
         /**** UNIREST MOCKING ****/
 
@@ -91,33 +85,15 @@ public abstract class WorkerBaseTestCase {
             .thenReturn(statusResponse);        
         when(Unirest.get(contains("/mystatus")))
             .thenReturn(getRequestStatus);
-        
-        /**** RABBITMQ MOCKING ****/
-        
-        Connection queueConnection = mock(Connection.class);
-        queueChannel = mock(Channel.class);
-        connectionFactory = mock(ConnectionFactory.class);
-        DeclareOk queueDeclareOk = mock(DeclareOk.class);
-        
-        when(queueDeclareOk.getQueue())
-            .thenReturn("graviton-masterqueue");
-        
-        when(queueChannel.queueDeclare())
-            .thenReturn(queueDeclareOk);
-        when(queueConnection.createChannel())
-            .thenReturn(queueChannel);
-        when(connectionFactory.newConnection())
-            .thenReturn(queueConnection);                
     }
     
     protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {
         worker = spy(new Worker(testWorker));
-        workerConsumer = PowerMockito.spy(new WorkerConsumer(queueChannel, testWorker));
-        
-        when(worker.getConnectionFactory())
-            .thenReturn(connectionFactory);
-        when(worker.getWorkerConsumer(any(Channel.class), any(WorkerAbstract.class)))
-            .thenReturn(workerConsumer);
+        workerConsumer = PowerMockito.spy(new WorkerConsumer(queueChannel, testWorker, "testQueueName"));
+
+        WorkerQueueManager queueManager = mock(WorkerQueueManager.class);
+        when(worker.getQueueManager()).thenReturn(queueManager);
+        doNothing().when(queueManager).connect();
         
         return worker;
     }
