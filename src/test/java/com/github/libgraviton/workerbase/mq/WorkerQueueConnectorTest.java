@@ -25,8 +25,7 @@ public class WorkerQueueConnectorTest {
     @Test
     public void shouldInitializeQueueManager() {
         queueManager = new WorkerQueueManager(properties);
-        assertEquals("document.core.app.*", queueManager.getBindKeys().get(0));
-        assertEquals("graviton", queueManager.getExchangeName());
+        assertEquals("graviton", queueManager.getQueueName());
         assertEquals("aaaaaaaaaaaaaa", queueManager.getFactory().getHost());
         assertEquals(5672, queueManager.getFactory().getPort());
         assertEquals(1, queueManager.getRetryAfterSeconds());
@@ -38,8 +37,6 @@ public class WorkerQueueConnectorTest {
 
         WorkerQueueConnector queueConnector = (WorkerQueueConnector) queueManager.getQueueConnector();
         assertEquals("graviton",queueConnector.getQueueName());
-        assertEquals("graviton",queueConnector.getExchangeName());
-        assertEquals("document.core.app.*",queueConnector.getBindKeys().get(0));
         assertNull(queueConnector.getWorker());
         assertNotNull(queueConnector.getFactory());
     }
@@ -48,11 +45,10 @@ public class WorkerQueueConnectorTest {
     public void shouldTryConnectingToQueue() {
         queueManager = spy(new WorkerQueueManager(properties));
         WorkerQueueConnector queueConnector = spy(new WorkerQueueConnector());
-        queueConnector.setBindKeys(queueManager.getBindKeys());
         queueConnector.setRetryAfterSeconds(queueManager.getRetryAfterSeconds());
         queueConnector.setWorker(queueManager.getWorker());
         queueConnector.setFactory(queueManager.getFactory());
-        queueConnector.setExchangeName(queueManager.getExchangeName());
+        queueConnector.setQueueName(queueManager.getQueueName());
 
         doCallRealMethod().doReturn(true).when(queueConnector).connectAttempt();
         doReturn(queueConnector).when(queueManager).getQueueConnector();
