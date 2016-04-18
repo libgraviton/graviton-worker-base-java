@@ -5,8 +5,6 @@ import com.github.libgraviton.workerbase.WorkerConsumer;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
@@ -27,23 +25,27 @@ public class WorkerQueueConnector extends QueueConnector {
 
     private String queueName;
 
+    private Boolean durable = Boolean.TRUE;
+
+    private Boolean exclusive = Boolean.FALSE;
+
+    private Boolean autoDelete = Boolean.FALSE;
+
+    private Boolean autoAck = Boolean.TRUE;
+
+    // how many messages should this worker handle at a time?
+    private Integer prefetchCount = 2;
+
     @Override
     protected void connect() throws QueueConnectionException {
         try {
             Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
 
-            boolean durable = true;
-            boolean exclusive = false;
-            boolean autoDelete = false;
             Map<String, Object> arguments = null;
-
             channel.queueDeclare(queueName, durable, exclusive, autoDelete, arguments);
 
-            // how many messages should this worker handle at a time?
-            int prefetchCount = 2;
             channel.basicQos(prefetchCount);
-            boolean autoAck = true;
             channel.basicConsume(queueName, autoAck, new WorkerConsumer(channel, worker, queueName));
         } catch (IOException | TimeoutException e) {
             throw new QueueConnectionException("Cannot connect to message queue.", queueName, e);
@@ -73,5 +75,13 @@ public class WorkerQueueConnector extends QueueConnector {
 
     public ConnectionFactory getFactory() {
         return factory;
+    }
+
+    public Integer getPrefetchCount() {
+        return prefetchCount;
+    }
+
+    public void setPrefetchCount(Integer prefetchCount) {
+        this.prefetchCount = prefetchCount;
     }
 }
