@@ -39,6 +39,7 @@ public class WorkerQueueConnectorTest {
         assertEquals("graviton",queueConnector.getQueueName());
         assertNull(queueConnector.getWorker());
         assertNotNull(queueConnector.getFactory());
+        assertEquals(new Integer(1), queueConnector.getPrefetchCount());
     }
 
     @Test
