@@ -18,6 +18,7 @@ import com.github.libgraviton.workerbase.model.status.Status;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +46,10 @@ public abstract class WorkerAbstract {
     protected EventStatusHandler statusHandler;
 
     protected Boolean isRegistered = Boolean.FALSE;
+
+    protected long deliveryTag;
+
+    protected Channel channel;
 
     public Properties getProperties() {
         return properties;
@@ -99,10 +104,14 @@ public abstract class WorkerAbstract {
     /**
      * outer function that will be called on an queue event
      *
-     * @param consumerTag consumer tag (aka routing key)
+     * @param deliveryTag delivery tag from envelope
+     * @param channel registered channel
      * @param queueEvent queue event
      */
-    public final void handleDelivery(String consumerTag, QueueEvent queueEvent) {
+    public final void handleDelivery(QueueEvent queueEvent, long deliveryTag, Channel channel) {
+
+        this.deliveryTag = deliveryTag;
+        this.channel = channel;
 
         String statusUrl = queueEvent.getStatus().get$ref();
         try {
@@ -120,6 +129,7 @@ public abstract class WorkerAbstract {
                     if (!(e instanceof GravitonCommunicationException)) {
                         LOG.error("Unable to update worker status at '" + statusUrl + "'.");
                     }
+                    reportToMessageQueue();
                 }
             }
         }
@@ -147,10 +157,24 @@ public abstract class WorkerAbstract {
 
     protected void update(EventStatus eventStatus, String workerId, Status status) throws GravitonCommunicationException {
         statusHandler.update(eventStatus, workerId, status);
+        if(Status.DONE == status || Status.FAILED == status) {
+            reportToMessageQueue();
+        }
     }
 
     protected void update(String eventStatusUrl, String workerId, Status status) throws GravitonCommunicationException {
         statusHandler.update(statusHandler.getEventStatusFromUrl(eventStatusUrl), workerId, status);
+        if(Status.DONE == status || Status.FAILED == status) {
+            reportToMessageQueue();
+        }
+    }
+
+    private void reportToMessageQueue() {
+        try {
+            channel.basicAck(deliveryTag, false);
+        } catch (IOException ioe) {
+            LOG.error("Unable to ack deliveryTag '" + deliveryTag + "' on message queue.");
+        }
     }
 
     /**

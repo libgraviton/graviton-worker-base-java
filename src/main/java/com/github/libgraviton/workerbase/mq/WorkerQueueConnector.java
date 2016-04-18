@@ -31,7 +31,7 @@ public class WorkerQueueConnector extends QueueConnector {
 
     private Boolean autoDelete = Boolean.FALSE;
 
-    private Boolean autoAck = Boolean.TRUE;
+    private Boolean autoAck = Boolean.FALSE;
 
     // how many messages should this worker handle at a time?
     private Integer prefetchCount = 2;
