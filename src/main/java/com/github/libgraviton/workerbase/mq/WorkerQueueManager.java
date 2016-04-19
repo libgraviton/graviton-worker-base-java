@@ -16,8 +16,6 @@ public class WorkerQueueManager extends QueueManager {
 
     private ConnectionFactory factory;
 
-    private String queueName;
-
     private WorkerAbstract worker;
 
     private Integer prefetchCount;
@@ -25,8 +23,6 @@ public class WorkerQueueManager extends QueueManager {
 
     public WorkerQueueManager(Properties properties) {
         super(properties);
-
-        queueName = properties.getProperty("queue.name");
         prefetchCount = Integer.parseInt(properties.getProperty("queue.prefetchCount"));
         factory = getFactory(properties);
     }
@@ -48,7 +44,7 @@ public class WorkerQueueManager extends QueueManager {
     @Override
     protected QueueConnector getQueueConnector() {
         WorkerQueueConnector queueConnector = new WorkerQueueConnector();
-        queueConnector.setQueueName(queueName);
+        queueConnector.setQueueName(getQueueName());
         queueConnector.setFactory(factory);
         queueConnector.setWorker(worker);
         queueConnector.setRetryAfterSeconds(retryAfterSeconds);
@@ -69,6 +65,6 @@ public class WorkerQueueManager extends QueueManager {
     }
 
     public String getQueueName() {
-        return queueName;
+        return worker.getWorkerId();
     }
 }

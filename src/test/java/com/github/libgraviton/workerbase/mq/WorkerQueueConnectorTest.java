@@ -1,5 +1,6 @@
 package com.github.libgraviton.workerbase.mq;
 
+import com.github.libgraviton.workerbase.WorkerAbstract;
 import com.github.libgraviton.workerbase.helper.PropertiesLoader;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,24 +9,29 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
 public class WorkerQueueConnectorTest {
 
     private WorkerQueueManager queueManager;
 
+    private WorkerAbstract worker;
+
     private Properties properties;
 
     @Before
     public void setup() throws Exception {
         properties = PropertiesLoader.load();
+
+        worker = mock(WorkerAbstract.class);
+        when(worker.getWorkerId()).thenReturn("java-test");
+        queueManager = spy(new WorkerQueueManager(properties));
+        queueManager.setWorker(worker);
     }
 
     @Test
     public void shouldInitializeQueueManager() {
-        queueManager = new WorkerQueueManager(properties);
-        assertEquals("graviton", queueManager.getQueueName());
+        assertEquals("java-test", queueManager.getQueueName());
         assertEquals("aaaaaaaaaaaaaa", queueManager.getFactory().getHost());
         assertEquals(5672, queueManager.getFactory().getPort());
         assertEquals(1, queueManager.getRetryAfterSeconds());
@@ -33,18 +39,15 @@ public class WorkerQueueConnectorTest {
 
     @Test
     public void shouldInitializeQueueConnector() {
-        queueManager = new WorkerQueueManager(properties);
-
         WorkerQueueConnector queueConnector = (WorkerQueueConnector) queueManager.getQueueConnector();
-        assertEquals("graviton",queueConnector.getQueueName());
-        assertNull(queueConnector.getWorker());
+        assertEquals("java-test",queueConnector.getQueueName());
+        assertEquals(worker, queueConnector.getWorker());
         assertNotNull(queueConnector.getFactory());
         assertEquals(new Integer(1), queueConnector.getPrefetchCount());
     }
 
     @Test
     public void shouldTryConnectingToQueue() {
-        queueManager = spy(new WorkerQueueManager(properties));
         WorkerQueueConnector queueConnector = spy(new WorkerQueueConnector());
         queueConnector.setRetryAfterSeconds(queueManager.getRetryAfterSeconds());
         queueConnector.setWorker(queueManager.getWorker());
