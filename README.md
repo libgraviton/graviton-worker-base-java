@@ -50,12 +50,24 @@ You can use this library in your project by including this in your `pom.xml`:
 	<dependency>
 		<groupId>com.github.libgraviton</groupId>
 		<artifactId>worker-base</artifactId>
-		<version>0.4.0</version>
+		<version>0.15.0</version>
 	</dependency>
 </dependencies>	
 ```
 
 make sure that `version` points to the newest release on Maven central (see badge above).
+
+## RabbitMQ integration
+RabbitMQ is integrated as *Work Queues* (aka: Task Queues). The Howto page explains the implementation details. See (https://www.rabbitmq.com/tutorials/tutorial-two-java.html).
+With this setup, we create a persistent, separate message queue for each `graviton.workerId` and can be sure each worker gets only the messages it needs.
+Additionally we have round-robin load balancing for the case when there are more than one worker running with matching `graviton.workerId`.
+Thanks to the `message acknowledgment` we also have a fail-over mechanism whenever a worker loses its connection to the message queue. In that case the queue will
+requeue the message for another available worker.
+Aside from the `graviton.workerId`, there is also the `queue.prefetchCount` that can be configured. Each running worker will take as many messages at a time as configured.
+```xml
+graviton.workerId=myWorkerId
+queue.prefetchCount=2
+```
 
 ## Cloudfoundry support
 
