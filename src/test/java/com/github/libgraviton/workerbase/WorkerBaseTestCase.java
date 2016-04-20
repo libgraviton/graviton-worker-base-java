@@ -89,7 +89,6 @@ public abstract class WorkerBaseTestCase {
     protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {
         worker = spy(new Worker(testWorker));
         queueChannel = mock(Channel.class);
-        doNothing().when(queueChannel).basicAck(any(Long.class), eq(false));
         workerConsumer = PowerMockito.spy(new WorkerConsumer(queueChannel, testWorker, "testQueueName"));
 
         WorkerQueueManager queueManager = mock(WorkerQueueManager.class);
