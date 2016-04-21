@@ -3,8 +3,6 @@ package com.github.libgraviton.workerbase.mq;
 import com.github.libgraviton.workerbase.WorkerAbstract;
 import com.rabbitmq.client.ConnectionFactory;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -18,18 +16,14 @@ public class WorkerQueueManager extends QueueManager {
 
     private ConnectionFactory factory;
 
-    private String exchangeName;
-
-    private List<String> bindKeys;
-
     private WorkerAbstract worker;
+
+    private Integer prefetchCount;
 
 
     public WorkerQueueManager(Properties properties) {
         super(properties);
-
-        exchangeName = properties.getProperty("queue.exchangeName");
-        bindKeys = Arrays.asList(properties.getProperty("queue.bindKey").split(","));
+        prefetchCount = Integer.parseInt(properties.getProperty("queue.prefetchCount"));
         factory = getFactory(properties);
     }
 
@@ -50,11 +44,11 @@ public class WorkerQueueManager extends QueueManager {
     @Override
     protected QueueConnector getQueueConnector() {
         WorkerQueueConnector queueConnector = new WorkerQueueConnector();
-        queueConnector.setBindKeys(bindKeys);
-        queueConnector.setExchangeName(exchangeName);
+        queueConnector.setQueueName(getQueueName());
         queueConnector.setFactory(factory);
         queueConnector.setWorker(worker);
         queueConnector.setRetryAfterSeconds(retryAfterSeconds);
+        queueConnector.setPrefetchCount(prefetchCount);
         return queueConnector;
     }
 
@@ -66,15 +60,11 @@ public class WorkerQueueManager extends QueueManager {
         return factory;
     }
 
-    public String getExchangeName() {
-        return exchangeName;
-    }
-
-    public List<String> getBindKeys() {
-        return bindKeys;
-    }
-
     public WorkerAbstract getWorker() {
         return worker;
+    }
+
+    public String getQueueName() {
+        return worker.getWorkerId();
     }
 }

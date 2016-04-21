@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.PrintStream;
 import java.net.URL;
 
-import com.github.libgraviton.workerbase.mq.QueueManager;
 import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -89,6 +88,7 @@ public abstract class WorkerBaseTestCase {
     
     protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {
         worker = spy(new Worker(testWorker));
+        queueChannel = mock(Channel.class);
         workerConsumer = PowerMockito.spy(new WorkerConsumer(queueChannel, testWorker, "testQueueName"));
 
         WorkerQueueManager queueManager = mock(WorkerQueueManager.class);

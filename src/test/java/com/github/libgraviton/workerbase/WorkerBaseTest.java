@@ -5,6 +5,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 
 import com.github.libgraviton.workerbase.model.QueueEvent;
@@ -40,6 +41,8 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     public void testBasicExecution() throws Exception {
         TestWorker testWorker = new TestWorker();
         worker = getWrappedWorker(testWorker);
+        // execution should work even if message queue ack is not successful
+        doThrow(new IOException()).when(queueChannel).basicAck(any(Long.class), any(Boolean.class));
         worker.run();
         
         Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
