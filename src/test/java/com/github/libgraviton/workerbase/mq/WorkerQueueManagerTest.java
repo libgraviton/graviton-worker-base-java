@@ -6,8 +6,6 @@ import com.rabbitmq.client.ConnectionFactory;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-
 import static org.mockito.Mockito.*;
 
 public class WorkerQueueManagerTest {
@@ -19,8 +17,7 @@ public class WorkerQueueManagerTest {
 
     @Before
     public void setup() throws Exception {
-        queueConnector.setBindKeys(Arrays.asList("testBindKey1", "testBindKey2"));
-        queueConnector.setExchangeName("testExchangeName");
+        queueConnector.setQueueName("testQueueName");
     }
 
     @Test(expected = QueueConnectionException.class)

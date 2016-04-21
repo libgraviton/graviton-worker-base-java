@@ -5,11 +5,10 @@ import com.github.libgraviton.workerbase.WorkerConsumer;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 /**
  * <p>QueueConnector</p>
@@ -20,15 +19,22 @@ import java.util.List;
  */
 public class WorkerQueueConnector extends QueueConnector {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WorkerQueueConnector.class);
-
     private WorkerAbstract worker;
 
     private ConnectionFactory factory;
 
-    private String exchangeName;
+    private String queueName;
 
-    private List<String> bindKeys;
+    private Boolean durable = Boolean.TRUE;
+
+    private Boolean exclusive = Boolean.FALSE;
+
+    private Boolean autoDelete = Boolean.FALSE;
+
+    private Boolean autoAck = Boolean.FALSE;
+
+    // how many messages should this worker handle at a time?
+    private Integer prefetchCount = 2;
 
     @Override
     protected void connect() throws QueueConnectionException {
@@ -36,24 +42,19 @@ public class WorkerQueueConnector extends QueueConnector {
             Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
 
-            channel.exchangeDeclare(exchangeName, "topic", true);
-            String queueName = channel.queueDeclare().getQueue();
+            Map<String, Object> arguments = null;
+            channel.queueDeclare(queueName, durable, exclusive, autoDelete, arguments);
 
-            for (String bindKey : bindKeys) {
-                channel.queueBind(queueName, exchangeName, bindKey);
-                LOG.info("Subscribed on topic exchange '" + exchangeName + "' using binding key '" + bindKey + "'.");
-            }
-
-            channel.basicQos(2);
-            channel.basicConsume(queueName, true, new WorkerConsumer(channel, worker, exchangeName));
-        } catch (IOException e) {
-            throw new QueueConnectionException("Cannot connect to message queue.", exchangeName, e);
+            channel.basicQos(prefetchCount);
+            channel.basicConsume(queueName, autoAck, new WorkerConsumer(channel, worker, queueName));
+        } catch (IOException | TimeoutException e) {
+            throw new QueueConnectionException("Cannot connect to message queue.", queueName, e);
         }
     }
 
     @Override
     public String getQueueName() {
-        return exchangeName;
+        return queueName;
     }
 
     public void setWorker(WorkerAbstract worker) {
@@ -64,12 +65,8 @@ public class WorkerQueueConnector extends QueueConnector {
         this.factory = factory;
     }
 
-    public void setExchangeName(String exchangeName) {
-        this.exchangeName = exchangeName;
-    }
-
-    public void setBindKeys(List<String> bindKeys) {
-        this.bindKeys = bindKeys;
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
     }
 
     public WorkerAbstract getWorker() {
@@ -80,11 +77,11 @@ public class WorkerQueueConnector extends QueueConnector {
         return factory;
     }
 
-    public String getExchangeName() {
-        return exchangeName;
+    public Integer getPrefetchCount() {
+        return prefetchCount;
     }
 
-    public List<String> getBindKeys() {
-        return bindKeys;
+    public void setPrefetchCount(Integer prefetchCount) {
+        this.prefetchCount = prefetchCount;
     }
 }
