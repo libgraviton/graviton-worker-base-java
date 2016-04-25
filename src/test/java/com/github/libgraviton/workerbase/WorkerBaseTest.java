@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import java.util.Properties;
+import com.github.libgraviton.workerbase.helper.PropertiesLoader;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -32,8 +34,11 @@ import com.github.libgraviton.workerbase.lib.TestWorkerNoAuto;
 @PrepareForTest({com.rabbitmq.client.ConnectionFactory.class,Unirest.class})
 public class WorkerBaseTest extends WorkerBaseTestCase {
 
+    private Properties properties;
+
     @Before
-    public void setUp() throws Exception {    
+    public void setUp() throws Exception {
+        properties = PropertiesLoader.load();
         this.baseMock();                    
     }
 
@@ -56,8 +61,8 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
 
         QueueEvent queueEvent = testWorker.getHandledQueueEvent();
         assertEquals("documents.core.app.create", queueEvent.getEvent());
-        assertEquals("http://localhost/core/app/admin", queueEvent.getDocument().get$ref());
-        assertEquals("http://localhost/event/status/mystatus", queueEvent.getStatus().get$ref());
+        assertEquals(properties.getProperty("graviton.baseUrl") + "/core/app/admin", queueEvent.getDocument().get$ref());
+        assertEquals(properties.getProperty("graviton.baseUrl") + "/event/status/mystatus", queueEvent.getStatus().get$ref());
 
         // register
         verify(requestBodyMock, times(1)).body(contains("{\"id\":\"java-test\""));
