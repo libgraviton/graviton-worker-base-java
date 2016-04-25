@@ -113,6 +113,14 @@ public abstract class WorkerAbstract {
         this.deliveryTag = deliveryTag;
         this.channel = channel;
 
+        // (re)completing the $refs in the queueEvent-Object with graviton.baseUrl property
+        queueEvent.getStatus().set$ref(
+                properties.getProperty("graviton.baseUrl") + queueEvent.getStatus().get$ref()
+        );
+        queueEvent.getDocument().set$ref(
+                properties.getProperty("graviton.baseUrl") + queueEvent.getDocument().get$ref()
+        );
+
         String statusUrl = queueEvent.getStatus().get$ref();
         try {
             processDelivery(queueEvent, statusUrl);
