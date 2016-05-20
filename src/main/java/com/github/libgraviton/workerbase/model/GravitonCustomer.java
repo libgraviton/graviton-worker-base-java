@@ -12,7 +12,7 @@ public class GravitonCustomer {
     
     private String recordOrigin;
 
-    private Integer customerNumber;
+    private String customerNumber;
     
     /**
      * <p>Getter for the field <code>id</code>.</p>
@@ -56,7 +56,7 @@ public class GravitonCustomer {
      * @return a {@link java.lang.Integer} object.
      * @since 0.9.0
      */
-    public Integer getCustomerNumber() {
+    public String getCustomerNumber() {
         return customerNumber;
     }
 
@@ -66,7 +66,7 @@ public class GravitonCustomer {
      * @param customerNumber a {@link java.lang.Integer} object.
      * @since 0.9.0
      */
-    public void setCustomerNumber(Integer customerNumber) {
+    public void setCustomerNumber(String customerNumber) {
         this.customerNumber = customerNumber;
     }
 
