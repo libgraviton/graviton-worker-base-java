@@ -99,7 +99,9 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         assertEquals("2015-09-28T06:46:15+0000", testWorker.fileObj.metadata.getCreateDate());
         assertEquals("2015-09-28T06:46:15+0000", testWorker.fileObj.metadata.getModificationDate());
         assertEquals("hans.txt", testWorker.fileObj.metadata.getFilename());
-        
+        assertEquals("6129ec9222853b13723e07a2404091b9e8bbe6728e4836cd8a0ea06939e74fb7",
+                testWorker.fileObj.metadata.getHash());
+
         assertEquals(0, testWorker.fileObj.metadata.getAction().size());
         
         assertThat(testWorker.fileObj.getMetadata(), instanceOf(Metadata.class));
@@ -119,7 +121,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         workerConsumer.handleDelivery("document.file.file.create", envelope, new AMQP.BasicProperties(), message.getBytes());     
         
         verify(stringResponse, times(4)).getStatus();
-        
+
         assertEquals("16f52c4b00523e2ba27480ce6905ed1e", testWorker.fileObj.getId());
         
         // see action stuff
