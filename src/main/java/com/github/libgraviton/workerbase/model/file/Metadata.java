@@ -14,6 +14,7 @@ public class Metadata {
     public String createDate;
     public String modificationDate;
     public String filename;
+    public String hash;
     public String additionalInformation;
     public List<MetadataAction> action;
     public List<MetadataAddProperty> additionalProperties;
@@ -99,6 +100,22 @@ public class Metadata {
         this.filename = filename;
     }
     /**
+     * <p>Getter for the field <code>hash</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
+    public String getHash() {
+        return hash;
+    }
+    /**
+     * <p>Setter for the field <code>hash</code>.</p>
+     *
+     * @param hash a {@link java.lang.String} object.
+     */
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
+    /**
      * <p>Getter for the field <code>action</code>.</p>
      *
      * @return a {@link java.util.List} object.
@@ -114,7 +131,6 @@ public class Metadata {
     public void setAction(List<MetadataAction> action) {
         this.action = action;
     }
-    
     /**
      * <p>Getter for the field <code>additionalInformation</code>.</p>
      *
