@@ -138,8 +138,8 @@ public abstract class WorkerAbstract {
     protected void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {
         statusHandler = new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
         if (!shouldHandleRequest(queueEvent)) {
-            // set status to done if the worker doesn't care about the event
-            update(statusUrl, workerId, Status.DONE);
+            // set status to ignored if the worker doesn't care about the event
+            update(statusUrl, workerId, Status.IGNORED);
             return;
         }
 
