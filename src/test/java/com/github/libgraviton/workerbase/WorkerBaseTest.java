@@ -91,7 +91,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         // working
         verify(requestBodyMock, never()).body(contains("\"status\":\"working\",\"workerId\":\"java-test\""));
         // done
-        verify(requestBodyMock, times(1)).body(contains("\"status\":\"done\",\"workerId\":\"java-test\""));
+        verify(requestBodyMock, times(1)).body(contains("\"status\":\"ignored\",\"workerId\":\"java-test\""));
     }
     
     @Test
