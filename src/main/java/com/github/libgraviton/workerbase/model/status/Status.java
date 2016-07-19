@@ -7,6 +7,7 @@ package com.github.libgraviton.workerbase.model.status;
  */
 public enum Status {
     OPEN("opened"),
+    IGNORED("ignored"),
     WORKING("working"),
     DONE("done"),
     FAILED("failed");
