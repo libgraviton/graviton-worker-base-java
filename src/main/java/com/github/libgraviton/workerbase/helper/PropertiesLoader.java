@@ -8,6 +8,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * Load Properties with fallback mechanism
+ *
+ * @author List of contributors
+ *         https://github.com/libgraviton/graviton/graphs/contributors
+ * @see <a href="http://swisscom.chm">http://swisscom.ch</a>
+ */
 public class PropertiesLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesLoader.class);

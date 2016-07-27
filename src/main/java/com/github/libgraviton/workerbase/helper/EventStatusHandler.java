@@ -1,17 +1,13 @@
 package com.github.libgraviton.workerbase.helper;
 
 import com.fasterxml.jackson.jr.ob.JSON;
-import com.fasterxml.jackson.jr.ob.JSONObjectException;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.model.status.EventStatus;
 import com.github.libgraviton.workerbase.model.status.WorkerStatus;
-import com.github.libgraviton.workerbase.model.status.Status;
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequestWithBody;
-import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,12 +34,11 @@ public class EventStatusHandler {
     /**
      * Update the event status object on Graviton side
      *
-     * @param eventStatus adapted status that should be updated
-     * @param workerId only the status of this workerId will be updated
+     * @param eventStatus  adapted status that should be updated
      * @param workerStatus the new status of the worker
      * @throws GravitonCommunicationException when status cannot be updated at Graviton
      */
-    public void update(EventStatus eventStatus, String workerId, Status workerStatus) throws GravitonCommunicationException {
+    public void update(EventStatus eventStatus, WorkerStatus workerStatus) throws GravitonCommunicationException {
 
         List<WorkerStatus> status = eventStatus.getStatus();
 
@@ -53,8 +48,10 @@ public class EventStatusHandler {
 
         for (WorkerStatus statusEntry : status) {
             String currentWorkerId = statusEntry.getWorkerId();
-            if(currentWorkerId != null && currentWorkerId.equals(workerId)) {
-                statusEntry.setStatus(workerStatus);
+            if (currentWorkerId != null && currentWorkerId.equals(workerStatus.getWorkerId())) {
+                statusEntry.setStatus(workerStatus.getStatus());
+                statusEntry.setDescription(workerStatus.getDescription());
+                break;
             }
         }
         HttpResponse updateResponse;

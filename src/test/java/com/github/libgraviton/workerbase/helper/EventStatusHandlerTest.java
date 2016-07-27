@@ -66,8 +66,11 @@ public class EventStatusHandlerTest {
     public void testStatusHandlerUpdateWithoutValidStatus() throws GravitonCommunicationException {
         EventStatusHandler statusHandler = spy(new EventStatusHandler(eventStatusUrl));
         EventStatus eventStatus = new EventStatus();
+        WorkerStatus workerStatus = new WorkerStatus();
+        workerStatus.setWorkerId("workerId");
+        workerStatus.setStatus(Status.WORKING);
 
-        statusHandler.update(eventStatus, "workerId", Status.WORKING);
+        statusHandler.update(eventStatus, workerStatus);
     }
 
     @Test(expected = GravitonCommunicationException.class)
@@ -75,13 +78,15 @@ public class EventStatusHandlerTest {
         EventStatusHandler statusHandler = spy(new EventStatusHandler(eventStatusUrl));
         EventStatus eventStatus = new EventStatus();
         WorkerStatus workerStatus = new WorkerStatus();
+        workerStatus.setWorkerId("workerId");
+        workerStatus.setStatus(Status.WORKING);
         eventStatus.setStatus(Arrays.asList(workerStatus));
 
         when(Unirest.put(anyString())).thenReturn(requestBodyMock);
         when(bodyEntity.asString())
                 .thenThrow(new UnirestException("Something strange but beautiful happened"));
 
-        statusHandler.update(eventStatus, "workerId", Status.WORKING);
+        statusHandler.update(eventStatus, workerStatus);
     }
 
     @Test(expected = GravitonCommunicationException.class)

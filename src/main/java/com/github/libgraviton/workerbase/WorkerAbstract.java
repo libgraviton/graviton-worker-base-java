@@ -6,15 +6,15 @@ package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import com.github.libgraviton.workerbase.exception.UnsuccessfulHttpResponseException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
+import com.github.libgraviton.workerbase.helper.Dto;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
-import com.github.libgraviton.workerbase.model.*;
+import com.github.libgraviton.workerbase.helper.Translatable;
+import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.github.libgraviton.workerbase.model.register.WorkerRegister;
 import com.github.libgraviton.workerbase.model.register.WorkerRegisterSubscription;
-import com.github.libgraviton.workerbase.model.status.EventStatus;
-import com.github.libgraviton.workerbase.model.status.WorkerFeedback;
-import com.github.libgraviton.workerbase.model.status.InformationType;
-import com.github.libgraviton.workerbase.model.status.Status;
+import com.github.libgraviton.workerbase.model.status.*;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -23,10 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * <p>Abstract WorkerAbstract class.</p>
@@ -50,6 +47,8 @@ public abstract class WorkerAbstract {
     protected long deliveryTag;
 
     protected Channel channel;
+
+    protected WorkerStatus workerStatus;
 
     public Properties getProperties() {
         return properties;
@@ -123,7 +122,7 @@ public abstract class WorkerAbstract {
                 try {
                     EventStatus eventStatus = statusHandler.getEventStatusFromUrl(statusUrl);
                     eventStatus.add(new WorkerFeedback(workerId, InformationType.ERROR, e.toString()));
-                    update(eventStatus, workerId, Status.FAILED);
+                    update(eventStatus, Status.FAILED);
                 } catch (GravitonCommunicationException e1) {
                     // don't log again in case if previous exception was already a GravitonCommunicationException.
                     if (!(e instanceof GravitonCommunicationException)) {
@@ -137,41 +136,67 @@ public abstract class WorkerAbstract {
 
     protected void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {
         statusHandler = new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
+
         if (!shouldHandleRequest(queueEvent)) {
             // set status to ignored if the worker doesn't care about the event
-            update(statusUrl, workerId, Status.IGNORED);
+            update(statusUrl, Status.IGNORED);
             return;
         }
 
         if (shouldAutoUpdateStatus()) {
-            update(statusUrl, workerId, Status.WORKING);
+            update(statusUrl, Status.WORKING);
         }
 
         // call the worker
         handleRequest(queueEvent);
 
         if (shouldAutoUpdateStatus()) {
-            update(statusUrl, workerId, Status.DONE);
+            update(statusUrl, Status.DONE);
         }
     }
 
-    protected void update(EventStatus eventStatus, String workerId, Status status) throws GravitonCommunicationException {
-        statusHandler.update(eventStatus, workerId, status);
-        if(Status.DONE == status || Status.FAILED == status) {
+    protected Map<String,String> getWorkerStatusDescription() throws GravitonCommunicationException {
+        Map<String, String> description = new HashMap<>();
+        // 1.) get configured / calculated /i18n/translatable id
+        String translatableId = getTranslatableIdForDescription();
+        // 2.) fetch entries from /i18n/translatable for each language
+        String url = getProperties().getProperty("graviton.i18n.translatable.url");
+        List<Translatable> translatables;
+        try {
+            translatables = Dto.fetchListFrom(url,Translatable.class, translatableId);
+        } catch (UnsuccessfulHttpResponseException e) {
+            throw new GravitonCommunicationException(e);
+        }
+        for (Translatable translatable : translatables) {
+            description.put(translatable.getLocale(), translatable.getTranslated());
+        }
+
+        return description;
+    }
+
+    protected void update(EventStatus eventStatus, Status status) throws GravitonCommunicationException {
+        if(workerStatus == null) {
+            workerStatus = new WorkerStatus();
+            workerStatus.setWorkerId(workerId);
+        }
+        if(workerStatus.getDescription() == null || workerStatus.getDescription().isEmpty()) {
+            workerStatus.setDescription(getWorkerStatusDescription());
+        }
+        workerStatus.setStatus(status);
+        statusHandler.update(eventStatus, workerStatus);
+        if(workerStatus.getStatus().isTerminatedState()) {
             reportToMessageQueue();
         }
     }
 
-    protected void update(String eventStatusUrl, String workerId, Status status) throws GravitonCommunicationException {
-        statusHandler.update(statusHandler.getEventStatusFromUrl(eventStatusUrl), workerId, status);
-        if(Status.DONE == status || Status.FAILED == status) {
-            reportToMessageQueue();
-        }
+    protected void update(String eventStatusUrl, Status status) throws GravitonCommunicationException {
+        update(statusHandler.getEventStatusFromUrl(eventStatusUrl), status);
     }
 
     private void reportToMessageQueue() {
         try {
             channel.basicAck(deliveryTag, false);
+            LOG.debug("Reported basicAck to message queue with delivery tag '" + deliveryTag + "'.");
         } catch (IOException ioe) {
             LOG.error("Unable to ack deliveryTag '" + deliveryTag + "' on message queue.");
         }
@@ -248,5 +273,9 @@ public abstract class WorkerAbstract {
             subscriptions.add(subscription);
         }
         return subscriptions;
+    }
+
+    protected String getTranslatableIdForDescription() {
+        return getProperties().getProperty("gravtion.worker.description.id");
     }
 }
