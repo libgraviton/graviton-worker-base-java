@@ -28,7 +28,7 @@ public enum Status {
     }
 
     public boolean isTerminatedState() {
-        return terminatedStates.contains(value);
+        return terminatedStates.contains(this);
     }
 
     @Override
