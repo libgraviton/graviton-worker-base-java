@@ -1,16 +1,6 @@
 package com.github.libgraviton.workerbase;
 
-import static org.mockito.Mockito.*;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.net.URL;
-
 import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
-import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.powermock.api.mockito.PowerMockito;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -18,6 +8,16 @@ import com.mashape.unirest.request.GetRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
 import com.rabbitmq.client.Channel;
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
+import org.powermock.api.mockito.PowerMockito;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.PrintStream;
+import java.net.URL;
+
+import static org.mockito.Mockito.*;
 
 public abstract class WorkerBaseTestCase {
     
@@ -33,6 +33,7 @@ public abstract class WorkerBaseTestCase {
     protected RequestBodyEntity bodyEntity;
     protected HttpRequestWithBody requestBodyMock;
     protected HttpResponse<String> statusResponse;
+    protected HttpResponse<String> translatableResponse;
     
     @SuppressWarnings("unchecked")
     @Before
@@ -84,6 +85,20 @@ public abstract class WorkerBaseTestCase {
             .thenReturn(statusResponse);        
         when(Unirest.get(contains("/mystatus")))
             .thenReturn(getRequestStatus);
+
+        // GET /i18n/translatable mock
+        URL translatableResponseUrl = this.getClass().getClassLoader().getResource("json/translatableResponse.json");
+        String translatableResponseContent = FileUtils.readFileToString(new File(translatableResponseUrl.getFile()));
+        GetRequest translatableGetRequestStatus = mock(GetRequest.class);
+        translatableResponse = (HttpResponse<String>) mock(HttpResponse.class);
+        when(translatableResponse.getBody())
+                .thenReturn(translatableResponseContent);
+        when(translatableGetRequestStatus.header(anyString(), anyString()))
+                .thenReturn(translatableGetRequestStatus);
+        when(translatableGetRequestStatus.asString())
+                .thenReturn(translatableResponse);
+        when(Unirest.get(contains("/i18n/translatable")))
+                .thenReturn(translatableGetRequestStatus);
     }
     
     protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {
