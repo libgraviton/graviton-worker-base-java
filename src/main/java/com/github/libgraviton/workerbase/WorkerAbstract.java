@@ -196,6 +196,7 @@ public abstract class WorkerAbstract {
     private void reportToMessageQueue() {
         try {
             channel.basicAck(deliveryTag, false);
+            LOG.debug("Reported basicAck to message queue with delivery tag '" + deliveryTag + "'.");
         } catch (IOException ioe) {
             LOG.error("Unable to ack deliveryTag '" + deliveryTag + "' on message queue.");
         }
