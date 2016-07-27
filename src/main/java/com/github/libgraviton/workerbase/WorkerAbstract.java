@@ -184,7 +184,7 @@ public abstract class WorkerAbstract {
         }
         workerStatus.setStatus(status);
         statusHandler.update(eventStatus, workerStatus);
-        if(Status.DONE == workerStatus.getStatus() || Status.FAILED == workerStatus.getStatus()) {
+        if(workerStatus.getStatus().isTerminatedState()) {
             reportToMessageQueue();
         }
     }
