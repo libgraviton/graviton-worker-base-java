@@ -1,14 +1,15 @@
 package com.github.libgraviton.workerbase;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-
+import com.github.libgraviton.workerbase.lib.TestWorker;
+import com.github.libgraviton.workerbase.lib.TestWorkerException;
+import com.github.libgraviton.workerbase.lib.TestWorkerNoAuto;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.request.HttpRequestWithBody;
+import com.mashape.unirest.request.body.RequestBodyEntity;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Envelope;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,16 +18,13 @@ import org.mockito.AdditionalMatchers;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.request.HttpRequestWithBody;
-import com.mashape.unirest.request.body.RequestBodyEntity;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Envelope;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
-import com.github.libgraviton.workerbase.lib.TestWorker;
-import com.github.libgraviton.workerbase.lib.TestWorkerException;
-import com.github.libgraviton.workerbase.lib.TestWorkerNoAuto;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({com.rabbitmq.client.ConnectionFactory.class,Unirest.class})
@@ -61,10 +59,14 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
 
         // register
         verify(requestBodyMock, times(1)).body(contains("{\"id\":\"java-test\""));
+
         // working
         verify(requestBodyMock, times(1)).body(contains("\"status\":\"working\",\"workerId\":\"java-test\""));
         // done
         verify(requestBodyMock, times(1)).body(contains("\"status\":\"done\",\"workerId\":\"java-test\""));
+
+        // has description for 'working' and 'done' updates
+        verify(requestBodyMock, times(2)).body(contains("\"description\":{\"de\":\"Undefiniert\",\"en\":\"Undefined\"}"));
 
         // check if event status will be fetched before every update
         verify(statusResponse, times(2)).getBody();

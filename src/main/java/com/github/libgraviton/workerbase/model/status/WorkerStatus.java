@@ -1,5 +1,8 @@
 package com.github.libgraviton.workerbase.model.status;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * <p>WorkerStatus class.</p>
  *
@@ -10,38 +13,42 @@ public class WorkerStatus {
 
     public String workerId;
     public Status status;
-    
-    /**
-     * <p>Getter for the field <code>workerId</code>.</p>
-     *
-     * @return a {@link java.lang.String} object.
-     */
+    public Map<String, String> description;
+
     public String getWorkerId() {
         return workerId;
     }
-    /**
-     * <p>Setter for the field <code>workerId</code>.</p>
-     *
-     * @param workerId a {@link java.lang.String} object.
-     */
+
     public void setWorkerId(String workerId) {
         this.workerId = workerId;
     }
-    /**
-     * <p>Getter for the field <code>status</code>.</p>
-     *
-     * @return a {@link Status} object.
-     */
+
     public Status getStatus() {
         return status;
     }
-    /**
-     * <p>Setter for the field <code>status</code>.</p>
-     *
-     * @param status a {@link Status} object.
-     */
+
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public Map<String, String> getDescription() {
+        return description;
+    }
+
+    public String getDescription(String language) {
+        return description.get(language);
+    }
+
+    public void setDescription(Map<String, String> description) {
+        this.description = description;
+    }
+
+    public void addTranslatedDescription(String language, String content) {
+        if(description == null) {
+            description = new HashMap<>();
+        }
+
+        description.put(language, content);
     }
     
 }
