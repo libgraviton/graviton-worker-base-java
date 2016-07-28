@@ -123,7 +123,7 @@ public abstract class WorkerAbstract {
                 try {
                     EventStatus eventStatus = statusHandler.getEventStatusFromUrl(statusUrl);
                     eventStatus.add(new WorkerFeedback(workerId, InformationType.ERROR, e.toString()));
-                    update(eventStatus, Status.FAILED);
+                    update(eventStatus, workerId, Status.FAILED);
                 } catch (GravitonCommunicationException e1) {
                     // don't log again in case if previous exception was already a GravitonCommunicationException.
                     if (!(e instanceof GravitonCommunicationException)) {
@@ -140,23 +140,23 @@ public abstract class WorkerAbstract {
 
         if (!shouldHandleRequest(queueEvent)) {
             // set status to ignored if the worker doesn't care about the event
-            update(statusUrl, Status.IGNORED);
+            update(statusUrl, workerId, Status.IGNORED);
             return;
         }
 
         if (shouldAutoUpdateStatus()) {
-            update(statusUrl, Status.WORKING);
+            update(statusUrl, workerId, Status.WORKING);
         }
 
         // call the worker
         handleRequest(queueEvent);
 
         if (shouldAutoUpdateStatus()) {
-            update(statusUrl, Status.DONE);
+            update(statusUrl, workerId, Status.DONE);
         }
     }
 
-    protected void update(EventStatus eventStatus, Status status) throws GravitonCommunicationException {
+    protected void update(EventStatus eventStatus, String workerId, Status status) throws GravitonCommunicationException {
         if(eventStatus.hasStatusNeedForDescription(workerId)) {
             statusHandler.updateWithDescription(eventStatus, workerId, status, getWorkerStatusDescription());
         } else {
@@ -167,8 +167,8 @@ public abstract class WorkerAbstract {
         }
     }
 
-    protected void update(String eventStatusUrl, Status status) throws GravitonCommunicationException {
-        update(statusHandler.getEventStatusFromUrl(eventStatusUrl), status);
+    protected void update(String eventStatusUrl, String workerId, Status status) throws GravitonCommunicationException {
+        update(statusHandler.getEventStatusFromUrl(eventStatusUrl), workerId, status);
     }
 
     private void reportToMessageQueue() {

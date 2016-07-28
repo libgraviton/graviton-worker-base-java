@@ -77,7 +77,7 @@ public class EventStatusHandler {
         for (WorkerStatus statusEntry : status) {
             String currentWorkerId = statusEntry.getWorkerId();
             if (currentWorkerId != null && currentWorkerId.equals(workerStatus.getWorkerId())) {
-                if(workerStatus.getDescription() != null || !workerStatus.getDescription().isEmpty()) {
+                if(workerStatus.getDescription() != null && !workerStatus.getDescription().isEmpty()) {
                     statusEntry.setDescription(workerStatus.getDescription());
                 }
                 statusEntry.setStatus(workerStatus.getStatus());
