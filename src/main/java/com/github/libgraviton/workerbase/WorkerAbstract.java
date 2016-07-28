@@ -273,7 +273,7 @@ public abstract class WorkerAbstract {
     }
 
     protected String getTranslatableIdForDescription() {
-        return getProperties().getProperty("gravtion.worker.description.id");
+        return getProperties().getProperty("graviton.worker.description.id");
     }
 
     protected EventStatusHandler getEventStatusHandler() {
