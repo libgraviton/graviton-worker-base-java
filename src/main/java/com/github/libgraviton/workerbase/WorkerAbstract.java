@@ -14,7 +14,10 @@ import com.github.libgraviton.workerbase.helper.Translatable;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.github.libgraviton.workerbase.model.register.WorkerRegister;
 import com.github.libgraviton.workerbase.model.register.WorkerRegisterSubscription;
-import com.github.libgraviton.workerbase.model.status.*;
+import com.github.libgraviton.workerbase.model.status.EventStatus;
+import com.github.libgraviton.workerbase.model.status.InformationType;
+import com.github.libgraviton.workerbase.model.status.Status;
+import com.github.libgraviton.workerbase.model.status.WorkerFeedback;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -47,8 +50,6 @@ public abstract class WorkerAbstract {
     protected long deliveryTag;
 
     protected Channel channel;
-
-    protected WorkerStatus workerStatus;
 
     public Properties getProperties() {
         return properties;
@@ -135,7 +136,7 @@ public abstract class WorkerAbstract {
     }
 
     protected void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {
-        statusHandler = new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
+        statusHandler = getEventStatusHandler();
 
         if (!shouldHandleRequest(queueEvent)) {
             // set status to ignored if the worker doesn't care about the event
@@ -155,36 +156,13 @@ public abstract class WorkerAbstract {
         }
     }
 
-    protected Map<String,String> getWorkerStatusDescription() throws GravitonCommunicationException {
-        Map<String, String> description = new HashMap<>();
-        // 1.) get configured / calculated /i18n/translatable id
-        String translatableId = getTranslatableIdForDescription();
-        // 2.) fetch entries from /i18n/translatable for each language
-        String url = getProperties().getProperty("graviton.i18n.translatable.url");
-        List<Translatable> translatables;
-        try {
-            translatables = Dto.fetchListFrom(url,Translatable.class, translatableId);
-        } catch (UnsuccessfulHttpResponseException e) {
-            throw new GravitonCommunicationException(e);
-        }
-        for (Translatable translatable : translatables) {
-            description.put(translatable.getLocale(), translatable.getTranslated());
-        }
-
-        return description;
-    }
-
     protected void update(EventStatus eventStatus, Status status) throws GravitonCommunicationException {
-        if(workerStatus == null) {
-            workerStatus = new WorkerStatus();
-            workerStatus.setWorkerId(workerId);
+        if(eventStatus.hasStatusNeedForDescription(workerId)) {
+            statusHandler.updateWithDescription(eventStatus, workerId, status, getWorkerStatusDescription());
+        } else {
+            statusHandler.update(eventStatus, workerId, status);
         }
-        if(workerStatus.getDescription() == null || workerStatus.getDescription().isEmpty()) {
-            workerStatus.setDescription(getWorkerStatusDescription());
-        }
-        workerStatus.setStatus(status);
-        statusHandler.update(eventStatus, workerStatus);
-        if(workerStatus.getStatus().isTerminatedState()) {
+        if(status.isTerminatedState()) {
             reportToMessageQueue();
         }
     }
@@ -275,7 +253,30 @@ public abstract class WorkerAbstract {
         return subscriptions;
     }
 
+    protected Map<String,String> getWorkerStatusDescription() throws GravitonCommunicationException {
+        Map<String, String> description = new HashMap<>();
+        // 1.) get configured / calculated /i18n/translatable id
+        String translatableId = getTranslatableIdForDescription();
+        // 2.) fetch entries from /i18n/translatable for each language
+        String url = getProperties().getProperty("graviton.i18n.translatable.url");
+        List<Translatable> translatables;
+        try {
+            translatables = Dto.fetchListFrom(url,Translatable.class, translatableId);
+        } catch (UnsuccessfulHttpResponseException e) {
+            throw new GravitonCommunicationException(e);
+        }
+        for (Translatable translatable : translatables) {
+            description.put(translatable.getLocale(), translatable.getTranslated());
+        }
+
+        return description;
+    }
+
     protected String getTranslatableIdForDescription() {
         return getProperties().getProperty("gravtion.worker.description.id");
+    }
+
+    protected EventStatusHandler getEventStatusHandler() {
+        return new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
     }
 }

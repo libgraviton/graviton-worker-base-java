@@ -79,4 +79,15 @@ public class EventStatus {
         }
         getInformation().add(workerFeedback);
     }
+
+    public boolean hasStatusNeedForDescription(String workerId) {
+        for (WorkerStatus statusEntry : status) {
+            if (workerId.equals(statusEntry.getWorkerId())
+                    && statusEntry.getDescription() != null
+                    && !statusEntry.getDescription().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
