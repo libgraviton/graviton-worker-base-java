@@ -52,7 +52,12 @@ public class WorkerUtil {
     public static GravitonFile getGravitonFile(String fileUrl) throws GravitonCommunicationException {
         try {
             HttpResponse<String> response = Unirest.get(fileUrl).header("Accept", "application/json").asString();
-            return JSON.std.beanFrom(GravitonFile.class, response.getBody());
+            GravitonFile file =  JSON.std.beanFrom(GravitonFile.class, response.getBody());
+            if (file == null || file.getId() == null) {
+                throw new GravitonCommunicationException("Unable to GET graviton file from '" + fileUrl + "'.");
+            }
+
+            return file;
         } catch (UnirestException | IOException e) {
             throw new GravitonCommunicationException("Unable to GET graviton file from '" + fileUrl + "'.", e);
         }

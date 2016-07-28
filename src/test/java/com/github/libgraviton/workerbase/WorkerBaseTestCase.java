@@ -85,20 +85,6 @@ public abstract class WorkerBaseTestCase {
             .thenReturn(statusResponse);        
         when(Unirest.get(contains("/mystatus")))
             .thenReturn(getRequestStatus);
-
-        // GET /i18n/translatable mock
-        URL translatableResponseUrl = this.getClass().getClassLoader().getResource("json/translatableResponse.json");
-        String translatableResponseContent = FileUtils.readFileToString(new File(translatableResponseUrl.getFile()));
-        GetRequest translatableGetRequestStatus = mock(GetRequest.class);
-        translatableResponse = (HttpResponse<String>) mock(HttpResponse.class);
-        when(translatableResponse.getBody())
-                .thenReturn(translatableResponseContent);
-        when(translatableGetRequestStatus.header(anyString(), anyString()))
-                .thenReturn(translatableGetRequestStatus);
-        when(translatableGetRequestStatus.asString())
-                .thenReturn(translatableResponse);
-        when(Unirest.get(contains("/i18n/translatable")))
-                .thenReturn(translatableGetRequestStatus);
     }
     
     protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {

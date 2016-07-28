@@ -2,6 +2,7 @@ package com.github.libgraviton.workerbase.helper;
 
 import static org.junit.Assert.*;
 
+import com.github.libgraviton.workerbase.Worker;
 import com.github.libgraviton.workerbase.WorkerBaseTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
