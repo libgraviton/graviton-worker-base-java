@@ -6,11 +6,8 @@ package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
-import com.github.libgraviton.workerbase.exception.UnsuccessfulHttpResponseException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
-import com.github.libgraviton.workerbase.helper.Dto;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
-import com.github.libgraviton.workerbase.helper.Translatable;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.github.libgraviton.workerbase.model.register.WorkerRegister;
 import com.github.libgraviton.workerbase.model.register.WorkerRegisterSubscription;
@@ -26,7 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * <p>Abstract WorkerAbstract class.</p>
@@ -136,7 +136,7 @@ public abstract class WorkerAbstract {
     }
 
     protected void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {
-        statusHandler = getEventStatusHandler();
+        statusHandler = new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
 
         if (!shouldHandleRequest(queueEvent)) {
             // set status to ignored if the worker doesn't care about the event
@@ -157,11 +157,7 @@ public abstract class WorkerAbstract {
     }
 
     protected void update(EventStatus eventStatus, String workerId, Status status) throws GravitonCommunicationException {
-        if(eventStatus.hasStatusNeedForDescription(workerId)) {
-            statusHandler.updateWithDescription(eventStatus, workerId, status, getWorkerStatusDescription());
-        } else {
-            statusHandler.update(eventStatus, workerId, status);
-        }
+        statusHandler.update(eventStatus, workerId, status);
         if(status.isTerminatedState()) {
             reportToMessageQueue();
         }
@@ -251,32 +247,5 @@ public abstract class WorkerAbstract {
             subscriptions.add(subscription);
         }
         return subscriptions;
-    }
-
-    protected Map<String,String> getWorkerStatusDescription() throws GravitonCommunicationException {
-        Map<String, String> description = new HashMap<>();
-        // 1.) get configured / calculated /i18n/translatable id
-        String translatableId = getTranslatableIdForDescription();
-        // 2.) fetch entries from /i18n/translatable for each language
-        String url = getProperties().getProperty("graviton.i18n.translatable.url");
-        List<Translatable> translatables;
-        try {
-            translatables = Dto.fetchListFrom(url,Translatable.class, translatableId);
-        } catch (UnsuccessfulHttpResponseException e) {
-            throw new GravitonCommunicationException(e);
-        }
-        for (Translatable translatable : translatables) {
-            description.put(translatable.getLocale(), translatable.getTranslated());
-        }
-
-        return description;
-    }
-
-    protected String getTranslatableIdForDescription() {
-        return getProperties().getProperty("graviton.worker.description.id");
-    }
-
-    protected EventStatusHandler getEventStatusHandler() {
-        return new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
     }
 }

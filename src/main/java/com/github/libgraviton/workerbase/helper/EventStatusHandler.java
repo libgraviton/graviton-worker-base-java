@@ -98,7 +98,7 @@ public class EventStatusHandler {
             throw new GravitonCommunicationException("Failed to update the event status on '" + statusUrl + "'. Return status was '" + updateResponse.getStatus() + "'");
         }
 
-        LOG.debug("Updated status to '" + workerStatus + "' on '" + statusUrl + "'.");
+        LOG.debug("Updated status to '" + workerStatus.getStatus() + "' on '" + statusUrl + "'.");
     }
 
     public EventStatus getEventStatusFromUrl(String url) throws GravitonCommunicationException {
