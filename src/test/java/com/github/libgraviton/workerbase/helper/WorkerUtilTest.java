@@ -2,6 +2,7 @@ package com.github.libgraviton.workerbase.helper;
 
 import static org.junit.Assert.*;
 
+import com.github.libgraviton.workerbase.Worker;
 import com.github.libgraviton.workerbase.WorkerBaseTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +25,11 @@ public class WorkerUtilTest extends WorkerBaseTestCase {
             "http%3A%2F%2Flocalhost%2Fdude%2Fhans%2Ffranz%2DX%5FX%2EX%7EX%2C%2Fpesche",
             WorkerUtil.encodeRql("http://localhost/dude/hans/franz-X_X.X~X,/pesche")
         );
+    }
+
+    @Test
+    public void test123() throws Exception {
+        WorkerUtil.getGravitonFile("asdf");
     }
 
 }

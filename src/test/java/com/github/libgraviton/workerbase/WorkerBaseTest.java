@@ -65,9 +65,6 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         // done
         verify(requestBodyMock, times(1)).body(contains("\"status\":\"done\",\"workerId\":\"java-test\""));
 
-        // has description for 'working' and 'done' updates
-        verify(requestBodyMock, times(2)).body(contains("\"description\":{\"de\":\"Undefiniert\",\"en\":\"Undefined\"}"));
-
         // check if event status will be fetched before every update
         verify(statusResponse, times(2)).getBody();
     }
