@@ -27,9 +27,4 @@ public class WorkerUtilTest extends WorkerBaseTestCase {
         );
     }
 
-    @Test
-    public void test123() throws Exception {
-        WorkerUtil.getGravitonFile("asdf");
-    }
-
 }
