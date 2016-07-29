@@ -24,10 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * <p>Abstract WorkerAbstract class.</p>
@@ -158,8 +155,12 @@ public abstract class WorkerAbstract {
     }
 
     protected void update(EventStatus eventStatus, String workerId, Status status) throws GravitonCommunicationException {
-        statusHandler.update(eventStatus, workerId, status);
-        if(status.isTerminatedState()) {
+        if (eventStatus.shouldLinkAction(workerId)) {
+            statusHandler.updateWithAction(eventStatus, workerId, status, getWorkerAction());
+        } else {
+            statusHandler.update(eventStatus, workerId, status);
+        }
+        if (status.isTerminatedState()) {
             reportToMessageQueue();
         }
     }
@@ -216,7 +217,6 @@ public abstract class WorkerAbstract {
         WorkerRegister workerRegister = new WorkerRegister();
         workerRegister.setId(workerId);
         workerRegister.setSubscription(getSubscriptions());
-        workerRegister.setActions(getActions());
 
         HttpResponse<String> response;
         String registrationUrl = properties.getProperty("graviton.registerUrl");
@@ -251,16 +251,17 @@ public abstract class WorkerAbstract {
         return subscriptions;
     }
 
-    protected List<GravitonRef> getActions() {
-        List<String> actions = Arrays.asList(properties.getProperty("graviton.actions").split(","));
-        List<GravitonRef> actionLinks = new ArrayList<>();
+    /**
+     * Links to the action the worker is processing. The action itself contains a localized description.
+     *
+     * @return link to worker action
+     */
+    protected GravitonRef getWorkerAction() {
         String gravitonBaseUrl = properties.getProperty("graviton.base.url");
-
-        for (String action : actions) {
-            GravitonRef actionRef = new GravitonRef();
-            actionRef.set$ref(gravitonBaseUrl + "/" + action);
-            actionLinks.add(actionRef);
-        }
-        return actionLinks;
+        String eventActionEndpoint = properties.getProperty("graviton.endpoint.event.action");
+        String workerId = properties.getProperty("graviton.workerId");
+        GravitonRef actionRef = new GravitonRef();
+        actionRef.set$ref(gravitonBaseUrl + eventActionEndpoint + workerId + "-default");
+        return actionRef;
     }
 }

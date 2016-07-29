@@ -14,7 +14,6 @@ public class WorkerRegister {
 
     public String id;
     public List<WorkerRegisterSubscription> subscription;
-    public List<GravitonRef> actions;
 
     public String getId() {
         return id;
@@ -30,13 +29,5 @@ public class WorkerRegister {
 
     public void setSubscription(List<WorkerRegisterSubscription> subscription) {
         this.subscription = subscription;
-    }
-
-    public List<GravitonRef> getActions() {
-        return actions;
-    }
-
-    public void setActions(List<GravitonRef> actions) {
-        this.actions = actions;
     }
 }

@@ -44,13 +44,19 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         // to initialize worker
         worker = getWrappedWorker(testWorker);
         List<WorkerRegisterSubscription> subscriptions = testWorker.getSubscriptions();
-        List<GravitonRef> actions = testWorker.getActions();
         assertEquals(1, subscriptions.size());
-        assertEquals(2, actions.size());
 
         assertEquals("document.core.app.*", subscriptions.get(0).getEvent());
-        assertEquals("http://localhost:8000/worker-base-default", actions.get(0).get$ref());
-        assertEquals("http://localhost:8000/worker-base-default2", actions.get(1).get$ref());
+    }
+
+    @Test
+    public void testGetWorkerAction() throws Exception {
+        TestWorker testWorker = new TestWorker();
+        // to initialize worker
+        worker = getWrappedWorker(testWorker);
+        GravitonRef actionRef = testWorker.getWorkerAction();
+
+        assertEquals("http://localhost:8000/event/action/java-test-default", actionRef.get$ref());
     }
 
     @Test

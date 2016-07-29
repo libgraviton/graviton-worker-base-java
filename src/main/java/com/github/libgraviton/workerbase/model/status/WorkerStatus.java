@@ -1,7 +1,6 @@
 package com.github.libgraviton.workerbase.model.status;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.github.libgraviton.workerbase.model.GravitonRef;
 
 /**
  * <p>WorkerStatus class.</p>
@@ -13,7 +12,7 @@ public class WorkerStatus {
 
     public String workerId;
     public Status status;
-    public Map<String, String> description;
+    public GravitonRef action;
 
     public String getWorkerId() {
         return workerId;
@@ -31,24 +30,11 @@ public class WorkerStatus {
         this.status = status;
     }
 
-    public Map<String, String> getDescription() {
-        return description;
+    public GravitonRef getAction() {
+        return action;
     }
 
-    public String getDescription(String language) {
-        return description.get(language);
+    public void setAction(GravitonRef action) {
+        this.action = action;
     }
-
-    public void setDescription(Map<String, String> description) {
-        this.description = description;
-    }
-
-    public void addTranslatedDescription(String language, String content) {
-        if(description == null) {
-            description = new HashMap<>();
-        }
-
-        description.put(language, content);
-    }
-    
 }

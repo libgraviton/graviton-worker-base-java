@@ -2,6 +2,7 @@ package com.github.libgraviton.workerbase.helper;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import com.github.libgraviton.workerbase.model.GravitonRef;
 import com.github.libgraviton.workerbase.model.status.EventStatus;
 import com.github.libgraviton.workerbase.model.status.Status;
 import com.github.libgraviton.workerbase.model.status.WorkerStatus;
@@ -40,14 +41,14 @@ public class EventStatusHandler {
      * @param eventStatus  adapted status that should be updated
      * @param workerId id of this worker
      * @param status the new status of the worker
-     * @param workerDescription localized worker description
+     * @param action link to a worker action
      * @throws GravitonCommunicationException when status cannot be updated at Graviton
      */
-    public void updateWithDescription(EventStatus eventStatus, String workerId, Status status, Map<String, String> workerDescription) throws GravitonCommunicationException {
+    public void updateWithAction(EventStatus eventStatus, String workerId, Status status, GravitonRef action) throws GravitonCommunicationException {
         WorkerStatus workerStatus = new WorkerStatus();
         workerStatus.setWorkerId(workerId);
         workerStatus.setStatus(status);
-        workerStatus.setDescription(workerDescription);
+        workerStatus.setAction(action);
         update(eventStatus, workerStatus);
     }
 
@@ -77,8 +78,8 @@ public class EventStatusHandler {
         for (WorkerStatus statusEntry : status) {
             String currentWorkerId = statusEntry.getWorkerId();
             if (currentWorkerId != null && currentWorkerId.equals(workerStatus.getWorkerId())) {
-                if(workerStatus.getDescription() != null && !workerStatus.getDescription().isEmpty()) {
-                    statusEntry.setDescription(workerStatus.getDescription());
+                if(workerStatus.getAction() != null) {
+                    statusEntry.setAction(workerStatus.getAction());
                 }
                 statusEntry.setStatus(workerStatus.getStatus());
                 break;
