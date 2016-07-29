@@ -8,6 +8,7 @@ import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
+import com.github.libgraviton.workerbase.model.GravitonRef;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.github.libgraviton.workerbase.model.register.WorkerRegister;
 import com.github.libgraviton.workerbase.model.register.WorkerRegisterSubscription;
@@ -23,10 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * <p>Abstract WorkerAbstract class.</p>
@@ -157,8 +155,12 @@ public abstract class WorkerAbstract {
     }
 
     protected void update(EventStatus eventStatus, String workerId, Status status) throws GravitonCommunicationException {
-        statusHandler.update(eventStatus, workerId, status);
-        if(status.isTerminatedState()) {
+        if (eventStatus.shouldLinkAction(workerId)) {
+            statusHandler.updateWithAction(eventStatus, workerId, status, getWorkerAction());
+        } else {
+            statusHandler.update(eventStatus, workerId, status);
+        }
+        if (status.isTerminatedState()) {
             reportToMessageQueue();
         }
     }
@@ -220,11 +222,11 @@ public abstract class WorkerAbstract {
         String registrationUrl = properties.getProperty("graviton.registerUrl");
         try {
             response = Unirest.put(registrationUrl)
-                .routeParam("workerId", workerId)
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .body(JSON.std.asString(workerRegister))
-                .asString();
+                    .routeParam("workerId", workerId)
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .body(JSON.std.asString(workerRegister))
+                    .asString();
         } catch (UnirestException | IOException e) {
             throw new GravitonCommunicationException("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'.", e);
         }
@@ -234,7 +236,7 @@ public abstract class WorkerAbstract {
             isRegistered = Boolean.TRUE;
         } else {
             throw new GravitonCommunicationException("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'. Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
-        }        
+        }
     }
 
     protected List<WorkerRegisterSubscription> getSubscriptions() {
@@ -247,5 +249,19 @@ public abstract class WorkerAbstract {
             subscriptions.add(subscription);
         }
         return subscriptions;
+    }
+
+    /**
+     * Links to the action the worker is processing. The action itself contains a localized description.
+     *
+     * @return link to worker action
+     */
+    protected GravitonRef getWorkerAction() {
+        String gravitonBaseUrl = properties.getProperty("graviton.base.url");
+        String eventActionEndpoint = properties.getProperty("graviton.endpoint.event.action");
+        String workerId = properties.getProperty("graviton.workerId");
+        GravitonRef actionRef = new GravitonRef();
+        actionRef.set$ref(gravitonBaseUrl + eventActionEndpoint + workerId + "-default");
+        return actionRef;
     }
 }
