@@ -80,11 +80,10 @@ public class EventStatus {
         getInformation().add(workerFeedback);
     }
 
-    public boolean hasStatusNeedForDescription(String workerId) {
+    public boolean shouldLinkAction(String workerId) {
         for (WorkerStatus statusEntry : status) {
             if (workerId.equals(statusEntry.getWorkerId())
-                    && statusEntry.getDescription() != null
-                    && !statusEntry.getDescription().isEmpty()) {
+                    && statusEntry.getAction() != null) {
                 return false;
             }
         }

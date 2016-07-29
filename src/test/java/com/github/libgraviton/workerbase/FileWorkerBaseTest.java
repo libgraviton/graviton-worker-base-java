@@ -129,7 +129,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         assertTrue(testWorker.actionPresent);
         
         // register
-        verify(requestBodyMock, times(1)).body(contains("{\"id\":\"java-test\""));
+        verify(requestBodyMock, times(1)).body(contains("\"id\":\"java-test\""));
         // working update
         verify(requestBodyMock, times(1)).body(contains("\"status\":\"working\",\"workerId\":\"java-test\""));
         // failed update
