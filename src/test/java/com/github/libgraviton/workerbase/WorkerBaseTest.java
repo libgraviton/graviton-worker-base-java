@@ -3,7 +3,9 @@ package com.github.libgraviton.workerbase;
 import com.github.libgraviton.workerbase.lib.TestWorker;
 import com.github.libgraviton.workerbase.lib.TestWorkerException;
 import com.github.libgraviton.workerbase.lib.TestWorkerNoAuto;
+import com.github.libgraviton.workerbase.model.GravitonRef;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.github.libgraviton.workerbase.model.register.WorkerRegisterSubscription;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.request.HttpRequestWithBody;
@@ -21,6 +23,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
@@ -33,6 +36,21 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     @Before
     public void setUp() throws Exception {    
         this.baseMock();                    
+    }
+
+    @Test
+    public void testRegistrationPreparation() throws Exception {
+        TestWorker testWorker = new TestWorker();
+        // to initialize worker
+        worker = getWrappedWorker(testWorker);
+        List<WorkerRegisterSubscription> subscriptions = testWorker.getSubscriptions();
+        List<GravitonRef> actions = testWorker.getActions();
+        assertEquals(1, subscriptions.size());
+        assertEquals(2, actions.size());
+
+        assertEquals("document.core.app.*", subscriptions.get(0).getEvent());
+        assertEquals("http://localhost:8000/worker-base-default", actions.get(0).get$ref());
+        assertEquals("http://localhost:8000/worker-base-default2", actions.get(1).get$ref());
     }
 
     @Test
@@ -58,7 +76,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         assertEquals("http://localhost/event/status/mystatus", queueEvent.getStatus().get$ref());
 
         // register
-        verify(requestBodyMock, times(1)).body(contains("{\"id\":\"java-test\""));
+        verify(requestBodyMock, times(1)).body(contains("\"id\":\"java-test\""));
 
         // working
         verify(requestBodyMock, times(1)).body(contains("\"status\":\"working\",\"workerId\":\"java-test\""));
@@ -86,7 +104,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         verify(testWorker, times(1)).shouldHandleRequest(any(QueueEvent.class));
 
         // register
-        verify(requestBodyMock, times(1)).body(contains("{\"id\":\"java-test\""));
+        verify(requestBodyMock, times(1)).body(contains("\"id\":\"java-test\""));
         // working
         verify(requestBodyMock, never()).body(contains("\"status\":\"working\",\"workerId\":\"java-test\""));
         // done
@@ -132,7 +150,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
         
         // register
-        verify(requestBodyMock, times(1)).body(contains("{\"id\":\"java-test\""));
+        verify(requestBodyMock, times(1)).body(contains("\"id\":\"java-test\""));
         // working update
         verify(requestBodyMock, times(1)).body(contains("\"status\":\"working\",\"workerId\":\"java-test\""));
         // failed update

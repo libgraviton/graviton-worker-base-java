@@ -8,6 +8,7 @@ import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
+import com.github.libgraviton.workerbase.model.GravitonRef;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.github.libgraviton.workerbase.model.register.WorkerRegister;
 import com.github.libgraviton.workerbase.model.register.WorkerRegisterSubscription;
@@ -215,16 +216,17 @@ public abstract class WorkerAbstract {
         WorkerRegister workerRegister = new WorkerRegister();
         workerRegister.setId(workerId);
         workerRegister.setSubscription(getSubscriptions());
+        workerRegister.setActions(getActions());
 
         HttpResponse<String> response;
         String registrationUrl = properties.getProperty("graviton.registerUrl");
         try {
             response = Unirest.put(registrationUrl)
-                .routeParam("workerId", workerId)
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .body(JSON.std.asString(workerRegister))
-                .asString();
+                    .routeParam("workerId", workerId)
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .body(JSON.std.asString(workerRegister))
+                    .asString();
         } catch (UnirestException | IOException e) {
             throw new GravitonCommunicationException("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'.", e);
         }
@@ -234,7 +236,7 @@ public abstract class WorkerAbstract {
             isRegistered = Boolean.TRUE;
         } else {
             throw new GravitonCommunicationException("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'. Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
-        }        
+        }
     }
 
     protected List<WorkerRegisterSubscription> getSubscriptions() {
@@ -247,5 +249,18 @@ public abstract class WorkerAbstract {
             subscriptions.add(subscription);
         }
         return subscriptions;
+    }
+
+    protected List<GravitonRef> getActions() {
+        List<String> actions = Arrays.asList(properties.getProperty("graviton.actions").split(","));
+        List<GravitonRef> actionLinks = new ArrayList<>();
+        String gravitonBaseUrl = properties.getProperty("graviton.base.url");
+
+        for (String action : actions) {
+            GravitonRef actionRef = new GravitonRef();
+            actionRef.set$ref(gravitonBaseUrl + "/" + action);
+            actionLinks.add(actionRef);
+        }
+        return actionLinks;
     }
 }
