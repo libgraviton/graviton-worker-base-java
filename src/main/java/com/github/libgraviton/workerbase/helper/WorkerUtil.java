@@ -11,7 +11,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -57,7 +56,24 @@ public class WorkerUtil {
      * @throws GravitonCommunicationException if file could not be fetched.
      * @return file instance
      */
-    public static GravitonFile getGravitonFile(String fileUrl) throws GravitonCommunicationException {
+    public static GravitonFile getGravitonFile(
+            String fileUrl
+    ) throws GravitonCommunicationException {
+        return getGravitonFile(fileUrl, RETRY_COUNT, SEC_WAIT_BEFORE_RETRY);
+    }
+
+    /**
+     * gets file metadata from backend as a GravitonFile object
+     *
+     * @param fileUrl the url of the object
+     * @param retryCount number of retries if the file meta could not be fetched
+     * @param secWaitBeforeRetry amount of seconds to wait before retrying
+     * @throws GravitonCommunicationException GravitonCommunicationException if file could not be fetched.
+     * @return file instance
+     */
+    public static GravitonFile getGravitonFile(
+            String fileUrl, int retryCount, int secWaitBeforeRetry
+    ) throws GravitonCommunicationException {
         try {
             int triesCount = 0;
             HttpResponse<String> response;
@@ -68,12 +84,12 @@ public class WorkerUtil {
                     LOG.warn(
                             "Unable to fetch {}. Trying again in {}s ({}/{})",
                             fileUrl,
-                            SEC_WAIT_BEFORE_RETRY,
+                            secWaitBeforeRetry,
                             triesCount,
-                            RETRY_COUNT
+                            retryCount
                     );
                     try {
-                        Thread.sleep(SEC_WAIT_BEFORE_RETRY * 1000);
+                        Thread.sleep(secWaitBeforeRetry * 1000);
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                     }
@@ -81,7 +97,7 @@ public class WorkerUtil {
                 response = Unirest.get(fileUrl).header("Accept", "application/json").asString();
                 file =  JSON.std.beanFrom(GravitonFile.class, response.getBody());
                 triesCount++;
-            } while (triesCount <= RETRY_COUNT && (file == null || file.getId() == null) && response.getStatus() != 404);
+            } while (triesCount <= retryCount && (file == null || file.getId() == null) && response.getStatus() != 404);
 
             if (file == null || file.getId() == null) {
                 throw new GravitonCommunicationException("Unable to GET graviton file from '" + fileUrl + "'.");
