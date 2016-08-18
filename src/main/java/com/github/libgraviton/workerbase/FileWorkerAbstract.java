@@ -47,7 +47,6 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
             }
         }
         return actionOfInterestPresent;
-
     }
 
     /**
