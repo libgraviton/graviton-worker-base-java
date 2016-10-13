@@ -66,7 +66,17 @@ public class WorkerConsumer extends DefaultConsumer {
 
     @Override
     public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
-        LOG.info("Lost connection to message queue '" + queueName + "'. Starting connection recovery.");
-    }
+        LOG.info("Lost connection to message queue '" + queueName + "'.");
+        if(sig.getReference() instanceof Channel) {
+            Channel channel = (Channel) sig.getReference();
+            Connection connection = channel.getConnection();
 
+            LOG.info("Channel is closed. Creating new channel for connection '" + connection + "'.");
+            try {
+                worker.getQueueManager().createChannel(connection);
+            } catch (IOException e) {
+                LOG.error("Cannot create channel for connection '" + connection + "'.", e);
+            }
+        }
+    }
 }

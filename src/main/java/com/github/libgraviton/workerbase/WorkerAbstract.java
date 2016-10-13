@@ -16,6 +16,7 @@ import com.github.libgraviton.workerbase.model.status.EventStatus;
 import com.github.libgraviton.workerbase.model.status.InformationType;
 import com.github.libgraviton.workerbase.model.status.Status;
 import com.github.libgraviton.workerbase.model.status.WorkerFeedback;
+import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -24,7 +25,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * <p>Abstract WorkerAbstract class.</p>
@@ -263,5 +267,11 @@ public abstract class WorkerAbstract {
         GravitonRef actionRef = new GravitonRef();
         actionRef.set$ref(gravitonBaseUrl + eventActionEndpoint + workerId + "-default");
         return actionRef;
+    }
+
+    public WorkerQueueManager getQueueManager() {
+        WorkerQueueManager workerQueueManager = new WorkerQueueManager(properties);
+        workerQueueManager.setWorker(this);
+        return workerQueueManager;
     }
 }
