@@ -10,7 +10,6 @@ import com.github.libgraviton.workerbase.exception.GravitonCommunicationExceptio
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.PropertiesLoader;
 import com.github.libgraviton.workerbase.mq.QueueManager;
-import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,9 +92,7 @@ public class Worker {
     }
 
     public QueueManager getQueueManager() {
-        WorkerQueueManager workerQueueManager = new WorkerQueueManager(properties);
-        workerQueueManager.setWorker(worker);
-        return workerQueueManager;
+        return worker.getQueueManager();
     }
     
     /**
