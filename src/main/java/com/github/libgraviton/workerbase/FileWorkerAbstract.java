@@ -36,6 +36,8 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
     private GravitonFile gravitonFile;
 
     public boolean shouldHandleRequest(QueueEvent queueEvent) throws WorkerException, GravitonCommunicationException {
+        // reset gravitonFile, to make sure we have no cached values that will interfere.
+        gravitonFile = null;
         String documentUrl = queueEvent.getDocument().get$ref();
         List<String> actions = getActionsOfInterest(queueEvent);
 
