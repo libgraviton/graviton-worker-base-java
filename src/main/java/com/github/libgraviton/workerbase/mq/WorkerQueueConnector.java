@@ -40,16 +40,20 @@ public class WorkerQueueConnector extends QueueConnector {
     protected void connect() throws QueueConnectionException {
         try {
             Connection connection = factory.newConnection();
-            Channel channel = connection.createChannel();
-
-            Map<String, Object> arguments = null;
-            channel.queueDeclare(queueName, durable, exclusive, autoDelete, arguments);
-
-            channel.basicQos(prefetchCount);
-            channel.basicConsume(queueName, autoAck, new WorkerConsumer(channel, worker, queueName));
+            createChannel(connection);
         } catch (IOException | TimeoutException e) {
             throw new QueueConnectionException("Cannot connect to message queue.", queueName, e);
         }
+    }
+
+    public void createChannel(Connection connection) throws IOException {
+        Channel channel = connection.createChannel();
+
+        Map<String, Object> arguments = null;
+        channel.queueDeclare(queueName, durable, exclusive, autoDelete, arguments);
+
+        channel.basicQos(prefetchCount);
+        channel.basicConsume(queueName, autoAck, new WorkerConsumer(channel, worker, queueName));
     }
 
     @Override

@@ -1,8 +1,10 @@
 package com.github.libgraviton.workerbase.mq;
 
 import com.github.libgraviton.workerbase.WorkerAbstract;
+import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
+import java.io.IOException;
 import java.util.Properties;
 
 /**
@@ -50,6 +52,10 @@ public class WorkerQueueManager extends QueueManager {
         queueConnector.setRetryAfterSeconds(retryAfterSeconds);
         queueConnector.setPrefetchCount(prefetchCount);
         return queueConnector;
+    }
+
+    public void createChannel(Connection connection) throws IOException {
+        ((WorkerQueueConnector) getQueueConnector()).createChannel(connection);
     }
 
     public void setWorker(WorkerAbstract worker) {
