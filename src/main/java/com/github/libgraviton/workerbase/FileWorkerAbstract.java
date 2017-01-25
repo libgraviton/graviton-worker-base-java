@@ -5,20 +5,17 @@
 
 package com.github.libgraviton.workerbase;
 
-import com.fasterxml.jackson.jr.ob.JSON;
+import com.github.libgraviton.gdk.exception.CommunicationException;
+import com.github.libgraviton.gdk.gravitondyn.file.document.File;
+import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadata;
+import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadataAction;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.model.QueueEvent;
-import com.github.libgraviton.workerbase.model.file.GravitonFile;
-import com.github.libgraviton.workerbase.model.file.Metadata;
-import com.github.libgraviton.workerbase.model.file.MetadataAction;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +30,7 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileWorkerAbstract.class);
 
-    private GravitonFile gravitonFile;
+    protected File gravitonFile;
 
     public boolean shouldHandleRequest(QueueEvent queueEvent) throws WorkerException, GravitonCommunicationException {
         // reset gravitonFile, to make sure we have no cached values that will interfere.
@@ -66,25 +63,25 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
      * @throws GravitonCommunicationException if file could not be fetched.
      * @return file instance
      */
-    public GravitonFile getGravitonFile(String fileUrl) throws GravitonCommunicationException {
+    public File getGravitonFile(String fileUrl) throws GravitonCommunicationException {
         if (gravitonFile != null && fileUrl.contains(gravitonFile.getId())) {
             return gravitonFile;
         }
 
-        gravitonFile = WorkerUtil.getGravitonFile(fileUrl);
+        gravitonFile = WorkerUtil.getGravitonFile(gravitonApi, fileUrl);
         return gravitonFile;
     }    
     
     /**
      * checks if a certain action is present in the metadata.action array
      *
-     * @param gravitonFile a {@link GravitonFile} object.
+     * @param gravitonFile a {@link File} object.
      * @param action a {@link java.lang.String} object.
      * @return true if yes, false if not
      */
-    public Boolean isActionCommandPresent(GravitonFile gravitonFile, String action) {
-        Metadata metadata = gravitonFile.getMetadata();
-        for (MetadataAction singleAction: metadata.getAction()) {
+    public Boolean isActionCommandPresent(File gravitonFile, String action) {
+        FileMetadata metadata = gravitonFile.getMetadata();
+        for (FileMetadataAction singleAction: metadata.getAction()) {
             if (singleAction.getCommand() != null && singleAction.getCommand().equals(action) ) {
                 return true;
             }            
@@ -101,14 +98,13 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
      * @throws GravitonCommunicationException when file action command could not be removed at Graviton
      */
     public void removeFileActionCommand(String documentUrl, String action) throws GravitonCommunicationException {
-        // we will re-fetch again just to be sure.. this *really* should use PATCH ;-)
         gravitonFile = null;
         gravitonFile = getGravitonFile(documentUrl);
-        Metadata metadata = gravitonFile.getMetadata();
-        List<MetadataAction> metadataActions = metadata.getAction();
-        List<MetadataAction> matchingActions = new ArrayList<>();
+        FileMetadata metadata = gravitonFile.getMetadata();
+        List<FileMetadataAction> metadataActions = metadata.getAction();
+        List<FileMetadataAction> matchingActions = new ArrayList<>();
 
-        for (MetadataAction metadataAction : metadataActions) {
+        for (FileMetadataAction metadataAction : metadataActions) {
             if (action.equals(metadataAction.getCommand())) {
                 matchingActions.add(metadataAction);
             }
@@ -118,8 +114,8 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
             metadataActions.removeAll(matchingActions);
 
             try {
-                Unirest.put(documentUrl).header("Content-Type", "application/json").body(JSON.std.asString(gravitonFile)).asString();
-            } catch (UnirestException | IOException e) {
+                gravitonApi.patch(gravitonFile).execute();
+            } catch (CommunicationException e) {
                 throw new GravitonCommunicationException("Unable to remove file action command '" + action + "' from '" + documentUrl + "'.", e);
             }
 

@@ -3,16 +3,16 @@
  */
 package com.github.libgraviton.workerbase;
 
+import com.github.libgraviton.gdk.GravitonApi;
+import com.github.libgraviton.gdk.api.GravitonResponse;
+import com.github.libgraviton.gdk.api.header.HeaderBag;
+import com.google.common.collect.AbstractIterator;
+
 import java.net.URLDecoder;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.fasterxml.jackson.jr.ob.JSON;
-import com.google.common.collect.AbstractIterator;
-import com.mashape.unirest.http.Headers;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
 
 /**
  * <pre>
@@ -79,7 +79,7 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
     /**
      * last response object
      */
-    private HttpResponse<String> response;
+    private GravitonResponse response;
     
     /**
      * the next page to fetch (if available)
@@ -92,12 +92,19 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
     private Class<T> typeParameterClass;
 
     /**
+     * wrapper to communicate with the graviton API
+     */
+    private GravitonApi gravitonApi;
+
+    /**
      * Constructor to serialize to DeferredMap instances
      *
      * @param requestUrl url to request
+     * @param gravitonApi GravitonApi instance
      * @throws java.lang.Exception if any.
      */
-    public PagingResponseIterator(String requestUrl) throws Exception {
+    public PagingResponseIterator(String requestUrl, GravitonApi gravitonApi) throws Exception {
+        this.gravitonApi = gravitonApi;
         init(requestUrl);
     }
 
@@ -106,10 +113,12 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
      *
      * @param typeParameterClass class type to serialize to
      * @param requestUrl url to fetch
+     * @param gravitonApi GravitonApi instance
      * @throws java.lang.Exception if any.
      */
-    public PagingResponseIterator(Class<T> typeParameterClass, String requestUrl) throws Exception {
+    public PagingResponseIterator(Class<T> typeParameterClass, String requestUrl, GravitonApi gravitonApi) throws Exception {
         this.typeParameterClass = typeParameterClass;
+        this.gravitonApi = gravitonApi;
         init(requestUrl);
     }
 
@@ -163,13 +172,13 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
      */
     @SuppressWarnings("unchecked")
     private void fetch(String fetchUrl) throws Exception {
-        response = Unirest.get(fetchUrl).header("Accept", "application/json").asString();
+
+        response = gravitonApi.get(fetchUrl).execute();
 
         if (typeParameterClass != null) {
-            resultSet = JSON.std.listOfFrom(typeParameterClass, response.getBody())
-                    .iterator();
+            resultSet = response.getBodyItems(typeParameterClass).iterator();
         } else {
-            resultSet = (Iterator<T>) JSON.std.listFrom(response.getBody()).iterator();
+            resultSet = (Iterator<T>) response.getBodyItem(List.class).iterator();
         }
     }
 
@@ -179,10 +188,10 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
      */
     private void parseLinkHeader() throws Exception {
         Pattern pattern = Pattern.compile("\\<(.*)\\>; rel\\=\\\"next\\\"");
-        Headers headers = response.getHeaders();
+        HeaderBag headers = response.getHeaders();
 
-        if (headers.containsKey("Link")) {
-            String linkHeader = headers.get("Link").get(0);
+        if (headers.get("link") != null) {
+            String linkHeader = headers.get("link").get(0);
             String[] headerParts = linkHeader.split(",");
             Matcher matcher;
             for (String singleLinkHeader : headerParts) {

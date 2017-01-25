@@ -1,12 +1,10 @@
 package com.github.libgraviton.workerbase;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.libgraviton.gdk.GravitonApi;
+import com.github.libgraviton.gdk.api.GravitonResponse;
+import com.github.libgraviton.gdk.data.GravitonBase;
 import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.request.GetRequest;
-import com.mashape.unirest.request.HttpRequestWithBody;
-import com.mashape.unirest.request.body.RequestBodyEntity;
 import com.rabbitmq.client.Channel;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -15,7 +13,8 @@ import org.powermock.api.mockito.PowerMockito;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
-import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 import static org.mockito.Mockito.*;
 
@@ -26,65 +25,37 @@ public abstract class WorkerBaseTestCase {
     
     protected Worker worker;
     protected WorkerConsumer workerConsumer;
-    
-    protected HttpResponse<JsonNode> jsonResponse;
-    protected HttpResponse<String> stringResponse;
     protected Channel queueChannel;
-    protected RequestBodyEntity bodyEntity;
-    protected HttpRequestWithBody requestBodyMock;
-    protected HttpResponse<String> statusResponse;
-    protected HttpResponse<String> translatableResponse;
-    
+    protected GravitonApi gravitonApi;
+    protected GravitonResponse response;
+    protected ObjectMapper objectMapper;
+
     @SuppressWarnings("unchecked")
     @Before
     public void baseMock() throws Exception {
         
         System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));
-        
-        PowerMockito.mockStatic(Unirest.class);
-        
-        /**** UNIREST MOCKING ****/
 
-        requestBodyMock = mock(HttpRequestWithBody.class);
-        
-        jsonResponse = (HttpResponse<JsonNode>) mock(HttpResponse.class);
-        when(jsonResponse.getStatus())
-            .thenReturn(204);        
-        stringResponse = (HttpResponse<String>) mock(HttpResponse.class);
-        when(stringResponse.getStatus())
-            .thenReturn(204);    
-        
-        bodyEntity = mock(RequestBodyEntity.class);
-        when(bodyEntity.asJson())
-            .thenReturn(jsonResponse);
-        when(bodyEntity.asString())
-        .thenReturn(stringResponse); 
-        
-        when(requestBodyMock.routeParam(anyString(), anyString()))
-            .thenReturn(requestBodyMock);
-        when(requestBodyMock.header(anyString(), anyString()))
-        .thenReturn(requestBodyMock);
-        when(requestBodyMock.body(anyString()))
-            .thenReturn(bodyEntity);
+        objectMapper = initObjectMapper();
+
+        response = mock(GravitonResponse.class);
+        gravitonApi = mock(GravitonApi.class, RETURNS_DEEP_STUBS);
 
         // PUT mock
-        when(Unirest.put(anyString()))
-            .thenReturn(requestBodyMock);
+        when(gravitonApi.put(any(GravitonBase.class)).execute()).thenReturn(response);
+
+        // PATCH mock
+        when(gravitonApi.patch(any(GravitonBase.class)).execute()).thenReturn(response);
         
         // GET /event/status mock
-        URL statusResponseUrl = this.getClass().getClassLoader().getResource("json/statusResponse.json");
-        String statusResponseContent = FileUtils.readFileToString(new File(statusResponseUrl.getFile()));
-        GetRequest getRequestStatus = mock(GetRequest.class);
-        statusResponse = (HttpResponse<String>) mock(HttpResponse.class);
-        when(statusResponse.getBody())
-            .thenReturn(statusResponseContent);        
-        when(getRequestStatus.header(anyString(), anyString()))
-            .thenReturn(getRequestStatus);
-        when(getRequestStatus.asString())
-            .thenReturn(statusResponse);        
-        when(Unirest.get(contains("/mystatus")))
-            .thenReturn(getRequestStatus);
+        String body = FileUtils.readFileToString(
+                new File("src/test/resources/json/statusResponse.json"));
+        GravitonResponse eventStatusResponse = spy(GravitonResponse.class);
+        eventStatusResponse.setObjectMapper(objectMapper);
+        doReturn(body).when(eventStatusResponse).getBody();
+        doCallRealMethod().when(eventStatusResponse).getBodyItem(eq(GravitonBase.class));
+        when(gravitonApi.get(contains("/event/status")).execute()).thenReturn(eventStatusResponse);
     }
     
     protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {
@@ -97,6 +68,12 @@ public abstract class WorkerBaseTestCase {
         doNothing().when(queueManager).connect();
         
         return worker;
+    }
+
+    protected ObjectMapper initObjectMapper() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return new ObjectMapper().setDateFormat(dateFormat);
     }
 
 }

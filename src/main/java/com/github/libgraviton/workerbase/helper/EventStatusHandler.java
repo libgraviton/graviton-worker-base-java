@@ -1,21 +1,16 @@
 package com.github.libgraviton.workerbase.helper;
 
-import com.fasterxml.jackson.jr.ob.JSON;
+import com.github.libgraviton.gdk.GravitonApi;
+import com.github.libgraviton.gdk.api.GravitonResponse;
+import com.github.libgraviton.gdk.exception.CommunicationException;
+import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
+import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
+import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatusAction;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
-import com.github.libgraviton.workerbase.model.GravitonRef;
-import com.github.libgraviton.workerbase.model.status.EventStatus;
-import com.github.libgraviton.workerbase.model.status.Status;
-import com.github.libgraviton.workerbase.model.status.WorkerStatus;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.request.HttpRequestWithBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Modify EventStatus entries at Graviton
@@ -28,10 +23,10 @@ public class EventStatusHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventStatusHandler.class);
 
-    private String eventStatusBaseUrl;
+    protected GravitonApi gravitonApi;
 
-    public EventStatusHandler(String eventStatusBaseUrl) {
-        this.eventStatusBaseUrl = eventStatusBaseUrl;
+    public EventStatusHandler(GravitonApi gravitonApi) {
+        this.gravitonApi = gravitonApi;
     }
 
 
@@ -44,8 +39,8 @@ public class EventStatusHandler {
      * @param action link to a worker action
      * @throws GravitonCommunicationException when status cannot be updated at Graviton
      */
-    public void updateWithAction(EventStatus eventStatus, String workerId, Status status, GravitonRef action) throws GravitonCommunicationException {
-        WorkerStatus workerStatus = new WorkerStatus();
+    public void updateWithAction(EventStatus eventStatus, String workerId, EventStatusStatus.Status status, EventStatusStatusAction action) throws GravitonCommunicationException {
+        EventStatusStatus workerStatus = new EventStatusStatus();
         workerStatus.setWorkerId(workerId);
         workerStatus.setStatus(status);
         workerStatus.setAction(action);
@@ -60,22 +55,22 @@ public class EventStatusHandler {
      * @param status the new status of the worker
      * @throws GravitonCommunicationException when status cannot be updated at Graviton
      */
-    public void update(EventStatus eventStatus, String workerId, Status status) throws GravitonCommunicationException {
-        WorkerStatus workerStatus = new WorkerStatus();
+    public void update(EventStatus eventStatus, String workerId, EventStatusStatus.Status status) throws GravitonCommunicationException {
+        EventStatusStatus workerStatus = new EventStatusStatus();
         workerStatus.setWorkerId(workerId);
         workerStatus.setStatus(status);
         update(eventStatus, workerStatus);
     }
 
-    protected void update(EventStatus eventStatus, WorkerStatus workerStatus) throws GravitonCommunicationException {
+    protected void update(EventStatus eventStatus, EventStatusStatus workerStatus) throws GravitonCommunicationException {
 
-        List<WorkerStatus> status = eventStatus.getStatus();
+        List<EventStatusStatus> status = eventStatus.getStatus();
 
-        if (status == null) {
+        if (status == null || status.size() == 0) {
             throw new IllegalStateException("Got an invalid EventStatus status.");
         }
 
-        for (WorkerStatus statusEntry : status) {
+        for (EventStatusStatus statusEntry : status) {
             String currentWorkerId = statusEntry.getWorkerId();
             if (currentWorkerId != null && currentWorkerId.equals(workerStatus.getWorkerId())) {
                 if(workerStatus.getAction() != null) {
@@ -85,28 +80,21 @@ public class EventStatusHandler {
                 break;
             }
         }
-        HttpResponse updateResponse;
-        HttpRequestWithBody updateRequest = Unirest.put(eventStatusBaseUrl + eventStatus.getId())
-                .header("Content-Type", "application/json");
-        String statusUrl = updateRequest.getUrl();
+
         try {
-            updateResponse = updateRequest.body(JSON.std.asString(eventStatus)).asString();
-        } catch (IOException | UnirestException e) {
-            throw new GravitonCommunicationException("Failed to update the event status on '" + statusUrl + "'.", e);
+            gravitonApi.patch(eventStatus).execute();
+        } catch (CommunicationException e) {
+            throw new GravitonCommunicationException("Failed to update the event status.", e);
         }
 
-        if (updateResponse.getStatus() != 204) {
-            throw new GravitonCommunicationException("Failed to update the event status on '" + statusUrl + "'. Return status was '" + updateResponse.getStatus() + "'");
-        }
-
-        LOG.debug("Updated status to '" + workerStatus.getStatus() + "' on '" + statusUrl + "'.");
+        LOG.debug("Updated /event/status/" + eventStatus.getId() + " to '" + workerStatus.getStatus() + "'.");
     }
 
     public EventStatus getEventStatusFromUrl(String url) throws GravitonCommunicationException {
         try {
-            HttpResponse response = Unirest.get(url).header("Accept", "application/json").asString();
-            return JSON.std.beanFrom(EventStatus.class, response.getBody());
-        } catch (UnirestException | IOException e) {
+            GravitonResponse response = gravitonApi.get(url).execute();
+            return response.getBodyItem(EventStatus.class);
+        } catch (CommunicationException e) {
             throw new GravitonCommunicationException("Failed to GET event status from '" + url + "'.", e);
         }
     }
@@ -143,12 +131,15 @@ public class EventStatusHandler {
      * @throws GravitonCommunicationException when Event Status cannot be retrieved from Graviton
      */
     public List<EventStatus> findEventStatus(String filter) throws GravitonCommunicationException {
+        String eventStatusEndpointUrl = gravitonApi
+                .getEndpointManager()
+                .getEndpoint(EventStatus.class.getName())
+                .getUrl();
+
         try {
-            HttpResponse<String> response = Unirest.get(eventStatusBaseUrl + filter)
-                    .header("Accept", "application/json")
-                    .asString();
-            return JSON.std.listOfFrom(EventStatus.class, response.getBody());
-        } catch (UnirestException | IOException e) {
+            GravitonResponse response = gravitonApi.get(eventStatusEndpointUrl + filter).execute();
+            return response.getBodyItems(EventStatus.class);
+        } catch (CommunicationException e) {
             throw new GravitonCommunicationException("Could not GET matching EventStatus for filter '" + filter + "'.", e);
         }
     }

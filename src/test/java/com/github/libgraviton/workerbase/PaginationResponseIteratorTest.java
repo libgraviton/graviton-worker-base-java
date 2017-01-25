@@ -1,15 +1,8 @@
 package com.github.libgraviton.workerbase;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.contains;
-import static org.mockito.Mockito.*;
-
-import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.github.libgraviton.gdk.api.GravitonResponse;
+import com.github.libgraviton.gdk.api.header.HeaderBag;
+import com.github.libgraviton.gdk.data.GravitonBase;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,62 +10,55 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
-import com.github.libgraviton.workerbase.model.file.GravitonFile;
-import com.mashape.unirest.http.Headers;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.request.GetRequest;
+import java.io.File;
+import java.util.Map;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({com.rabbitmq.client.ConnectionFactory.class,Unirest.class})
+@PrepareForTest({com.rabbitmq.client.ConnectionFactory.class})
 public class PaginationResponseIteratorTest extends WorkerBaseTestCase {
 
-    HttpResponse<String> fileStatusResponse;
-    
+    GravitonResponse response;
+
     @SuppressWarnings("unchecked")
     @Before
     public void setUp() throws Exception {    
-        this.baseMock();
-        
-        URL fileResponseUrl = this.getClass().getClassLoader().getResource("json/fileResourceCollection.json");
-        assert fileResponseUrl != null;
-        String fileResponseContent = FileUtils.readFileToString(new File(fileResponseUrl.getFile()));
-        GetRequest getRequestStatus = mock(GetRequest.class);        
-        
-        List<String> headerList = new ArrayList<String>();
-        headerList.add("<http://localhost/file/?limit(1%2C1)>; rel=\"next\", " +
+        baseMock();
+
+        String fileResponseContent = FileUtils.readFileToString(
+                new File("src/test/resources/json/fileResourceCollection.json"));
+
+        HeaderBag headers = new HeaderBag.Builder()
+                .set("link", "<http://localhost/file/?limit(1%2C1)>; rel=\"next\", " +
                 "<http://localhost/file/?limit(1%2C1)>; rel=\"last\"," +
-                "<http://localhost/file/?limit(1)>; rel=\"self\"");
-        Headers headers = new Headers();
-        headers.put("Link", headerList);
-        
-        List<String> headerListNoMore = new ArrayList<String>();
-        headerListNoMore.add("<http://localhost/file/?limit(2%2C1)>; rel=\"last\"," +
-                "<http://localhost/file/?limit(1)>; rel=\"self\"");
-        Headers headersNoMore = new Headers();
-        headersNoMore.put("Link", headerListNoMore);
-        
-        fileStatusResponse = (HttpResponse<String>) mock(HttpResponse.class);
-        when(fileStatusResponse.getHeaders())
-            .thenReturn(headers)
-            .thenReturn(headersNoMore)
-            .thenReturn(new Headers());
-        when(fileStatusResponse.getBody())
-            .thenReturn(fileResponseContent);        
-        when(getRequestStatus.header(anyString(), anyString()))
-            .thenReturn(getRequestStatus);
-        when(getRequestStatus.asString())
-            .thenReturn(fileStatusResponse);        
-        when(Unirest.get(contains("/file/")))
-            .thenReturn(getRequestStatus);        
+                "<http://localhost/file/?limit(1)>; rel=\"self\"")
+                .build();
+
+        HeaderBag headersNoMore = new HeaderBag.Builder()
+                .set("link", "<http://localhost/file/?limit(2%2C1)>; rel=\"last\"," +
+                        "<http://localhost/file/?limit(1)>; rel=\"self\"")
+                .build();
+
+        response = spy(GravitonResponse.class);
+        response.setObjectMapper(objectMapper);
+        doReturn(fileResponseContent).when(response).getBody();
+        doCallRealMethod().when(response).getBodyItem(eq(GravitonBase.class));
+        doReturn(headers)
+                .doReturn(headersNoMore)
+                .doReturn(new HeaderBag.Builder().build())
+                .when(response).getHeaders();
+
+        when(gravitonApi.get(contains("/file/")).execute())
+                .thenReturn(response);
     }
 
     @Test
-    public void testDeferredMapHandling() throws Exception {
-        PagingResponseIterator<DeferredMap> pr = new PagingResponseIterator<>("http://localhost/file/?limit(1)");
-        
-        DeferredMap singleElement;
+    public void testMapHandling() throws Exception {
+        PagingResponseIterator<Map> pr = new PagingResponseIterator<>("http://localhost/file/?limit(1)", gravitonApi);
+
+        Map singleElement;
         
         // test all loop sequence
         assertTrue(pr.hasNext());
@@ -84,16 +70,18 @@ public class PaginationResponseIteratorTest extends WorkerBaseTestCase {
             counter++;
         }
         
-        verify(fileStatusResponse, times(2)).getHeaders();
+        verify(response, times(2)).getHeaders();
         
         assertEquals(4, counter);
     }
     
     @Test
     public void testPojoHandling() throws Exception {
-        PagingResponseIterator<GravitonFile> pr = new PagingResponseIterator<>(GravitonFile.class, "http://localhost/file/?limit(1)");
+        PagingResponseIterator<com.github.libgraviton.gdk.gravitondyn.file.document.File> pr = new PagingResponseIterator<>(
+                com.github.libgraviton.gdk.gravitondyn.file.document.File.class,
+                "http://localhost/file/?limit(1)", gravitonApi);
         
-        GravitonFile singleElement;
+        com.github.libgraviton.gdk.gravitondyn.file.document.File singleElement;
         
         // test all loop sequence
         assertTrue(pr.hasNext());
@@ -106,7 +94,7 @@ public class PaginationResponseIteratorTest extends WorkerBaseTestCase {
             counter++;
         }
         
-        verify(fileStatusResponse, times(2)).getHeaders();
+        verify(response, times(2)).getHeaders();
         
         assertEquals(4, counter);
     }    
