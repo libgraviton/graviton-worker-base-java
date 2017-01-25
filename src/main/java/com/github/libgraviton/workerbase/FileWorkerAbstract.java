@@ -5,6 +5,7 @@
 
 package com.github.libgraviton.workerbase;
 
+import com.github.libgraviton.gdk.GravitonFileEndpoint;
 import com.github.libgraviton.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadata;
@@ -31,6 +32,8 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
     private static final Logger LOG = LoggerFactory.getLogger(FileWorkerAbstract.class);
 
     protected File gravitonFile;
+
+    protected GravitonFileEndpoint fileEndpoint = initFileEndpoint();
 
     public boolean shouldHandleRequest(QueueEvent queueEvent) throws WorkerException, GravitonCommunicationException {
         // reset gravitonFile, to make sure we have no cached values that will interfere.
@@ -68,7 +71,7 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
             return gravitonFile;
         }
 
-        gravitonFile = WorkerUtil.getGravitonFile(gravitonApi, fileUrl);
+        gravitonFile = WorkerUtil.getGravitonFile(fileEndpoint, fileUrl);
         return gravitonFile;
     }    
     
@@ -114,12 +117,16 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
             metadataActions.removeAll(matchingActions);
 
             try {
-                gravitonApi.patch(gravitonFile).execute();
+                fileEndpoint.patch(gravitonFile).execute();
             } catch (CommunicationException e) {
                 throw new GravitonCommunicationException("Unable to remove file action command '" + action + "' from '" + documentUrl + "'.", e);
             }
 
             LOG.info("Removed action property from " + documentUrl);
         }        
+    }
+
+    protected GravitonFileEndpoint initFileEndpoint() {
+        return new GravitonFileEndpoint(gravitonApi);
     }
 }

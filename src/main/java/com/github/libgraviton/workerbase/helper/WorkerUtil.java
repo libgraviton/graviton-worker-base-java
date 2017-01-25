@@ -3,7 +3,7 @@
  */
 package com.github.libgraviton.workerbase.helper;
 
-import com.github.libgraviton.gdk.GravitonApi;
+import com.github.libgraviton.gdk.GravitonFileEndpoint;
 import com.github.libgraviton.gdk.api.GravitonResponse;
 import com.github.libgraviton.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
@@ -51,22 +51,22 @@ public class WorkerUtil {
     /**
      * gets file metadata from backend as a GravitonFile object
      *
-     * @param gravitonApi gravitonApi instance
+     * @param fileEndpoint GravitonFileEndpoint instance
      * @param fileUrl the url of the object
      * @throws GravitonCommunicationException if file could not be fetched.
      * @return file instance
      */
     public static File getGravitonFile(
-            GravitonApi gravitonApi,
+            GravitonFileEndpoint fileEndpoint,
             String fileUrl
     ) throws GravitonCommunicationException {
-        return getGravitonFile(gravitonApi, fileUrl, RETRY_COUNT, SEC_WAIT_BEFORE_RETRY);
+        return getGravitonFile(fileEndpoint, fileUrl, RETRY_COUNT, SEC_WAIT_BEFORE_RETRY);
     }
 
     /**
      * gets file metadata from backend as a GravitonFile object
      *
-     * @param gravitonApi gravitonApi instance
+     * @param fileEndpoint GravitonFileEndpoint instance
      * @param fileUrl the url of the object
      * @param retryCount number of retries if the file meta could not be fetched
      * @param secWaitBeforeRetry amount of seconds to wait before retrying
@@ -74,7 +74,7 @@ public class WorkerUtil {
      * @return file instance
      */
     public static File getGravitonFile(
-            GravitonApi gravitonApi, String fileUrl, int retryCount, int secWaitBeforeRetry
+            GravitonFileEndpoint fileEndpoint, String fileUrl, int retryCount, int secWaitBeforeRetry
     ) throws GravitonCommunicationException {
         int triesCount = 0;
         File file = null;
@@ -95,7 +95,7 @@ public class WorkerUtil {
                 }
             }
             try {
-                response = gravitonApi.get(fileUrl).execute();
+                response = fileEndpoint.getMetadata(fileUrl).execute();
                 file = response.getBodyItem(File.class);
             } catch (CommunicationException e) {
                 throw new GravitonCommunicationException("Unable to GET graviton file from '" + fileUrl + "'.", e);

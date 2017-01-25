@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.GravitonApi;
+import com.github.libgraviton.gdk.GravitonFileEndpoint;
 import com.github.libgraviton.gdk.api.GravitonResponse;
 import com.github.libgraviton.gdk.data.GravitonBase;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
@@ -38,9 +38,9 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 @PrepareForTest({com.rabbitmq.client.ConnectionFactory.class, WorkerUtil.class})
 public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
-    private GravitonResponse response1;
+    protected GravitonResponse response1;
 
-    private GravitonResponse response2;
+    protected GravitonResponse response2;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -145,7 +145,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         com.github.libgraviton.gdk.gravitondyn.file.document.File file = new com.github.libgraviton.gdk.gravitondyn.file.document.File();
         file.setId("someTestId");
         mockStatic(WorkerUtil.class);
-        when(WorkerUtil.getGravitonFile(any(GravitonApi.class),anyString())).thenReturn(file);
+        when(WorkerUtil.getGravitonFile(any(GravitonFileEndpoint.class),anyString())).thenReturn(file);
 
         String file1Url = "testFile1";
         String file2Url = "testFile2";
@@ -206,7 +206,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         file.setMetadata(metadata);
 
         mockStatic(WorkerUtil.class);
-        when(WorkerUtil.getGravitonFile(any(GravitonApi.class), anyString())).thenReturn(file);
+        when(WorkerUtil.getGravitonFile(any(GravitonFileEndpoint.class), anyString())).thenReturn(file);
 
         doReturn(noActions).when(testFileWorker).getActionsOfInterest(queueEvent);
         doNothing().when(testFileWorker).removeFileActionCommand(eq(documentUrl), anyString());
@@ -217,8 +217,9 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         assertEquals("someId123", queueEvent.getCoreUserId());
     }
 
-    private <T extends WorkerAbstract> T prepareTestWorker(T worker) {
+    private <T extends FileWorkerAbstract> T prepareTestWorker(T worker) {
         worker.gravitonApi = gravitonApi;
+        worker.fileEndpoint = new GravitonFileEndpoint(gravitonApi);
         return worker;
     }
 

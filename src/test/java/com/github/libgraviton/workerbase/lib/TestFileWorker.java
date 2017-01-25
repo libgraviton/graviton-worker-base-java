@@ -17,7 +17,7 @@ public class TestFileWorker extends FileWorkerAbstract {
 
     public File fileObj;
     public boolean actionPresent;
-    
+
     /**
      * worker logic is implemented here
      * 
