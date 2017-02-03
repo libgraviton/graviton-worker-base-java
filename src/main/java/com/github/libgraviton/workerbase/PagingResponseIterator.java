@@ -4,7 +4,7 @@
 package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.gdk.GravitonApi;
-import com.github.libgraviton.gdk.api.GravitonResponse;
+import com.github.libgraviton.gdk.api.Response;
 import com.github.libgraviton.gdk.api.header.HeaderBag;
 import com.google.common.collect.AbstractIterator;
 
@@ -79,7 +79,7 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
     /**
      * last response object
      */
-    private GravitonResponse response;
+    private Response response;
     
     /**
      * the next page to fetch (if available)

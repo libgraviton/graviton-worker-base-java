@@ -2,7 +2,7 @@ package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.libgraviton.gdk.GravitonApi;
-import com.github.libgraviton.gdk.api.GravitonResponse;
+import com.github.libgraviton.gdk.api.Response;
 import com.github.libgraviton.gdk.data.GravitonBase;
 import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
 import com.rabbitmq.client.Channel;
@@ -27,7 +27,7 @@ public abstract class WorkerBaseTestCase {
     protected WorkerConsumer workerConsumer;
     protected Channel queueChannel;
     protected GravitonApi gravitonApi;
-    protected GravitonResponse response;
+    protected Response response;
     protected ObjectMapper objectMapper;
 
     @SuppressWarnings("unchecked")
@@ -39,7 +39,7 @@ public abstract class WorkerBaseTestCase {
 
         objectMapper = initObjectMapper();
 
-        response = mock(GravitonResponse.class);
+        response = mock(Response.class);
         gravitonApi = mock(GravitonApi.class, RETURNS_DEEP_STUBS);
 
         // PUT mock
@@ -51,7 +51,7 @@ public abstract class WorkerBaseTestCase {
         // GET /event/status mock
         String body = FileUtils.readFileToString(
                 new File("src/test/resources/json/statusResponse.json"));
-        GravitonResponse eventStatusResponse = spy(GravitonResponse.class);
+        Response eventStatusResponse = spy(Response.class);
         eventStatusResponse.setObjectMapper(objectMapper);
         doReturn(body).when(eventStatusResponse).getBody();
         doCallRealMethod().when(eventStatusResponse).getBodyItem(eq(GravitonBase.class));

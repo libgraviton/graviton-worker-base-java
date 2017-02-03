@@ -4,7 +4,7 @@
 package com.github.libgraviton.workerbase.helper;
 
 import com.github.libgraviton.gdk.GravitonFileEndpoint;
-import com.github.libgraviton.gdk.api.GravitonResponse;
+import com.github.libgraviton.gdk.api.Response;
 import com.github.libgraviton.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
@@ -78,7 +78,7 @@ public class WorkerUtil {
     ) throws GravitonCommunicationException {
         int triesCount = 0;
         File file = null;
-        GravitonResponse response = null;
+        Response response = null;
         do {
             if (triesCount > 0) {
                 LOG.warn(

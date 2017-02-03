@@ -1,7 +1,7 @@
 package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.gdk.GravitonFileEndpoint;
-import com.github.libgraviton.gdk.api.GravitonResponse;
+import com.github.libgraviton.gdk.api.Response;
 import com.github.libgraviton.gdk.data.GravitonBase;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
@@ -38,9 +38,9 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 @PrepareForTest({com.rabbitmq.client.ConnectionFactory.class, WorkerUtil.class})
 public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
-    protected GravitonResponse response1;
+    protected Response response1;
 
-    protected GravitonResponse response2;
+    protected Response response2;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -51,7 +51,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
         String metadata1 = FileUtils.readFileToString(
                 new File("src/test/resources/json/fileResource.json"));
-        response1 = spy(GravitonResponse.class);
+        response1 = spy(Response.class);
         response1.setObjectMapper(objectMapper);
         doReturn(metadata1).when(response1).getBody();
         doCallRealMethod().when(response1).getBodyItem(eq(GravitonBase.class));
@@ -60,7 +60,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
         String metadata2 = FileUtils.readFileToString(
                 new File("src/test/resources/json/fileResourceWithAction.json"));
-        response2 = spy(GravitonResponse.class);
+        response2 = spy(Response.class);
         response2.setObjectMapper(objectMapper);
         doReturn(metadata2).when(response2).getBody();
         doCallRealMethod().when(response2).getBodyItem(eq(GravitonBase.class));

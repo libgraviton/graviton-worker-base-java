@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.api.GravitonResponse;
+import com.github.libgraviton.gdk.api.Response;
 import com.github.libgraviton.gdk.api.header.HeaderBag;
 import com.github.libgraviton.gdk.data.GravitonBase;
 import org.apache.commons.io.FileUtils;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 @PrepareForTest({com.rabbitmq.client.ConnectionFactory.class})
 public class PaginationResponseIteratorTest extends WorkerBaseTestCase {
 
-    GravitonResponse response;
+    Response response;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -41,7 +41,7 @@ public class PaginationResponseIteratorTest extends WorkerBaseTestCase {
                         "<http://localhost/file/?limit(1)>; rel=\"self\"")
                 .build();
 
-        response = spy(GravitonResponse.class);
+        response = spy(Response.class);
         response.setObjectMapper(objectMapper);
         doReturn(fileResponseContent).when(response).getBody();
         doCallRealMethod().when(response).getBodyItem(eq(GravitonBase.class));

@@ -1,7 +1,7 @@
 package com.github.libgraviton.workerbase.helper;
 
 import com.github.libgraviton.gdk.GravitonApi;
-import com.github.libgraviton.gdk.api.GravitonResponse;
+import com.github.libgraviton.gdk.api.Response;
 import com.github.libgraviton.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
@@ -92,7 +92,7 @@ public class EventStatusHandler {
 
     public EventStatus getEventStatusFromUrl(String url) throws GravitonCommunicationException {
         try {
-            GravitonResponse response = gravitonApi.get(url).execute();
+            Response response = gravitonApi.get(url).execute();
             return response.getBodyItem(EventStatus.class);
         } catch (CommunicationException e) {
             throw new GravitonCommunicationException("Failed to GET event status from '" + url + "'.", e);
@@ -137,7 +137,7 @@ public class EventStatusHandler {
                 .getUrl();
 
         try {
-            GravitonResponse response = gravitonApi.get(eventStatusEndpointUrl + filter).execute();
+            Response response = gravitonApi.get(eventStatusEndpointUrl + filter).execute();
             return response.getBodyItems(EventStatus.class);
         } catch (CommunicationException e) {
             throw new GravitonCommunicationException("Could not GET matching EventStatus for filter '" + filter + "'.", e);
