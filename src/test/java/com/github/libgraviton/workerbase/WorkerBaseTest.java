@@ -1,5 +1,6 @@
 package com.github.libgraviton.workerbase;
 
+import com.github.libgraviton.gdk.api.Response;
 import com.github.libgraviton.gdk.exception.UnsuccessfulResponseException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
@@ -200,7 +201,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     public void testBackendStatusUpdateError() throws Exception {
         
         /*** change mocking so we get an unsuccessful response on /event/status update -> worker shall throw GravitonCommunicationException ***/
-        when(gravitonApi.patch(any(EventStatus.class)).execute()).thenThrow(new UnsuccessfulResponseException("Response not successful."));
+        when(gravitonApi.patch(any(EventStatus.class)).execute()).thenThrow(UnsuccessfulResponseException.class);
         
         TestWorker testWorker = prepareTestWorker(new TestWorker());
         worker = getWrappedWorker(testWorker);
