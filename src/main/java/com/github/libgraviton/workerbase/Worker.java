@@ -9,6 +9,7 @@ import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.PropertiesLoader;
+import com.github.libgraviton.workerbase.mq.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.mq.QueueManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,14 +60,18 @@ public class Worker {
     /**
      * setup worker
      */
-    public void run() {
+    public void run() throws WorkerException {
         try {
             applyVcapConfig();
         } catch (IOException e) {
             LOG.warn("Unable to load vcap config. Skip this step.");
         }
-        QueueManager queueManager = getQueueManager();
-        queueManager.connect();
+        QueueManager queueManager = worker.getQueueManager();
+        try {
+            queueManager.connect(worker);
+        } catch (CannotConnectToQueue e) {
+            throw new WorkerException("Unable to initialize worker.", e);
+        }
     }
 
     /**
@@ -91,10 +96,6 @@ public class Worker {
         }
     }
 
-    public QueueManager getQueueManager() {
-        return worker.getQueueManager();
-    }
-    
     /**
      * Gets the properties
      *

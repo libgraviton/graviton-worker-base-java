@@ -1,5 +1,12 @@
 package com.github.libgraviton.workerbase.mq;
 
+import com.github.libgraviton.workerbase.WorkerAbstract;
+import com.github.libgraviton.workerbase.WorkerConsumer;
+import com.github.libgraviton.workerbase.mq.exception.CannotConnectToQueue;
+import com.github.libgraviton.workerbase.mq.exception.CannotRegisterConsumer;
+import com.github.libgraviton.workerbase.mq.strategy.rabbitmq.direct.QueueExceptionLogger;
+import com.github.libgraviton.workerbase.mq.strategy.rabbitmq.direct.RabbitMqConnection;
+import com.rabbitmq.client.ConnectionFactory;
 import java.util.Properties;
 
 /**
@@ -9,26 +16,38 @@ import java.util.Properties;
  * @version $Id: $Id
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  */
-public abstract class QueueManager {
+public class QueueManager {
 
-    int retryAfterSeconds;
+    private QueueConnection connection;
 
     public QueueManager(Properties properties) {
-        retryAfterSeconds = Integer.parseInt(properties.getProperty("queue.connecting.retryAfterSeconds"));
+        int retrySleep = Integer.parseInt(properties.getProperty("queue.connecting.retryAfterSeconds")) * 1000;
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(properties.getProperty("queue.host"));
+        factory.setPort(Integer.parseInt(properties.getProperty("queue.port")));
+        factory.setUsername(properties.getProperty("queue.username"));
+        factory.setPassword(properties.getProperty("queue.password"));
+        factory.setVirtualHost(properties.getProperty("queue.vhost"));
+        factory.setAutomaticRecoveryEnabled(true);
+        factory.setNetworkRecoveryInterval(
+            Integer.parseInt(properties.getProperty("queue.connecting.retryAfterSeconds")) * 1000
+        );
+        factory.setExceptionHandler(new QueueExceptionLogger());
+
+        connection = new RabbitMqConnection(
+            properties.getProperty("graviton.workerId"),
+            properties.getProperty("queue.exchange", null),
+            properties.getProperty("graviton.workerId"),
+            factory
+        );
+        connection.setConnectionAttemptSleep(retrySleep);
     }
 
     /**
      * Async connection to queue.
      */
-    public void connect() {
-        QueueConnector queueConnector = getQueueConnector();
-        queueConnector.setRetryAfterSeconds(retryAfterSeconds);
-        new Thread(getQueueConnector()).start();
-    }
-
-    protected abstract QueueConnector getQueueConnector();
-
-    public int getRetryAfterSeconds() {
-        return retryAfterSeconds;
+    public void connect(WorkerAbstract worker) throws CannotConnectToQueue, CannotRegisterConsumer {
+        connection.open();
+        connection.consume(new WorkerConsumer(worker));
     }
 }

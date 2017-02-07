@@ -1,5 +1,6 @@
 package com.github.libgraviton.workerbase.mq;
 
+import com.github.libgraviton.workerbase.mq.exception.CannotConnectToQueue;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -20,8 +21,8 @@ public class WorkerQueueManagerTest {
         queueConnector.setQueueName("testQueueName");
     }
 
-    @Test(expected = QueueConnectionException.class)
-    public void shouldConnectWithoutConnectionThenReturnException() throws QueueConnectionException {
+    @Test(expected = CannotConnectToQueue.class)
+    public void shouldConnectWithoutConnectionThenReturnException() throws CannotConnectToQueue {
         connectionFactory = new ConnectionFactory();
         connectionFactory.setHost("queue.host");
         connectionFactory.setPort(1234);

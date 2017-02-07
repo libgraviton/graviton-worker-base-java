@@ -2,16 +2,16 @@
  * Exception to be thrown on a feedback XML processing / event status update failure.
  */
 
-package com.github.libgraviton.workerbase.mq;
+package com.github.libgraviton.workerbase.mq.exception;
 
 /**
- * <p>QueueConnectionException</p>
+ * <p>CannotConnectToQueue</p>
  *
  * @author List of contributors {@literal <https://github.com/libgraviton/graviton-worker-base-java/graphs/contributors>}
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-public class QueueConnectionException extends Exception {
+public class CannotConnectToQueue extends Exception {
 
     private String queueName;
 
@@ -23,33 +23,33 @@ public class QueueConnectionException extends Exception {
         this.queueName = queueName;
     }
 
-    public QueueConnectionException() {
+    public CannotConnectToQueue() {
         super();
     }
 
-    public QueueConnectionException(String message) {
+    public CannotConnectToQueue(String message) {
         super(message);
     }
 
-    public QueueConnectionException(String message, String queueName) {
+    public CannotConnectToQueue(String message, String queueName) {
         super(message);
         this.queueName = queueName;
     }
 
-    public QueueConnectionException(String message, Throwable cause) {
+    public CannotConnectToQueue(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public QueueConnectionException(String message, String queueName, Throwable cause) {
+    public CannotConnectToQueue(String message, String queueName, Throwable cause) {
         super(message, cause);
         this.queueName = queueName;
     }
 
-    public QueueConnectionException(Throwable cause) {
+    public CannotConnectToQueue(Throwable cause) {
         super(cause);
     }
 
-    protected QueueConnectionException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    protected CannotConnectToQueue(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

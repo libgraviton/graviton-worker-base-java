@@ -16,11 +16,12 @@ import com.github.libgraviton.workerbase.model.status.EventStatus;
 import com.github.libgraviton.workerbase.model.status.InformationType;
 import com.github.libgraviton.workerbase.model.status.Status;
 import com.github.libgraviton.workerbase.model.status.WorkerFeedback;
-import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
+import com.github.libgraviton.workerbase.mq.MessageAcknowledger;
+import com.github.libgraviton.workerbase.mq.QueueManager;
+import com.github.libgraviton.workerbase.mq.exception.CannotAcknowledgeMessage;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +52,7 @@ public abstract class WorkerAbstract {
 
     protected long deliveryTag;
 
-    protected Channel channel;
+    protected MessageAcknowledger acknowledger;
 
     public Properties getProperties() {
         return properties;
@@ -107,13 +108,13 @@ public abstract class WorkerAbstract {
      * outer function that will be called on an queue event
      *
      * @param deliveryTag delivery tag from envelope
-     * @param channel registered channel
+     * @param acknowledger registered acknowledger
      * @param queueEvent queue event
      */
-    public final void handleDelivery(QueueEvent queueEvent, long deliveryTag, Channel channel) {
+    public final void handleDelivery(QueueEvent queueEvent, long deliveryTag, MessageAcknowledger acknowledger) {
 
         this.deliveryTag = deliveryTag;
-        this.channel = channel;
+        this.acknowledger = acknowledger;
 
         String statusUrl = queueEvent.getStatus().get$ref();
         try {
@@ -175,9 +176,8 @@ public abstract class WorkerAbstract {
 
     private void reportToMessageQueue() {
         try {
-            channel.basicAck(deliveryTag, false);
-            LOG.debug("Reported basicAck to message queue with delivery tag '" + deliveryTag + "'.");
-        } catch (IOException ioe) {
+            acknowledger.acknowledge(deliveryTag);
+        } catch (CannotAcknowledgeMessage e) {
             LOG.error("Unable to ack deliveryTag '" + deliveryTag + "' on message queue.");
         }
     }
@@ -269,9 +269,7 @@ public abstract class WorkerAbstract {
         return actionRef;
     }
 
-    public WorkerQueueManager getQueueManager() {
-        WorkerQueueManager workerQueueManager = new WorkerQueueManager(properties);
-        workerQueueManager.setWorker(this);
-        return workerQueueManager;
+    public QueueManager getQueueManager() {
+        return new QueueManager(properties);
     }
 }
