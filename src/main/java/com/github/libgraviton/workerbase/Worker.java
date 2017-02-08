@@ -11,6 +11,7 @@ import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.PropertiesLoader;
 import com.github.libgraviton.workerbase.mq.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.mq.QueueManager;
+import com.github.libgraviton.workerbase.mq.exception.CannotRegisterConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,10 +67,10 @@ public class Worker {
         } catch (IOException e) {
             LOG.warn("Unable to load vcap config. Skip this step.");
         }
-        QueueManager queueManager = worker.getQueueManager();
+        QueueManager queueManager = getQueueManager();
         try {
             queueManager.connect(worker);
-        } catch (CannotConnectToQueue e) {
+        } catch (CannotConnectToQueue | CannotRegisterConsumer e) {
             throw new WorkerException("Unable to initialize worker.", e);
         }
     }
@@ -112,5 +113,9 @@ public class Worker {
      */
     public String getVcap() {
         return System.getenv("VCAP_SERVICES");
+    }
+
+    public QueueManager getQueueManager() {
+        return worker.getQueueManager();
     }
 }

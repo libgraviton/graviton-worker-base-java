@@ -1,6 +1,12 @@
 package com.github.libgraviton.workerbase.mq;
 
+import com.github.libgraviton.workerbase.mq.exception.CannotConsumeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ParallelConsumer implements Consumer {
+
+    final private Logger LOG = LoggerFactory.getLogger(getClass());
 
     private Consumer consumer;
 
@@ -9,7 +15,7 @@ public class ParallelConsumer implements Consumer {
     }
 
     @Override
-    public void consume(long messageId, String message) {
+    public void consume(String messageId, String message) {
         new Thread(new ConsumerRunner(consumer, messageId, message)).start();
     }
 
@@ -17,11 +23,11 @@ public class ParallelConsumer implements Consumer {
 
         private Consumer consumer;
 
-        private long messageId;
+        private String messageId;
 
         private String message;
 
-        ConsumerRunner(Consumer consumer, long messageId, String message) {
+        ConsumerRunner(Consumer consumer, String messageId, String message) {
             this.consumer = consumer;
             this.messageId = messageId;
             this.message = message;
@@ -29,7 +35,11 @@ public class ParallelConsumer implements Consumer {
 
         @Override
         public void run() {
-            consumer.consume(messageId, message);
+            try {
+                consumer.consume(messageId, message);
+            } catch (CannotConsumeMessage e) {
+                LOG.warn(String.format("Consumer '%s' failed: '%s'", consumer, e.getMessage()));
+            }
         }
     }
 

@@ -50,7 +50,7 @@ public abstract class WorkerAbstract {
 
     protected Boolean isRegistered = Boolean.FALSE;
 
-    protected long deliveryTag;
+    protected String messageId;
 
     protected MessageAcknowledger acknowledger;
 
@@ -107,13 +107,13 @@ public abstract class WorkerAbstract {
     /**
      * outer function that will be called on an queue event
      *
-     * @param deliveryTag delivery tag from envelope
+     * @param messageId delivery tag from envelope
      * @param acknowledger registered acknowledger
      * @param queueEvent queue event
      */
-    public final void handleDelivery(QueueEvent queueEvent, long deliveryTag, MessageAcknowledger acknowledger) {
+    public final void handleDelivery(QueueEvent queueEvent, String messageId, MessageAcknowledger acknowledger) {
 
-        this.deliveryTag = deliveryTag;
+        this.messageId = messageId;
         this.acknowledger = acknowledger;
 
         String statusUrl = queueEvent.getStatus().get$ref();
@@ -176,9 +176,9 @@ public abstract class WorkerAbstract {
 
     private void reportToMessageQueue() {
         try {
-            acknowledger.acknowledge(deliveryTag);
+            acknowledger.acknowledge(messageId);
         } catch (CannotAcknowledgeMessage e) {
-            LOG.error("Unable to ack deliveryTag '" + deliveryTag + "' on message queue.");
+            LOG.error("Unable to ack messageId '" + messageId + "' on message queue.");
         }
     }
 

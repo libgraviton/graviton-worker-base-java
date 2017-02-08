@@ -34,7 +34,7 @@ public class WorkerConsumer implements AcknowledgingConsumer {
     }
 
     @Override
-    public void consume(long messageId, String message) throws CannotConsumeMessage {
+    public void consume(String messageId, String message) throws CannotConsumeMessage {
         QueueEvent queueEvent;
         try {
             queueEvent = JSON.std.beanFrom(QueueEvent.class, message);
