@@ -32,6 +32,10 @@ abstract public class QueueConnection {
     }
 
     public void open() throws CannotConnectToQueue {
+        if (isOpen()) {
+            LOG.info("Connection to queue '%s' has already been opened. Skipping...", queueName);
+            return;
+        }
         int connectionAttempts = this.connectionAttempts;
         boolean retryEndless = connectionAttempts == 0;
         LOG.info(String.format("Connecting to queue '%s'...", queueName));

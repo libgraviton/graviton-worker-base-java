@@ -20,16 +20,23 @@ public class RecoveringExceptionListener implements ExceptionListener {
     @Override
     public void onException(JMSException e) {
         LOG.warn(String.format(
-                "Connection encountered an exception with code '%s' and message '%s'.",
+                "Connection to queue '%s' encountered an exception with code '%s' and message '%s'.",
+                connection.getQueueName(),
                 e.getErrorCode(),
                 e.getMessage()
         ));
-        LOG.info("Reconnecting...");
+        LOG.info(String.format("Recovering connection to queue '%s'...", connection.getQueueName()));
 
         try {
+            connection.close();
             connection.open();
+            LOG.info(String.format("Connection to queue '%s' successfully re-established.", connection.getQueueName()));
         } catch (CannotConnectToQueue recoverException) {
-            LOG.error(String.format("Connection recovery failed: %s", recoverException.getMessage()));
+            LOG.error(String.format(
+                    "Connection recovery for queue '%s' failed: %s",
+                    connection.getQueueName(),
+                    recoverException.getMessage())
+            );
         }
     }
 }

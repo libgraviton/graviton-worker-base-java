@@ -4,10 +4,9 @@ import com.github.libgraviton.workerbase.mq.AcknowledgingConsumer;
 import com.github.libgraviton.workerbase.mq.Consumer;
 import com.github.libgraviton.workerbase.mq.MessageAcknowledger;
 import com.github.libgraviton.workerbase.mq.exception.CannotAcknowledgeMessage;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
+import com.github.libgraviton.workerbase.mq.exception.CannotConnectToQueue;
+import com.github.libgraviton.workerbase.mq.exception.CannotRegisterConsumer;
+import com.rabbitmq.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,17 +17,20 @@ public class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowle
 
     final private boolean ACK_PREV_MESSAGES = false;
 
-    private Consumer consumer;
-
     final private Logger LOG = LoggerFactory.getLogger(getClass());
 
-    public RabbitMqConsumer(Channel channel, Consumer consumer) {
-        super(channel);
+    private RabbitMqConnection connection;
+
+    private Consumer consumer;
+
+    public RabbitMqConsumer(RabbitMqConnection connection, Consumer consumer) {
+        super(connection.getChannel());
         this.consumer = consumer;
+        this.connection = connection;
     }
 
-    public RabbitMqConsumer(Channel channel, AcknowledgingConsumer consumer) {
-        this(channel, (Consumer) consumer);
+    public RabbitMqConsumer(RabbitMqConnection connection, AcknowledgingConsumer consumer) {
+        this(connection, (Consumer) consumer);
         consumer.setAcknowledger(this);
     }
 
@@ -38,8 +40,32 @@ public class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowle
     ) throws IOException {
         long deliveryTag = envelope.getDeliveryTag();
         String message = new String(body, StandardCharsets.UTF_8);
-        LOG.info(String.format("Received '%d': '%s'", deliveryTag, message));
+        LOG.info(String.format(
+                "Message '%d' received on queue '%s': '%s'",
+                deliveryTag,
+                connection.getQueueName(),
+                message
+        ));
         consumer.consume(String.valueOf(deliveryTag), message);
+        throw new IOException("test");
+    }
+
+    @Override
+    public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
+        LOG.warn(String.format("Lost connection to message queue '%s'.", connection.getQueueName()));
+        // "Automatic recovery only covers TCP connectivity issues and server-sent connection.close. It does not try to
+        // recover channels that were closed due to a channel exception or an application-level exception, by design."
+        // - RabbitMQ Documentation
+        // So we need to recover channel closings only.
+        if(sig.getReference() instanceof Channel) {
+            LOG.info("Recovering connection to queue '%s'...", connection.getQueueName());
+            connection.close();
+            try {
+                connection.consume(consumer);
+            } catch (CannotRegisterConsumer e) {
+                LOG.error("Connection recovery for queue '%s' failed.", connection.getQueueName());
+            }
+        }
     }
 
     @Override
