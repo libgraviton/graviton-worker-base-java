@@ -58,6 +58,7 @@ public class JmsConnection extends QueueConnection {
             connection = connectionFactory.createConnection();
             session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE); // AutoAck is done by JmsConsumer
             queue = session.createQueue(queueName);
+            connection.setExceptionListener(new RecoveringExceptionListener(this));
         } catch (JMSException e) {
             throw new CannotConnectToQueue(queueName, e);
         }

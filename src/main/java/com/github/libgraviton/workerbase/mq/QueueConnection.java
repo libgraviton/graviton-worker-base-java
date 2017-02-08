@@ -100,13 +100,18 @@ abstract public class QueueConnection {
 
     public void publish(String message) throws CannotPublishMessage {
         LOG.info(String.format("Publishing message on queue '%s': '%s", queueName, message));
+        boolean alreadyOpen = isOpen();
         try {
-            open();
+            if (!alreadyOpen) {
+                open();
+            }
             publishMessage(message);
         } catch (CannotConnectToQueue e) {
             throw new CannotPublishMessage(message, e);
         } finally {
-            close();
+            if (!alreadyOpen) {
+                close();
+            }
         }
         LOG.info(String.format("Message successfully published on queue '%s'.", queueName));
     }

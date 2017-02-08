@@ -78,9 +78,20 @@ public class QueueConnectionTest {
     }
 
     @Test
-    public void testPublishMessage() throws Exception{
+    public void testPublishMessage() throws Exception {
         connection.publish("gugus");
         verify(connection).publishMessage("gugus");
+        assertFalse(connection.isOpen());
+    }
+
+    @Test
+    public void testPublishMessageAlreadyOpen() throws Exception {
+        doReturn(true).when(connection).isOpen();
+
+        connection.publish("gugus");
+        
+        verify(connection, never()).open();
+        verify(connection, never()).close();
     }
 
     @Test
@@ -105,6 +116,15 @@ public class QueueConnectionTest {
         Consumer consumer = mock(Consumer.class);
         doThrow(new CannotRegisterConsumer(consumer, "gugus")).when(connection).registerConsumer(consumer);
         connection.consume(consumer);
+    }
+
+    @Test
+    public void testRegisterSecondConsumer() throws Exception {
+        thrown.expect(CannotRegisterConsumer.class);
+        thrown.expectMessage("Another consumer is already registered.");
+
+        connection.consume(mock(Consumer.class));
+        connection.consume(mock(Consumer.class));
     }
 
 }

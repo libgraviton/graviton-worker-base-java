@@ -68,6 +68,7 @@ public class JmsConnectionTest {
     public void testOpenConnection() throws Exception {
         connection.open();
         verify(jmsConnection).createSession(false, Session.CLIENT_ACKNOWLEDGE);
+        verify(jmsConnection).setExceptionListener(any(RecoveringExceptionListener.class));
         verify(jmsSession).createQueue("queue");
     }
 
