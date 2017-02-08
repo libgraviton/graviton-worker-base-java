@@ -63,6 +63,15 @@ public class QueueConnectionTest {
     }
 
     @Test
+    public void testOpenIfClosed() throws Exception {
+        connection.open();
+        doReturn(true).when(connection).isOpen();
+        assertFalse(connection.openIfClosed());
+        verify(connection, times(1)).open();
+        verify(connection, never()).close();
+    }
+
+    @Test
     public void testCloseConnection() throws Exception{
         connection.close();
         verify(connection).closeConnection();

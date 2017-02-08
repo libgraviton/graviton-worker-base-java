@@ -32,10 +32,6 @@ abstract public class QueueConnection {
     }
 
     public void open() throws CannotConnectToQueue {
-        if (isOpen()) {
-            LOG.info("Connection to queue '%s' has already been opened. Skipping...", queueName);
-            return;
-        }
         int connectionAttempts = this.connectionAttempts;
         boolean retryEndless = connectionAttempts == 0;
         LOG.info(String.format("Connecting to queue '%s'...", queueName));
@@ -89,7 +85,7 @@ abstract public class QueueConnection {
             );
         }
         try {
-            open();
+            openIfClosed();
         } catch (CannotConnectToQueue e) {
             throw new CannotRegisterConsumer(consumer, e);
         }
@@ -100,16 +96,14 @@ abstract public class QueueConnection {
 
     public void publish(String message) throws CannotPublishMessage {
         LOG.info(String.format("Publishing message on queue '%s': '%s", queueName, message));
-        boolean alreadyOpen = isOpen();
+        boolean wasClosed = false;
         try {
-            if (!alreadyOpen) {
-                open();
-            }
+            wasClosed = openIfClosed();
             publishMessage(message);
         } catch (CannotConnectToQueue e) {
             throw new CannotPublishMessage(message, e);
         } finally {
-            if (!alreadyOpen) {
+            if (wasClosed) {
                 close();
             }
         }
@@ -118,6 +112,15 @@ abstract public class QueueConnection {
 
     public String getQueueName() {
         return queueName;
+    }
+
+    public boolean openIfClosed() throws CannotConnectToQueue {
+        if (!isOpen()) {
+            open();
+            LOG.info("Connection to queue '%s' has already been opened. Skipping...", queueName);
+            return true;
+        }
+        return false;
     }
 
     abstract public boolean isOpen();

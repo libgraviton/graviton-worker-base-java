@@ -86,13 +86,14 @@ public class JmsConnectionTest {
         doReturn(jmsConsumer).when(jmsSession).createConsumer(jmsQueue);
 
         Consumer consumer = mock(Consumer.class);
-
         connection.consume(consumer);
         verify(jmsSession).createConsumer(jmsQueue);
         verify(jmsSession, never()).createConsumer(eq(jmsQueue), anyString());
         verify(jmsConsumer).setMessageListener(any(JmsConsumer.class));
         verify(jmsConnection).start();
-        verify(jmsConnection).setExceptionListener(any(ReRegisteringExceptionListener.class));
+
+        // Normal recovering exception listener first, re-registering exception listener second
+        verify(jmsConnection, times(2)).setExceptionListener(any(ExceptionListener.class));
     }
 
     @Test
