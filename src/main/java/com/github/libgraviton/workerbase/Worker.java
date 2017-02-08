@@ -60,6 +60,8 @@ public class Worker {
     
     /**
      * setup worker
+     *
+     * @throws WorkerException If connecting to queue is impossible
      */
     public void run() throws WorkerException {
         try {

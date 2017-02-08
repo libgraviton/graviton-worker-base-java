@@ -7,11 +7,6 @@ import javax.jms.JMSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author List of contributors
- *         <https://github.com/libgraviton/graviton/graphs/contributors>
- * @link http://swisscom.ch
- */
 public class RecoveringExceptionListener implements ExceptionListener {
 
     protected static final Logger LOG = LoggerFactory.getLogger(RecoveringExceptionListener.class);

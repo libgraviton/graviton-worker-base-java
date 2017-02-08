@@ -129,12 +129,12 @@ public class RabbitMqConnection extends QueueConnection {
         try {
             connection = connectionFactory.newConnection();
             channel = connection.createChannel();
-            // Use specific exchange if defined, otherwise use default exchange
+            channel.queueDeclare(queueName, queueDurable, queueExclusive, queueAutoAck, QUEUE_ARGS);
+            // If defined, use specific exchange and bind queue to it, otherwise use default exchange
             if (null != exchange) {
                 channel.exchangeDeclare(exchange, exchangeType, exchangeDurable);
+                channel.queueBind(queueName, exchange, routingKey);
             }
-            channel.queueDeclare(queueName, queueDurable, queueExclusive, queueAutoAck, QUEUE_ARGS);
-            channel.queueBind(queueName, exchange, routingKey);
         } catch (IOException | TimeoutException e) {
             throw new CannotConnectToQueue(queueName, e);
         }

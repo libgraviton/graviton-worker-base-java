@@ -45,6 +45,11 @@ public class QueueManager {
 
     /**
      * Async connection to queue.
+     *
+     * @param worker the worker
+     *
+     * @throws CannotConnectToQueue if connection to queue cannot be established
+     * @throws CannotRegisterConsumer if connection was successfully established, but consumer registration failed
      */
     public void connect(WorkerAbstract worker) throws CannotConnectToQueue, CannotRegisterConsumer {
         connection.open();

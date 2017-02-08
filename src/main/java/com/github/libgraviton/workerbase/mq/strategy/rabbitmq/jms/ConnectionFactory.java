@@ -5,7 +5,7 @@ import com.rabbitmq.jms.admin.RMQConnectionFactory;
 
 public class ConnectionFactory {
 
-    static JmsConnection createConnection(
+    public static JmsConnection createConnection(
             String queueName,
             String host,
             String virtualHost,
