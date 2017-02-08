@@ -47,7 +47,6 @@ public class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowle
                 message
         ));
         consumer.consume(String.valueOf(deliveryTag), message);
-        throw new IOException("test");
     }
 
     @Override

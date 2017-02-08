@@ -89,7 +89,7 @@ public class QueueConnectionTest {
         doReturn(true).when(connection).isOpen();
 
         connection.publish("gugus");
-        
+
         verify(connection, never()).open();
         verify(connection, never()).close();
     }

@@ -39,10 +39,7 @@ public class JmsConsumer implements MessageListener, MessageAcknowledger {
             if (jmsMessage instanceof TextMessage) {
                 message = ((TextMessage) jmsMessage).getText();
             } else if (jmsMessage instanceof BytesMessage) {
-                BytesMessage bytesMessage = (BytesMessage) jmsMessage;
-                byte[] messageBytes = new byte[(int) bytesMessage.getBodyLength()];
-                bytesMessage.readBytes(messageBytes);
-                message = new String(messageBytes, StandardCharsets.UTF_8);
+                message = extractBody((BytesMessage) jmsMessage);
             } else {
                 LOG.warn(String.format(
                         "Message of type '%s' cannot be handled and got ignored.",
@@ -80,5 +77,11 @@ public class JmsConsumer implements MessageListener, MessageAcknowledger {
         } finally {
             messages.remove(messageId);
         }
+    }
+
+    String extractBody(BytesMessage message) throws JMSException {
+        byte[] messageBytes = new byte[(int) message.getBodyLength()];
+        message.readBytes(messageBytes);
+        return new String(messageBytes, StandardCharsets.UTF_8);
     }
 }
