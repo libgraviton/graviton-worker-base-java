@@ -32,15 +32,34 @@ public class JmsConnection extends QueueConnection {
         return null != connection;
     }
 
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public Session getSession() {
+        return session;
+    }
+
+    public Queue getQueue() {
+        return queue;
+    }
+
+    public String getMessageSelector() {
+        return messageSelector;
+    }
+
+    public void setMessageSelector(String messageSelector) {
+        this.messageSelector = messageSelector;
+    }
+
     @Override
-    protected void publishMessage(String message) throws CannotPublishMessage {
+    protected void openConnection() throws CannotConnectToQueue {
         try {
-            MessageProducer producer = session.createProducer(queue);
-            BytesMessage bytesMessage = session.createBytesMessage();
-            bytesMessage.writeBytes(message.getBytes(StandardCharsets.UTF_8));
-            producer.send(bytesMessage);
+            connection = connectionFactory.createConnection();
+            session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE); // AutoAck is done by JmsConsumer
+            queue = session.createQueue(queueName);
         } catch (JMSException e) {
-            throw new CannotPublishMessage(message, e);
+            throw new CannotConnectToQueue(queueName, e);
         }
     }
 
@@ -63,13 +82,14 @@ public class JmsConnection extends QueueConnection {
     }
 
     @Override
-    protected void openConnection() throws CannotConnectToQueue {
+    protected void publishMessage(String message) throws CannotPublishMessage {
         try {
-            connection = connectionFactory.createConnection();
-            session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE); // AutoAck is done by JmsConsumer
-            queue = session.createQueue(queueName);
+            MessageProducer producer = session.createProducer(queue);
+            BytesMessage bytesMessage = session.createBytesMessage();
+            bytesMessage.writeBytes(message.getBytes(StandardCharsets.UTF_8));
+            producer.send(bytesMessage);
         } catch (JMSException e) {
-            throw new CannotConnectToQueue(queueName, e);
+            throw new CannotPublishMessage(message, e);
         }
     }
 
@@ -89,25 +109,5 @@ public class JmsConnection extends QueueConnection {
             connection = null;
             queue = null;
         }
-    }
-
-    public Connection getConnection() {
-        return connection;
-    }
-
-    public Session getSession() {
-        return session;
-    }
-
-    public Queue getQueue() {
-        return queue;
-    }
-
-    public String getMessageSelector() {
-        return messageSelector;
-    }
-
-    public void setMessageSelector(String messageSelector) {
-        this.messageSelector = messageSelector;
     }
 }

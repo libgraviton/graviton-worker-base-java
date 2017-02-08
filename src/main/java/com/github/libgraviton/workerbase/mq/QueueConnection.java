@@ -15,7 +15,7 @@ abstract public class QueueConnection {
 
     private int connectionAttempts = 0;
 
-    private int connectionAttemptSleep = 1;
+    private double connectionAttemptSleep = 1;
 
     private Consumer consumer;
 
@@ -27,7 +27,7 @@ abstract public class QueueConnection {
         this.connectionAttempts = connectionAttempts;
     }
 
-    public void setConnectionAttemptSleep(int connectionAttemptSleep) {
+    public void setConnectionAttemptSleep(double connectionAttemptSleep) {
         this.connectionAttemptSleep = connectionAttemptSleep;
     }
 
@@ -56,7 +56,7 @@ abstract public class QueueConnection {
                     connectionAttemptSleep
             ));
             try {
-                Thread.sleep(connectionAttemptSleep * 1000);
+                Thread.sleep((long) (connectionAttemptSleep * 1000));
             } catch (InterruptedException e) {
                 LOG.warn(String.format("Thread sleep interrupted: %s", e.getMessage()));
             }
@@ -74,7 +74,7 @@ abstract public class QueueConnection {
             closeConnection();
             LOG.info(String.format("Connection to queue '%s' successfully closed.", queueName));
         } catch (CannotCloseConnection e) {
-            LOG.warn(String.format("Cannot successfully close queue '%s': '%s'", queueName, e.getMessage()));
+            LOG.warn(String.format("Cannot successfully close queue '%s': '%s'", queueName, e.getCause().getMessage()));
         }
     }
 

@@ -96,16 +96,18 @@ public class RabbitMqConnection extends QueueConnection {
     }
 
     @Override
-    protected void publishMessage(String message) throws CannotPublishMessage {
+    protected void openConnection() throws CannotConnectToQueue {
         try {
-            channel.basicPublish(
-                    exchange,
-                    routingKey,
-                    MessageProperties.PERSISTENT_TEXT_PLAIN,
-                    message.getBytes(StandardCharsets.UTF_8)
-            );
-        } catch (IOException e) {
-            throw new CannotPublishMessage(message, e);
+            connection = connectionFactory.newConnection();
+            channel = connection.createChannel();
+            channel.queueDeclare(queueName, queueDurable, queueExclusive, queueAutoAck, QUEUE_ARGS);
+            // If defined, use specific exchange and bind queue to it, otherwise use default exchange
+            if (null != exchange) {
+                channel.exchangeDeclare(exchange, exchangeType, exchangeDurable);
+                channel.queueBind(queueName, exchange, routingKey);
+            }
+        } catch (IOException | TimeoutException e) {
+            throw new CannotConnectToQueue(queueName, e);
         }
     }
 
@@ -125,18 +127,16 @@ public class RabbitMqConnection extends QueueConnection {
 
 
     @Override
-    protected void openConnection() throws CannotConnectToQueue {
+    protected void publishMessage(String message) throws CannotPublishMessage {
         try {
-            connection = connectionFactory.newConnection();
-            channel = connection.createChannel();
-            channel.queueDeclare(queueName, queueDurable, queueExclusive, queueAutoAck, QUEUE_ARGS);
-            // If defined, use specific exchange and bind queue to it, otherwise use default exchange
-            if (null != exchange) {
-                channel.exchangeDeclare(exchange, exchangeType, exchangeDurable);
-                channel.queueBind(queueName, exchange, routingKey);
-            }
-        } catch (IOException | TimeoutException e) {
-            throw new CannotConnectToQueue(queueName, e);
+            channel.basicPublish(
+                    exchange,
+                    routingKey,
+                    MessageProperties.PERSISTENT_TEXT_PLAIN,
+                    message.getBytes(StandardCharsets.UTF_8)
+            );
+        } catch (IOException e) {
+            throw new CannotPublishMessage(message, e);
         }
     }
 
@@ -151,6 +151,9 @@ public class RabbitMqConnection extends QueueConnection {
             }
         } catch (IOException | TimeoutException e) {
             throw new CannotCloseConnection(queueName, e);
+        } finally {
+            connection = null;
+            channel = null;
         }
     }
 }
