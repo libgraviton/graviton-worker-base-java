@@ -10,7 +10,7 @@ public class CannotConsumeMessage extends IOException {
 
     public CannotConsumeMessage(String messageId, String mqMessage, String reason) {
         super(String.format(
-                "Unable to consume mqMessage with id '%d': '%s'. Reason: '%s'",
+                "Unable to consume mqMessage with id '%s': '%s'. Reason: '%s'",
                 messageId,
                 mqMessage,
                 reason
@@ -22,7 +22,7 @@ public class CannotConsumeMessage extends IOException {
     public CannotConsumeMessage(String messageId, String mqMessage, Exception cause) {
         super(
                 String.format(
-                        "Unable to consume mqMessage with id '%d': '%s'. An Exception occurred.",
+                        "Unable to consume mqMessage with id '%s': '%s'. An Exception occurred.",
                         messageId,
                         mqMessage
                 ),
