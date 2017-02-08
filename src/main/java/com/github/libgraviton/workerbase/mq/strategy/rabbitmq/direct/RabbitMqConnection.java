@@ -3,6 +3,7 @@ package com.github.libgraviton.workerbase.mq.strategy.rabbitmq.direct;
 import com.github.libgraviton.workerbase.mq.AcknowledgingConsumer;
 import com.github.libgraviton.workerbase.mq.Consumer;
 import com.github.libgraviton.workerbase.mq.QueueConnection;
+import com.github.libgraviton.workerbase.mq.exception.CannotCloseConnection;
 import com.github.libgraviton.workerbase.mq.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.mq.exception.CannotPublishMessage;
 import com.github.libgraviton.workerbase.mq.exception.CannotRegisterConsumer;
@@ -95,40 +96,33 @@ public class RabbitMqConnection extends QueueConnection {
     }
 
     @Override
-    public void publish(String message) throws CannotPublishMessage {
+    protected void publishMessage(String message) throws CannotPublishMessage {
         try {
-            open();
             channel.basicPublish(
                     exchange,
                     routingKey,
                     MessageProperties.PERSISTENT_TEXT_PLAIN,
                     message.getBytes(StandardCharsets.UTF_8)
             );
-        } catch (IOException | CannotConnectToQueue e) {
+        } catch (IOException e) {
             throw new CannotPublishMessage(message, e);
-        } finally {
-            close();
         }
     }
 
-    public void consume(Consumer consumer) throws CannotRegisterConsumer {
-        consume(new RabbitMqConsumer(channel, consumer), true);
-    }
-
-    public void consume(AcknowledgingConsumer consumer) throws CannotRegisterConsumer {
+    @Override
+    protected void registerConsumer(Consumer consumer) throws CannotRegisterConsumer {
         RabbitMqConsumer rabbitMqConsumer = new RabbitMqConsumer(channel, consumer);
-        consumer.setAcknowledger(rabbitMqConsumer);
-        consume(rabbitMqConsumer, false);
-    }
-
-    private void consume(RabbitMqConsumer rabbitMqConsumer, boolean autoAck) throws CannotRegisterConsumer {
+        boolean autoAck = !(consumer instanceof AcknowledgingConsumer);
+        if (!autoAck) {
+            ((AcknowledgingConsumer) consumer).setAcknowledger(rabbitMqConsumer);
+        }
         try {
-            open();
             channel.basicConsume(queueName, autoAck, rabbitMqConsumer);
-        } catch (CannotConnectToQueue | IOException e) {
-            throw new CannotRegisterConsumer(rabbitMqConsumer.getConsumer(), e);
+        } catch (IOException e) {
+            throw new CannotRegisterConsumer(consumer, e);
         }
     }
+
 
     @Override
     protected void openConnection() throws CannotConnectToQueue {
@@ -142,16 +136,12 @@ public class RabbitMqConnection extends QueueConnection {
             channel.queueDeclare(queueName, queueDurable, queueExclusive, queueAutoAck, QUEUE_ARGS);
             channel.queueBind(queueName, exchange, routingKey);
         } catch (IOException | TimeoutException e) {
-            throw new CannotConnectToQueue(String.format(
-                "Unable to open connection to queue '%s': '%s'",
-                queueName,
-                e.getCause().getMessage()
-            ));
+            throw new CannotConnectToQueue(queueName, e);
         }
     }
 
     @Override
-    protected void closeConnection() throws CannotConnectToQueue {
+    protected void closeConnection() throws CannotCloseConnection {
         try {
             if (channel != null) {
                 channel.close();
@@ -160,10 +150,7 @@ public class RabbitMqConnection extends QueueConnection {
                 connection.close();
             }
         } catch (IOException | TimeoutException e) {
-            throw new CannotConnectToQueue(
-                String.format("Cannot close connection to queue '%s'.", queueName),
-                e
-            );
+            throw new CannotCloseConnection(queueName, e);
         }
     }
 }

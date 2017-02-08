@@ -11,12 +11,12 @@ package com.github.libgraviton.workerbase.mq.exception;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-public class CannotConnectToQueue extends Exception {
+public class CannotCloseConnection extends Exception {
 
     private String queueName;
 
-    public CannotConnectToQueue(String queueName, Throwable cause) {
-        super(String.format("Unable to establish connection to queue '%s'.", queueName), cause);
+    public CannotCloseConnection(String queueName, Throwable cause) {
+        super(String.format("Unable to close connection to queue '%s'.", queueName), cause);
         this.queueName = queueName;
     }
 

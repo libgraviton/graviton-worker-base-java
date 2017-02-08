@@ -66,8 +66,32 @@ abstract public class QueueConnection {
       closeConnection();
       LOG.info(String.format("Connection to queue '%s' successfully closed.", queueName));
     } catch (CannotConnectToQueue e) {
-      LOG.warn("Cannot successfully close queue '" + queueName + "'.", e);
+      LOG.warn(String.format("Cannot successfully close queue '%s': '%s'", queueName, e.getMessage()));
     }
+  }
+
+  public void consume(Consumer consumer) throws CannotRegisterConsumer {
+    LOG.info(String.format("Registering consumer on queue '%s'...", queueName));
+    try {
+      open();
+    } catch (CannotConnectToQueue e) {
+      throw new CannotRegisterConsumer(consumer, e);
+    }
+    registerConsumer(consumer);
+    LOG.info(String.format("Consumer successfully registered on queue '%s'. Waiting for messages...", queueName));
+  }
+
+  public void publish(String message) throws CannotPublishMessage {
+    LOG.info(String.format("Publishing message on queue '%s': '%s", queueName, message));
+    try {
+      open();
+      publishMessage(message);
+    } catch (CannotConnectToQueue e) {
+      throw new CannotPublishMessage(message, e);
+    } finally {
+      close();
+    }
+    LOG.info(String.format("Message successfully published on queue '%s'.", queueName));
   }
 
   public String getQueueName() {
@@ -76,11 +100,9 @@ abstract public class QueueConnection {
 
   abstract public boolean isOpen();
 
-  abstract public void publish(String message) throws CannotPublishMessage;
+  abstract protected void publishMessage(String message) throws CannotPublishMessage;
 
-  abstract public void consume(Consumer consumer) throws CannotRegisterConsumer;
-
-  abstract public void consume(AcknowledgingConsumer consumer) throws CannotRegisterConsumer;
+  abstract protected void registerConsumer(Consumer consumer) throws CannotRegisterConsumer;
 
   abstract protected void openConnection() throws CannotConnectToQueue;
 
