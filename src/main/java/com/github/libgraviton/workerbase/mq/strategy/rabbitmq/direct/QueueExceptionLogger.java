@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-public class QueueExceptionLogger extends DefaultExceptionHandler {
+class QueueExceptionLogger extends DefaultExceptionHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(QueueExceptionLogger.class);
 

@@ -4,7 +4,6 @@ import com.github.libgraviton.workerbase.WorkerAbstract;
 import com.github.libgraviton.workerbase.WorkerConsumer;
 import com.github.libgraviton.workerbase.mq.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.mq.exception.CannotRegisterConsumer;
-import com.github.libgraviton.workerbase.mq.strategy.rabbitmq.direct.QueueExceptionLogger;
 import com.github.libgraviton.workerbase.mq.strategy.rabbitmq.direct.RabbitMqConnection;
 import com.rabbitmq.client.ConnectionFactory;
 import java.util.Properties;
@@ -32,7 +31,6 @@ public class QueueManager {
         factory.setNetworkRecoveryInterval(
             Integer.parseInt(properties.getProperty("queue.connecting.retryAfterSeconds")) * 1000
         );
-        factory.setExceptionHandler(new QueueExceptionLogger());
 
         connection = new RabbitMqConnection(
             properties.getProperty("graviton.workerId"),

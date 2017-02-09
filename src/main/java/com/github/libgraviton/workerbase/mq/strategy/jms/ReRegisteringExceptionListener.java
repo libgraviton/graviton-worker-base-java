@@ -5,11 +5,11 @@ import com.github.libgraviton.workerbase.mq.exception.CannotRegisterConsumer;
 
 import javax.jms.JMSException;
 
-public class ReRegisteringExceptionListener extends RecoveringExceptionListener {
+class ReRegisteringExceptionListener extends RecoveringExceptionListener {
 
     private Consumer consumer;
 
-    public ReRegisteringExceptionListener(JmsConnection connection, Consumer consumer) {
+    ReRegisteringExceptionListener(JmsConnection connection, Consumer consumer) {
         super(connection);
         this.consumer = consumer;
     }

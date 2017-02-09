@@ -1,5 +1,6 @@
 package com.github.libgraviton.workerbase.mq.strategy.jms;
 
+import com.github.libgraviton.workerbase.mq.AcknowledgingConsumer;
 import com.github.libgraviton.workerbase.mq.Consumer;
 import com.github.libgraviton.workerbase.mq.QueueConnection;
 import com.github.libgraviton.workerbase.mq.exception.CannotCloseConnection;
@@ -9,8 +10,11 @@ import com.github.libgraviton.workerbase.mq.exception.CannotRegisterConsumer;
 import javax.jms.*;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Represents a connection to a queue of a JMS compatible queue system. In case of a queue exception, the connection
+ * will try to recover itself.
+ */
 public class JmsConnection extends QueueConnection {
-
 
     private ConnectionFactory connectionFactory;
 
@@ -22,11 +26,23 @@ public class JmsConnection extends QueueConnection {
 
     protected Queue queue;
 
+    /**
+     * Creates a JMS queue connection.
+     *
+     * @param queueName The name of the queue
+     * @param connectionFactory The JMS Connection factory
+     */
     public JmsConnection(String queueName, ConnectionFactory connectionFactory) {
         super(queueName);
         this.connectionFactory = connectionFactory;
     }
 
+    /**
+     * Whtether the connection is open or not. Since JMS does not seem to provide such a functionality, this method
+     * just checks whether a {@link Connection} has been instantiatet or not.
+     *
+     * @return true if the connection is open, false if not.
+     */
     @Override
     public boolean isOpen() {
         return null != connection;
@@ -48,10 +64,22 @@ public class JmsConnection extends QueueConnection {
         return messageSelector;
     }
 
+    /**
+     * Defines the JMS Message selector for consumers.
+     *
+     * @see Session#createConsumer(Destination, String)
+     *
+     * @param messageSelector The JMS message selector
+     */
     public void setMessageSelector(String messageSelector) {
         this.messageSelector = messageSelector;
     }
 
+    /**
+     * Opens the connection by creating a new {@link Connection}, {@link Session} and {@link Queue}.
+     *
+     * @throws CannotConnectToQueue If the connection cannot be established
+     */
     @Override
     protected void openConnection() throws CannotConnectToQueue {
         try {
@@ -64,6 +92,14 @@ public class JmsConnection extends QueueConnection {
         }
     }
 
+    /**
+     * Registers a {@link MessageConsumer} with {@link MessageListener}.
+     *
+     * @param consumer The consumer to register. All messages will be acknowledged automatically. Except if the consumer
+     *                 implements {@link AcknowledgingConsumer}.
+     *
+     * @throws CannotRegisterConsumer If the consumer cannot be registerd
+     */
     @Override
     protected void registerConsumer(Consumer consumer) throws CannotRegisterConsumer {
         MessageListener jmsConsumer = new JmsConsumer(consumer);
@@ -82,6 +118,13 @@ public class JmsConnection extends QueueConnection {
         }
     }
 
+    /**
+     * Publishes a {@link BytesMessage}. Note that every message is considered UTF-8 encoded.
+     *
+     * @param message The message to publish
+     *
+     * @throws CannotPublishMessage If the message cannot be published.
+     */
     @Override
     protected void publishMessage(String message) throws CannotPublishMessage {
         try {
@@ -94,6 +137,11 @@ public class JmsConnection extends QueueConnection {
         }
     }
 
+    /**
+     * Closes the connection by closing the {@link Session} and {@link Connection}.
+     *
+     * @throws CannotCloseConnection If the connection cannot be closed.
+     */
     @Override
     protected void closeConnection() throws CannotCloseConnection {
         try {

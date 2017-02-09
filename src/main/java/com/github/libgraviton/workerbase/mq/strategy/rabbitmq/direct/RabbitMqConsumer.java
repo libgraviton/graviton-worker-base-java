@@ -4,7 +4,6 @@ import com.github.libgraviton.workerbase.mq.AcknowledgingConsumer;
 import com.github.libgraviton.workerbase.mq.Consumer;
 import com.github.libgraviton.workerbase.mq.MessageAcknowledger;
 import com.github.libgraviton.workerbase.mq.exception.CannotAcknowledgeMessage;
-import com.github.libgraviton.workerbase.mq.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.mq.exception.CannotRegisterConsumer;
 import com.rabbitmq.client.*;
 import org.slf4j.Logger;
@@ -13,7 +12,14 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-public class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
+/**
+ * Wraps an instance of {@link Consumer} in order to consume from an AMQP RabbitMQ queue. Moreover, this consumer does
+ * also connection recovery if an exception on the channel occurred (e.g. remote channel close).
+ *
+ * If the wrapped {@link Consumer} is an {@link AcknowledgingConsumer}, this class will receive the acknowledgment and
+ * do the basicAck on the queue.
+ */
+class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
 
     final private boolean ACK_PREV_MESSAGES = false;
 
@@ -23,13 +29,13 @@ public class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowle
 
     private Consumer consumer;
 
-    public RabbitMqConsumer(RabbitMqConnection connection, Consumer consumer) {
+    RabbitMqConsumer(RabbitMqConnection connection, Consumer consumer) {
         super(connection.getChannel());
         this.consumer = consumer;
         this.connection = connection;
     }
 
-    public RabbitMqConsumer(RabbitMqConnection connection, AcknowledgingConsumer consumer) {
+    RabbitMqConsumer(RabbitMqConnection connection, AcknowledgingConsumer consumer) {
         this(connection, (Consumer) consumer);
         consumer.setAcknowledger(this);
     }
@@ -77,7 +83,7 @@ public class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowle
         }
     }
 
-    public Consumer getConsumer() {
+    Consumer getConsumer() {
         return consumer;
     }
 }

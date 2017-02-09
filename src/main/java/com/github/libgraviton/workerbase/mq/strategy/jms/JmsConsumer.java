@@ -11,7 +11,15 @@ import javax.jms.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
-public class JmsConsumer implements MessageListener, MessageAcknowledger {
+/**
+ * Wraps an instance of {@link Consumer} in order to consume from a JMS based queue.
+ *
+ * Moreover, this class does also the automatic message acknowledgment after the
+ * {@link Consumer#consume(String, String)} terminated. Except if the wrapped {@link Consumer} is an
+ * {@link AcknowledgingConsumer}, it will do the JMS acknowledgment as soon as it receives the acknowledgment from the
+ * wrapped consumer.
+ */
+class JmsConsumer implements MessageListener, MessageAcknowledger {
 
     private final Logger LOG = LoggerFactory.getLogger(getClass());
 
@@ -19,16 +27,11 @@ public class JmsConsumer implements MessageListener, MessageAcknowledger {
 
     private HashMap<String, Message> messages;
 
-    public JmsConsumer(Consumer consumer) {
+    JmsConsumer(Consumer consumer) {
         this.consumer = consumer;
         messages = new HashMap<>();
     }
 
-    /**
-     * Entry point of an incoming queue message. Starts processing the feedback XML.
-     *
-     * @param jmsMessage The incoming message
-     */
     @Override
     public void onMessage(Message jmsMessage) {
         LOG.debug(String.format("Received message of type '%s' from queue.", jmsMessage.getClass().getName()));

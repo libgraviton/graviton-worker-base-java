@@ -80,7 +80,7 @@ public class RabbitMqConnectionTest {
         final boolean durable= false;
         final boolean exclusive = true;
 
-        connection.setQueueAutoAck(autoAck);
+        connection.setQueueAutoDelete(autoAck);
         connection.setQueueDurable(durable);
         connection.setQueueExclusive(exclusive);
         connection.open();

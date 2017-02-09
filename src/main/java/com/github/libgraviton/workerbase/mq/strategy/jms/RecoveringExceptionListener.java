@@ -7,13 +7,13 @@ import javax.jms.JMSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RecoveringExceptionListener implements ExceptionListener {
+class RecoveringExceptionListener implements ExceptionListener {
 
     protected static final Logger LOG = LoggerFactory.getLogger(RecoveringExceptionListener.class);
 
     protected JmsConnection connection;
 
-    public RecoveringExceptionListener(JmsConnection connection) {
+    RecoveringExceptionListener(JmsConnection connection) {
         this.connection = connection;
     }
 
