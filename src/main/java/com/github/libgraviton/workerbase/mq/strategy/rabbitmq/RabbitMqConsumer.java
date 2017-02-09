@@ -1,4 +1,4 @@
-package com.github.libgraviton.workerbase.mq.strategy.rabbitmq.direct;
+package com.github.libgraviton.workerbase.mq.strategy.rabbitmq;
 
 import com.github.libgraviton.workerbase.mq.AcknowledgingConsumer;
 import com.github.libgraviton.workerbase.mq.Consumer;

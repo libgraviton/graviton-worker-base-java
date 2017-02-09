@@ -4,7 +4,7 @@ import com.github.libgraviton.workerbase.WorkerAbstract;
 import com.github.libgraviton.workerbase.WorkerConsumer;
 import com.github.libgraviton.workerbase.mq.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.mq.exception.CannotRegisterConsumer;
-import com.github.libgraviton.workerbase.mq.strategy.rabbitmq.direct.RabbitMqConnection;
+import com.github.libgraviton.workerbase.mq.strategy.rabbitmq.RabbitMqConnection;
 import com.rabbitmq.client.ConnectionFactory;
 import java.util.Properties;
 
