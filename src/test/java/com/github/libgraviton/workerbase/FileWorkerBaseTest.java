@@ -82,10 +82,9 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         worker = getWrappedWorker(testWorker);
         worker.run();
         
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "document.file.file.create");
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueFileEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("document.file.file.create", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
         
         verify(stringResponse, times(4)).getStatus();
         
@@ -115,10 +114,9 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         worker = getWrappedWorker(testWorker);
         worker.run();
         
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "document.file.file.create");
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueFileEventWithAction.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("document.file.file.create", envelope, new AMQP.BasicProperties(), message.getBytes());     
+        workerConsumer.consume("34343", message);
         
         verify(stringResponse, times(4)).getStatus();
 

@@ -67,10 +67,9 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         doThrow(new IOException()).when(queueChannel).basicAck(any(Long.class), any(Boolean.class));
         worker.run();
         
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
         
         verify(stringResponse, times(4)).getStatus();
 
@@ -100,10 +99,9 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker = getWrappedWorker(testWorker);
         worker.run();
 
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
 
         verify(stringResponse, times(3)).getStatus();
 
@@ -123,10 +121,9 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker = getWrappedWorker(testWorker);
         worker.run();
         
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
         
         assertTrue(testWorker.concerningRequestCalled);
         assertTrue(testWorker.handleRequestCalled);
@@ -137,7 +134,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         testWorker.handleRequestCalled = false;
         testWorker.isConcerningRequest = false;
         
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
         
         assertTrue(testWorker.concerningRequestCalled);
         assertFalse(testWorker.handleRequestCalled);        
@@ -150,10 +147,9 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
         
         // let worker throw WorkerException        
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
         
         // register
         verify(requestBodyMock, times(1)).body(contains("\"id\":\"java-test\""));
@@ -176,10 +172,9 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
         
         // let worker throw WorkerException        
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
         
         // should be NO call on requestBodyMock
         verify(requestBodyMock, times(0)).body(anyString());
@@ -216,10 +211,9 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
         
         // let worker throw CommunicationException
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes()); 
+        workerConsumer.consume("34343", message);
     }
     
     @Test
