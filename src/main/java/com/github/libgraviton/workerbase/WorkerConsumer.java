@@ -5,11 +5,10 @@
 package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.jr.ob.JSON;
+import com.github.libgraviton.messaging.MessageAcknowledger;
+import com.github.libgraviton.messaging.consumer.AcknowledgingConsumer;
+import com.github.libgraviton.messaging.exception.CannotConsumeMessage;
 import com.github.libgraviton.workerbase.model.QueueEvent;
-import com.rabbitmq.client.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 
 /**
@@ -19,64 +18,34 @@ import java.io.IOException;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-public class WorkerConsumer extends DefaultConsumer {
-
-    private static final Logger LOG = LoggerFactory.getLogger(WorkerConsumer.class);
+public class WorkerConsumer implements AcknowledgingConsumer {
 
     private WorkerAbstract worker;
 
-    private String queueName;
+    private MessageAcknowledger acknowledger;
 
     /**
      * constructor
      *
-     * @param channel channel
      * @param worker worker
-     * @param queueName queueName
      */
-    public WorkerConsumer(Channel channel, WorkerAbstract worker, String queueName) {
-        super(channel);                
+    public WorkerConsumer(WorkerAbstract worker) {
         this.worker = worker;
-        this.queueName = queueName;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * handles a delivery
-     */
-    @Override
-    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
-            throws IOException {
-        String message = new String(body, "UTF-8");
-        LOG.info("Received '" + envelope.getDeliveryTag() + "':'" + message + "'");
-
-        // deserialize
-        QueueEvent queueEvent = JSON.std.beanFrom(QueueEvent.class, message);
-        
-        // give to worker
-        worker.handleDelivery(queueEvent, envelope.getDeliveryTag(), getChannel());
     }
 
     @Override
-    public void handleConsumeOk(String consumerTag) {
-        LOG.info("Connection to message queue '" + queueName +"' established.");
-        LOG.info("Waiting for messages...");
-    }
-
-    @Override
-    public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
-        LOG.info("Lost connection to message queue '" + queueName + "'.");
-        if(sig.getReference() instanceof Channel) {
-            Channel channel = (Channel) sig.getReference();
-            Connection connection = channel.getConnection();
-
-            LOG.info("Channel is closed. Creating new channel for connection '" + connection + "'.");
-            try {
-                worker.getQueueManager().createChannel(connection);
-            } catch (IOException e) {
-                LOG.error("Cannot create channel for connection '" + connection + "'.", e);
-            }
+    public void consume(String messageId, String message) throws CannotConsumeMessage {
+        QueueEvent queueEvent;
+        try {
+            queueEvent = JSON.std.beanFrom(QueueEvent.class, message);
+        } catch (IOException e) {
+            throw new CannotConsumeMessage(messageId, message, e);
         }
+        worker.handleDelivery(queueEvent, messageId, acknowledger);
+    }
+
+    @Override
+    public void setAcknowledger(MessageAcknowledger acknowledger) {
+        this.acknowledger = acknowledger;
     }
 }

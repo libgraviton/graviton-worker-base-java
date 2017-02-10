@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
+import com.github.libgraviton.messaging.MessageAcknowledger;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -34,7 +34,7 @@ public abstract class WorkerBaseTestCase {
     protected HttpRequestWithBody requestBodyMock;
     protected HttpResponse<String> statusResponse;
     protected HttpResponse<String> translatableResponse;
-    
+
     @SuppressWarnings("unchecked")
     @Before
     public void baseMock() throws Exception {
@@ -90,12 +90,13 @@ public abstract class WorkerBaseTestCase {
     protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {
         worker = spy(new Worker(testWorker));
         queueChannel = mock(Channel.class);
-        workerConsumer = PowerMockito.spy(new WorkerConsumer(queueChannel, testWorker, "testQueueName"));
+        workerConsumer = PowerMockito.spy(new WorkerConsumer(testWorker));
+        workerConsumer.setAcknowledger(mock(MessageAcknowledger.class));
 
-        WorkerQueueManager queueManager = mock(WorkerQueueManager.class);
-        when(worker.getQueueManager()).thenReturn(queueManager);
-        doNothing().when(queueManager).connect();
-        
+        QueueManager queueManager = mock(QueueManager.class);
+        doReturn(queueManager).when(worker).getQueueManager();
+        doNothing().when(queueManager).connect(any(WorkerAbstract.class));
+
         return worker;
     }
 

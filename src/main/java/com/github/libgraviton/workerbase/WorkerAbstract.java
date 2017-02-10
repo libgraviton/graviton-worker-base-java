@@ -5,6 +5,8 @@
 package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.jr.ob.JSON;
+import com.github.libgraviton.messaging.MessageAcknowledger;
+import com.github.libgraviton.messaging.exception.CannotAcknowledgeMessage;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
@@ -16,11 +18,9 @@ import com.github.libgraviton.workerbase.model.status.EventStatus;
 import com.github.libgraviton.workerbase.model.status.InformationType;
 import com.github.libgraviton.workerbase.model.status.Status;
 import com.github.libgraviton.workerbase.model.status.WorkerFeedback;
-import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,9 +49,9 @@ public abstract class WorkerAbstract {
 
     protected Boolean isRegistered = Boolean.FALSE;
 
-    protected long deliveryTag;
+    protected String messageId;
 
-    protected Channel channel;
+    protected MessageAcknowledger acknowledger;
 
     public Properties getProperties() {
         return properties;
@@ -106,14 +106,14 @@ public abstract class WorkerAbstract {
     /**
      * outer function that will be called on an queue event
      *
-     * @param deliveryTag delivery tag from envelope
-     * @param channel registered channel
+     * @param messageId delivery tag from envelope
+     * @param acknowledger registered acknowledger
      * @param queueEvent queue event
      */
-    public final void handleDelivery(QueueEvent queueEvent, long deliveryTag, Channel channel) {
+    public final void handleDelivery(QueueEvent queueEvent, String messageId, MessageAcknowledger acknowledger) {
 
-        this.deliveryTag = deliveryTag;
-        this.channel = channel;
+        this.messageId = messageId;
+        this.acknowledger = acknowledger;
 
         String statusUrl = queueEvent.getStatus().get$ref();
         try {
@@ -175,10 +175,9 @@ public abstract class WorkerAbstract {
 
     private void reportToMessageQueue() {
         try {
-            channel.basicAck(deliveryTag, false);
-            LOG.debug("Reported basicAck to message queue with delivery tag '" + deliveryTag + "'.");
-        } catch (IOException ioe) {
-            LOG.error("Unable to ack deliveryTag '" + deliveryTag + "' on message queue.");
+            acknowledger.acknowledge(messageId);
+        } catch (CannotAcknowledgeMessage e) {
+            LOG.error("Unable to ack messageId '" + messageId + "' on message queue.");
         }
     }
 
@@ -269,9 +268,7 @@ public abstract class WorkerAbstract {
         return actionRef;
     }
 
-    public WorkerQueueManager getQueueManager() {
-        WorkerQueueManager workerQueueManager = new WorkerQueueManager(properties);
-        workerQueueManager.setWorker(this);
-        return workerQueueManager;
+    public QueueManager getQueueManager() {
+        return new QueueManager(properties);
     }
 }
