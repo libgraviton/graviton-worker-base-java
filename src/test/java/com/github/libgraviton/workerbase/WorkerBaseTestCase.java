@@ -1,8 +1,6 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.workerbase.mq.AcknowledgingConsumer;
-import com.github.libgraviton.workerbase.mq.MessageAcknowledger;
-import com.github.libgraviton.workerbase.mq.QueueManager;
+import com.github.libgraviton.messaging.MessageAcknowledger;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;

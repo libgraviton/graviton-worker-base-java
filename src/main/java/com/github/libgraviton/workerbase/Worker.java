@@ -6,12 +6,11 @@ package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
+import com.github.libgraviton.messaging.exception.CannotConnectToQueue;
+import com.github.libgraviton.messaging.exception.CannotRegisterConsumer;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.PropertiesLoader;
-import com.github.libgraviton.workerbase.mq.exception.CannotConnectToQueue;
-import com.github.libgraviton.workerbase.mq.QueueManager;
-import com.github.libgraviton.workerbase.mq.exception.CannotRegisterConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

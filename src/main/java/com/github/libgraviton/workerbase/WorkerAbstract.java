@@ -5,6 +5,8 @@
 package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.jr.ob.JSON;
+import com.github.libgraviton.messaging.MessageAcknowledger;
+import com.github.libgraviton.messaging.exception.CannotAcknowledgeMessage;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
@@ -16,9 +18,6 @@ import com.github.libgraviton.workerbase.model.status.EventStatus;
 import com.github.libgraviton.workerbase.model.status.InformationType;
 import com.github.libgraviton.workerbase.model.status.Status;
 import com.github.libgraviton.workerbase.model.status.WorkerFeedback;
-import com.github.libgraviton.workerbase.mq.MessageAcknowledger;
-import com.github.libgraviton.workerbase.mq.QueueManager;
-import com.github.libgraviton.workerbase.mq.exception.CannotAcknowledgeMessage;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
