@@ -223,7 +223,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker = getWrappedWorker(testWorker);
         
         String vcapCreds = "{\"rabbitmq-3.0\": [{\"credentials\": {\"host\": \"test\", \"port\": 32321,"+
-                "\"username\": \"hansuser\", \"password\": \"hans22\", \"vhost\": \"hanshost\"}}]}";
+                "\"user\": \"hansuser\", \"password\": \"hans22\", \"virtualhost\": \"hanshost\"}}]}";
         
         when(worker.getVcap())
         .thenReturn(vcapCreds);        
@@ -232,9 +232,9 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
 
         assertEquals("test", worker.getProperties().getProperty("queue.host"));
         assertEquals("32321", worker.getProperties().getProperty("queue.port"));
-        assertEquals("hansuser", worker.getProperties().getProperty("queue.username"));
+        assertEquals("hansuser", worker.getProperties().getProperty("queue.user"));
         assertEquals("hans22", worker.getProperties().getProperty("queue.password"));
-        assertEquals("hanshost", worker.getProperties().getProperty("queue.vhost"));        
+        assertEquals("hanshost", worker.getProperties().getProperty("queue.virtualhost"));
     }
 
 }

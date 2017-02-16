@@ -91,9 +91,9 @@ public class Worker {
 
                 properties.setProperty("queue.host", vcapCreds.get("host").toString());
                 properties.setProperty("queue.port", vcapCreds.get("port").toString());
-                properties.setProperty("queue.username", vcapCreds.get("username").toString());
+                properties.setProperty("queue.user", vcapCreds.get("user").toString());
                 properties.setProperty("queue.password", vcapCreds.get("password").toString());
-                properties.setProperty("queue.vhost", vcapCreds.get("vhost").toString());
+                properties.setProperty("queue.virtualhost", vcapCreds.get("virtualhost").toString());
             }
         }
     }
