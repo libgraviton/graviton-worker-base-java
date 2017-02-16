@@ -19,25 +19,11 @@ public class QueueManager {
     private QueueConnection connection;
 
     public QueueManager(Properties properties) {
-        int retrySleep = Integer.parseInt(properties.getProperty("queue.connecting.retryAfterSeconds")) * 1000;
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(properties.getProperty("queue.host"));
-        factory.setPort(Integer.parseInt(properties.getProperty("queue.port")));
-        factory.setUsername(properties.getProperty("queue.username"));
-        factory.setPassword(properties.getProperty("queue.password"));
-        factory.setVirtualHost(properties.getProperty("queue.vhost"));
-        factory.setAutomaticRecoveryEnabled(true);
-        factory.setNetworkRecoveryInterval(
-            Integer.parseInt(properties.getProperty("queue.connecting.retryAfterSeconds")) * 1000
-        );
-
-        connection = new RabbitMqConnection(
-            properties.getProperty("graviton.workerId"),
-            properties.getProperty("queue.exchange", null),
-            properties.getProperty("graviton.workerId"),
-            factory
-        );
-        connection.setConnectionAttemptSleep(retrySleep);
+        connection = new RabbitMqConnection.Builder()
+                .queueName(properties.getProperty("graviton.workerId"))
+                .routingKey(properties.getProperty("graviton.workerId"))
+                .applyProperties(properties, "queue.")
+                .build();
     }
 
     /**
