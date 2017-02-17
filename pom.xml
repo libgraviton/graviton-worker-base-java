@@ -4,7 +4,7 @@
     <groupId>com.github.libgraviton</groupId>
     <artifactId>worker-base</artifactId>
     <packaging>jar</packaging>
-    <version>0.20.1-SNAPSHOT</version>
+    <version>0.22.1-SNAPSHOT</version>
     <name>Graviton Worker Base Library</name>
     <url>https://github.com/libgraviton/graviton-worker-base-java</url>
     <inceptionYear>2015</inceptionYear>
@@ -50,9 +50,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.rabbitmq</groupId>
-            <artifactId>amqp-client</artifactId>
-            <version>3.6.1</version>
+            <groupId>com.github.libgraviton</groupId>
+            <artifactId>messaging</artifactId>
+            <version>0.2.0</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>

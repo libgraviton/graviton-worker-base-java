@@ -11,8 +11,6 @@ import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.lib.TestFileWorker;
 import com.github.libgraviton.workerbase.model.GravitonRef;
 import com.github.libgraviton.workerbase.model.QueueEvent;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Envelope;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,12 +71,11 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         TestFileWorker testWorker = prepareTestWorker(new TestFileWorker());
         worker = getWrappedWorker(testWorker);
         worker.run();
-        
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "document.file.file.create");
+
         String message = FileUtils.readFileToString(
                 new File("src/test/resources/json/queueFileEvent.json"));
 
-        workerConsumer.handleDelivery("document.file.file.create", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
 
         // register
         verify(gravitonApi, times(1)).put(isA(EventWorker.class));
@@ -116,11 +113,10 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         TestFileWorker testWorker = prepareTestWorker(new TestFileWorker());
         worker = getWrappedWorker(testWorker);
         worker.run();
-        
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "document.file.file.create");
+
         String message = FileUtils.readFileToString(
                 new File("src/test/resources/json/queueFileEventWithAction.json"));
-        workerConsumer.handleDelivery("document.file.file.create", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
 
         // register
         verify(gravitonApi, times(1)).put(isA(EventWorker.class));

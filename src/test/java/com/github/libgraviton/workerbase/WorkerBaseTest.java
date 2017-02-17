@@ -1,6 +1,5 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.api.Response;
 import com.github.libgraviton.gdk.exception.UnsuccessfulResponseException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
@@ -12,8 +11,6 @@ import com.github.libgraviton.workerbase.lib.TestWorker;
 import com.github.libgraviton.workerbase.lib.TestWorkerException;
 import com.github.libgraviton.workerbase.lib.TestWorkerNoAuto;
 import com.github.libgraviton.workerbase.model.QueueEvent;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Envelope;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,11 +70,10 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         // execution should work even if message queue ack is not successful
         doThrow(new IOException()).when(queueChannel).basicAck(any(Long.class), any(Boolean.class));
         worker.run();
-        
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
+
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
 
         assertTrue(testWorker.shouldHandleRequestCalled);
 
@@ -103,10 +99,9 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker = getWrappedWorker(testWorker);
         worker.run();
 
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
 
         verify(testWorker, times(1)).shouldHandleRequest(any(QueueEvent.class));
 
@@ -125,11 +120,10 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         TestWorkerNoAuto testWorker = spy(prepareTestWorker(new TestWorkerNoAuto()));
         worker = getWrappedWorker(testWorker);
         worker.run();
-        
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
+
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
         
         assertTrue(testWorker.concerningRequestCalled);
         assertTrue(testWorker.handleRequestCalled);
@@ -145,8 +139,8 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         // again, this time no request concern
         testWorker.handleRequestCalled = false;
         testWorker.isConcerningRequest = false;
-        
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+
+        workerConsumer.consume("34343", message);
         
         assertTrue(testWorker.concerningRequestCalled);
         assertFalse(testWorker.handleRequestCalled);        
@@ -158,11 +152,10 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker = getWrappedWorker(testWorker);
         worker.run();
         
-        // let worker throw WorkerException        
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
+        // let worker throw WorkerException
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
 
         // register
         verify(gravitonApi, times(1)).put(isA(EventWorker.class));
@@ -181,11 +174,10 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker = getWrappedWorker(testWorker);
         worker.run();
         
-        // let worker throw WorkerException        
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
+        // let worker throw WorkerException
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes());
+        workerConsumer.consume("34343", message);
 
         // register
         verify(gravitonApi, times(0)).put(isA(EventWorker.class));
@@ -208,10 +200,9 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
         
         // let worker throw CommunicationException
-        Envelope envelope = new Envelope(new Long(34343), false, "graviton", "documents.core.app.update");
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
-        workerConsumer.handleDelivery("documents.core.app.update", envelope, new AMQP.BasicProperties(), message.getBytes()); 
+        workerConsumer.consume("34343", message);
     }
     
     @Test
@@ -221,7 +212,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker = getWrappedWorker(testWorker);
         
         String vcapCreds = "{\"rabbitmq-3.0\": [{\"credentials\": {\"host\": \"test\", \"port\": 32321,"+
-                "\"username\": \"hansuser\", \"password\": \"hans22\", \"vhost\": \"hanshost\"}}]}";
+                "\"user\": \"hansuser\", \"password\": \"hans22\", \"virtualhost\": \"hanshost\"}}]}";
         
         when(worker.getVcap())
         .thenReturn(vcapCreds);        
@@ -230,9 +221,9 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
 
         assertEquals("test", worker.getProperties().getProperty("queue.host"));
         assertEquals("32321", worker.getProperties().getProperty("queue.port"));
-        assertEquals("hansuser", worker.getProperties().getProperty("queue.username"));
+        assertEquals("hansuser", worker.getProperties().getProperty("queue.user"));
         assertEquals("hans22", worker.getProperties().getProperty("queue.password"));
-        assertEquals("hanshost", worker.getProperties().getProperty("queue.vhost"));        
+        assertEquals("hanshost", worker.getProperties().getProperty("queue.virtualhost"));
     }
 
     @Test

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.libgraviton.gdk.GravitonApi;
 import com.github.libgraviton.gdk.api.Response;
 import com.github.libgraviton.gdk.data.GravitonBase;
-import com.github.libgraviton.workerbase.mq.WorkerQueueManager;
+import com.github.libgraviton.messaging.MessageAcknowledger;
 import com.rabbitmq.client.Channel;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -61,12 +61,13 @@ public abstract class WorkerBaseTestCase {
     protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {
         worker = spy(new Worker(testWorker));
         queueChannel = mock(Channel.class);
-        workerConsumer = PowerMockito.spy(new WorkerConsumer(queueChannel, testWorker, "testQueueName"));
+        workerConsumer = PowerMockito.spy(new WorkerConsumer(testWorker));
+        workerConsumer.setAcknowledger(mock(MessageAcknowledger.class));
 
-        WorkerQueueManager queueManager = mock(WorkerQueueManager.class);
-        when(worker.getQueueManager()).thenReturn(queueManager);
-        doNothing().when(queueManager).connect();
-        
+        QueueManager queueManager = mock(QueueManager.class);
+        doReturn(queueManager).when(worker).getQueueManager();
+        doNothing().when(queueManager).connect(any(WorkerAbstract.class));
+
         return worker;
     }
 
