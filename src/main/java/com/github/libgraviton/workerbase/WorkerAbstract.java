@@ -4,27 +4,24 @@
 
 package com.github.libgraviton.workerbase;
 
-import com.fasterxml.jackson.jr.ob.JSON;
+import com.github.libgraviton.gdk.GravitonApi;
+import com.github.libgraviton.gdk.exception.CommunicationException;
+import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
+import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusInformation;
+import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
+import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatusAction;
+import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventStatusAction;
+import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
+import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
 import com.github.libgraviton.messaging.MessageAcknowledger;
 import com.github.libgraviton.messaging.exception.CannotAcknowledgeMessage;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
-import com.github.libgraviton.workerbase.model.GravitonRef;
 import com.github.libgraviton.workerbase.model.QueueEvent;
-import com.github.libgraviton.workerbase.model.register.WorkerRegister;
-import com.github.libgraviton.workerbase.model.register.WorkerRegisterSubscription;
-import com.github.libgraviton.workerbase.model.status.EventStatus;
-import com.github.libgraviton.workerbase.model.status.InformationType;
-import com.github.libgraviton.workerbase.model.status.Status;
-import com.github.libgraviton.workerbase.model.status.WorkerFeedback;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,6 +50,8 @@ public abstract class WorkerAbstract {
 
     protected MessageAcknowledger acknowledger;
 
+    protected GravitonApi gravitonApi = initGravitonApi();
+
     public Properties getProperties() {
         return properties;
     }
@@ -64,7 +63,6 @@ public abstract class WorkerAbstract {
     public Boolean getRegistered() {
         return isRegistered;
     }
-
 
     /**
      * worker logic is implemented here
@@ -124,8 +122,12 @@ public abstract class WorkerAbstract {
             if (shouldAutoUpdateStatus()) {
                 try {
                     EventStatus eventStatus = statusHandler.getEventStatusFromUrl(statusUrl);
-                    eventStatus.add(new WorkerFeedback(workerId, InformationType.ERROR, e.toString()));
-                    update(eventStatus, workerId, Status.FAILED);
+                    EventStatusInformation information = new EventStatusInformation();
+                    information.setWorkerId(workerId);
+                    information.setType(EventStatusInformation.Type.ERROR);
+                    information.setContent(e.toString());
+                    eventStatus.getInformation().add(information);
+                    update(eventStatus, workerId, EventStatusStatus.Status.FAILED);
                 } catch (GravitonCommunicationException e1) {
                     // don't log again in case if previous exception was already a GravitonCommunicationException.
                     if (!(e instanceof GravitonCommunicationException)) {
@@ -138,38 +140,56 @@ public abstract class WorkerAbstract {
     }
 
     protected void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {
-        statusHandler = new EventStatusHandler(properties.getProperty("graviton.eventStatusBaseUrl"));
+        statusHandler = new EventStatusHandler(gravitonApi);
 
         if (!shouldHandleRequest(queueEvent)) {
             // set status to ignored if the worker doesn't care about the event
-            update(statusUrl, workerId, Status.IGNORED);
+            update(statusUrl, workerId, EventStatusStatus.Status.IGNORED);
             return;
         }
 
         if (shouldAutoUpdateStatus()) {
-            update(statusUrl, workerId, Status.WORKING);
+            update(statusUrl, workerId, EventStatusStatus.Status.WORKING);
         }
 
         // call the worker
         handleRequest(queueEvent);
 
         if (shouldAutoUpdateStatus()) {
-            update(statusUrl, workerId, Status.DONE);
+            update(statusUrl, workerId, EventStatusStatus.Status.DONE);
         }
     }
 
-    protected void update(EventStatus eventStatus, String workerId, Status status) throws GravitonCommunicationException {
-        if (eventStatus.shouldLinkAction(workerId)) {
+    protected void update(EventStatus eventStatus, String workerId, EventStatusStatus.Status status) throws GravitonCommunicationException {
+        if (shouldLinkAction(workerId, eventStatus.getStatus())) {
             statusHandler.updateWithAction(eventStatus, workerId, status, getWorkerAction());
         } else {
             statusHandler.update(eventStatus, workerId, status);
         }
-        if (status.isTerminatedState()) {
+        if (isTerminatedState(status)) {
             reportToMessageQueue();
         }
     }
 
-    protected void update(String eventStatusUrl, String workerId, Status status) throws GravitonCommunicationException {
+    protected boolean isTerminatedState(EventStatusStatus.Status status) {
+        return Arrays.asList(
+                EventStatusStatus.Status.DONE,
+                EventStatusStatus.Status.FAILED,
+                EventStatusStatus.Status.IGNORED)
+                .contains(status);
+    }
+
+    protected boolean shouldLinkAction(String workerId, List<EventStatusStatus> status) {
+        for (EventStatusStatus statusEntry : status) {
+            if (workerId.equals(statusEntry.getWorkerId())
+                    && statusEntry.getAction() != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected void update(String eventStatusUrl, String workerId, EventStatusStatus.Status status) throws GravitonCommunicationException {
         update(statusHandler.getEventStatusFromUrl(eventStatusUrl), workerId, status);
     }
 
@@ -216,38 +236,24 @@ public abstract class WorkerAbstract {
      * @throws GravitonCommunicationException when registering worker is not possible
      */
     protected void register() throws GravitonCommunicationException {
+        EventWorker eventWorker = new EventWorker();
+        eventWorker.setId(workerId);
+        eventWorker.setSubscription(getSubscriptions());
 
-        WorkerRegister workerRegister = new WorkerRegister();
-        workerRegister.setId(workerId);
-        workerRegister.setSubscription(getSubscriptions());
-
-        HttpResponse<String> response;
-        String registrationUrl = properties.getProperty("graviton.registerUrl");
         try {
-            response = Unirest.put(registrationUrl)
-                    .routeParam("workerId", workerId)
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .body(JSON.std.asString(workerRegister))
-                    .asString();
-        } catch (UnirestException | IOException e) {
-            throw new GravitonCommunicationException("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'.", e);
-        }
-
-        LOG.debug("Worker register response code: " + response.getStatus());
-        if (response.getStatus() == 204) {
+            gravitonApi.put(eventWorker).execute();
             isRegistered = Boolean.TRUE;
-        } else {
-            throw new GravitonCommunicationException("Could not register worker '" + workerId + "' on backend at '" + registrationUrl + "'. Returned status: " + response.getStatus() + ", backend body: " + response.getBody());
+        } catch (CommunicationException e) {
+            throw new GravitonCommunicationException("Unable to register worker '" + workerId + "'.", e);
         }
     }
 
-    protected List<WorkerRegisterSubscription> getSubscriptions() {
+    protected List<EventWorkerSubscription> getSubscriptions() {
         List<String> subscriptionKeys = Arrays.asList(properties.getProperty("graviton.subscription").split(","));
-        List<WorkerRegisterSubscription> subscriptions = new ArrayList<>();
+        List<EventWorkerSubscription> subscriptions = new ArrayList<>();
 
         for (String subscriptionKey: subscriptionKeys) {
-            WorkerRegisterSubscription subscription = new WorkerRegisterSubscription();
+            EventWorkerSubscription subscription = new EventWorkerSubscription();
             subscription.setEvent(subscriptionKey);
             subscriptions.add(subscription);
         }
@@ -259,16 +265,23 @@ public abstract class WorkerAbstract {
      *
      * @return link to worker action
      */
-    protected GravitonRef getWorkerAction() {
-        String gravitonBaseUrl = properties.getProperty("graviton.base.url");
-        String eventActionEndpoint = properties.getProperty("graviton.endpoint.event.action");
+    protected EventStatusStatusAction getWorkerAction() {
+        String eventStatusActionEndpointUrl = gravitonApi
+                .getEndpointManager()
+                .getEndpoint(EventStatusAction.class.getName())
+                .getUrl();
+
         String workerId = properties.getProperty("graviton.workerId");
-        GravitonRef actionRef = new GravitonRef();
-        actionRef.set$ref(gravitonBaseUrl + eventActionEndpoint + workerId + "-default");
-        return actionRef;
+        EventStatusStatusAction action = new EventStatusStatusAction();
+        action.set$ref(eventStatusActionEndpointUrl + workerId + "-default");
+        return action;
     }
 
     public QueueManager getQueueManager() {
         return new QueueManager(properties);
+    }
+
+    protected GravitonApi initGravitonApi() {
+        return new GravitonApi();
     }
 }

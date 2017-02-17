@@ -1,9 +1,10 @@
 package com.github.libgraviton.workerbase.lib;
 
+import com.github.libgraviton.gdk.GravitonApi;
+import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.workerbase.FileWorkerAbstract;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
-import com.github.libgraviton.workerbase.model.file.GravitonFile;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
 import java.util.Arrays;
@@ -14,9 +15,9 @@ public class TestFileWorker extends FileWorkerAbstract {
     public boolean concerningRequestCalled = false;
     public boolean shouldHandleRequestMocked = true;
 
-    public GravitonFile fileObj;
+    public File fileObj;
     public boolean actionPresent;
-    
+
     /**
      * worker logic is implemented here
      * 
@@ -56,4 +57,7 @@ public class TestFileWorker extends FileWorkerAbstract {
         return Arrays.asList("doYourStuff");
     }
 
+    protected GravitonApi initGravitonApi() {
+        return null;
+    }
 }

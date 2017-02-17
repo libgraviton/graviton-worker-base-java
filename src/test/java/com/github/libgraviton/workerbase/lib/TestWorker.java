@@ -1,5 +1,6 @@
 package com.github.libgraviton.workerbase.lib;
 
+import com.github.libgraviton.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.WorkerAbstract;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.model.QueueEvent;
@@ -37,5 +38,9 @@ public class TestWorker extends WorkerAbstract {
 
     public QueueEvent getHandledQueueEvent() {
         return handledQueueEvent;
+    }
+
+    protected GravitonApi initGravitonApi() {
+        return null;
     }
 }
