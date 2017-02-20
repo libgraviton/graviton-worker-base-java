@@ -9,6 +9,7 @@ import com.github.libgraviton.messaging.MessageAcknowledger;
 import com.github.libgraviton.messaging.consumer.AcknowledgingConsumer;
 import com.github.libgraviton.messaging.exception.CannotConsumeMessage;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+
 import java.io.IOException;
 
 /**

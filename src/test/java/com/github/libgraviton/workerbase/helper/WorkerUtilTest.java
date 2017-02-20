@@ -1,18 +1,15 @@
 package com.github.libgraviton.workerbase.helper;
 
-import static org.junit.Assert.*;
-
-import com.github.libgraviton.workerbase.Worker;
 import com.github.libgraviton.workerbase.WorkerBaseTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.mashape.unirest.http.Unirest;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({com.rabbitmq.client.ConnectionFactory.class,Unirest.class})
+@PrepareForTest({com.rabbitmq.client.ConnectionFactory.class})
 public class WorkerUtilTest extends WorkerBaseTestCase {
 
     @Test

@@ -19,7 +19,7 @@ public class PropertiesLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesLoader.class);
 
-    private static final String DEFAULT_APPLICATION_PROPERTIES_PATH = "etc/app.properties";
+    private static final String DEFAULT_APPLICATION_PROPERTIES_PATH = "src/main/resources/app.properties";
     private static final String SYSTEM_PROPERTY = "propFile";
 
     public static Properties load() throws IOException {

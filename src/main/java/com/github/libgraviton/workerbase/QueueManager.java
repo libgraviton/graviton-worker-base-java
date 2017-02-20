@@ -4,7 +4,7 @@ import com.github.libgraviton.messaging.QueueConnection;
 import com.github.libgraviton.messaging.exception.CannotConnectToQueue;
 import com.github.libgraviton.messaging.exception.CannotRegisterConsumer;
 import com.github.libgraviton.messaging.strategy.rabbitmq.RabbitMqConnection;
-import com.rabbitmq.client.ConnectionFactory;
+
 import java.util.Properties;
 
 /**
