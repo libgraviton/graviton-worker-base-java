@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.libgraviton.gdk.GravitonApi;
 import com.github.libgraviton.gdk.api.Response;
 import com.github.libgraviton.gdk.data.GravitonBase;
+import com.github.libgraviton.gdk.serialization.mapper.GravitonObjectMapper;
+import com.github.libgraviton.gdk.util.PropertiesLoader;
 import com.github.libgraviton.messaging.MessageAcknowledger;
 import com.rabbitmq.client.Channel;
 import org.apache.commons.io.FileUtils;
@@ -13,8 +15,7 @@ import org.powermock.api.mockito.PowerMockito;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
+import java.util.Properties;
 
 import static org.mockito.Mockito.*;
 
@@ -37,7 +38,8 @@ public abstract class WorkerBaseTestCase {
         System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));
 
-        objectMapper = initObjectMapper();
+        Properties properties = PropertiesLoader.load();
+        objectMapper = new GravitonObjectMapper(properties);
 
         response = mock(Response.class);
         gravitonApi = mock(GravitonApi.class, RETURNS_DEEP_STUBS);
@@ -70,11 +72,4 @@ public abstract class WorkerBaseTestCase {
 
         return worker;
     }
-
-    protected ObjectMapper initObjectMapper() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return new ObjectMapper().setDateFormat(dateFormat);
-    }
-
 }
