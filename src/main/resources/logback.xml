@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+
+  <conversionRule conversionWord="truncatedMsg"
+                  converterClass="com.github.libgraviton.workerbase.logging.TruncatedMessageConverter" />
+
   <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <!--See also http://logback.qos.ch/manual/appenders.html#RollingFileAppender-->
     <File>logs/worker.log</File>
     <encoder>
-      <pattern>%d{ISO8601} %5p %c{1}:%L - %m%n</pattern>
+      <pattern>%date{ISO8601} [%thread] %5level %logger{1}:%line - %truncatedMsg{1000,[... truncated]}%n</pattern>
     </encoder>
     <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
       <level>debug</level>
@@ -19,7 +23,7 @@
   </appender>
   <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%d{ISO8601} %5p %c{1}:%L - %m%n</pattern>
+      <pattern>%date{ISO8601} [%thread] %5level %logger{1}:%line - %truncatedMsg{1000,[... truncated]}%n</pattern>
     </encoder>
   </appender>
   <root level="debug">
