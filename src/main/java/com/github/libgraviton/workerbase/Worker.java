@@ -52,6 +52,8 @@ public class Worker {
         } catch (IOException e) {
             throw new WorkerException(e);
         }
+
+        LOG.info("Starting " + properties.getProperty("application.name") + " " + properties.getProperty("application.version"));
         worker.initialize(properties);
         worker.onStartUp();
         this.worker = worker;

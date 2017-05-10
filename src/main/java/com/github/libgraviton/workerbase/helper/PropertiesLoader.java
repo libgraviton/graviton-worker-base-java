@@ -1,8 +1,5 @@
 package com.github.libgraviton.workerbase.helper;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,34 +14,53 @@ import java.util.Properties;
  */
 public class PropertiesLoader {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PropertiesLoader.class);
+    private static final String DEFAULT_PROPERTIES_PATH = "default.properties";
 
-    private static final String DEFAULT_APPLICATION_PROPERTIES_PATH = "src/main/resources/app.properties";
+    private static final String OVERWRITE_PROPERTIES_PATH = "app.properties";
+
     private static final String SYSTEM_PROPERTY = "propFile";
 
+    /**
+     * Loads the Properties in the following order (if a property entry ia already loaded, it will be overridden with the new value).
+     * 1.) Default Properties (resource path)
+     *     Minimal needed properties for the gdk
+     *
+     * 2.) Overwrite Properties (resource path)
+     *     Usually projects that make use of the gdk library will define these properties.
+     *
+     * 3.) Overwrite Properties (system property path)
+     *     Whenever the project needs to run as a jar file with an external properties file,
+     *     it's required to pass the SYSTEM_PROPERTY key with the path to the properties file as value. (e.g. -DpropFile=/app.properties)
+     *
+     * 4.) System Properties
+     *     Projects that use the gdk library could be deployed to several environments that require different property values.
+     *     The easiest way at this point is to just redefine those properties as system properties.
+     *
+     * @return loaded Properties
+     * @throws IOException whenever the properties from a given path could not be loaded
+     */
     public static Properties load() throws IOException {
         Properties properties = new Properties();
-        // load defaults
-        try (InputStream defaultProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream("default.properties")) {
+
+        try (InputStream defaultProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(DEFAULT_PROPERTIES_PATH)) {
             properties.load(defaultProperties);
         }
 
-        // overrides?
-        String propertiesPath = System.getProperty(SYSTEM_PROPERTY);
-        if (propertiesPath == null) {
-            propertiesPath = DEFAULT_APPLICATION_PROPERTIES_PATH;
+        try (InputStream overwriteProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(OVERWRITE_PROPERTIES_PATH)) {
+            if (overwriteProperties != null) {
+                properties.load(overwriteProperties);
+            }
         }
 
-        try (FileInputStream appProperties = new FileInputStream(propertiesPath)) {
-            properties.load(appProperties);
-        } catch (IOException e) {
-            LOG.debug("No overriding properties found at '" + propertiesPath + "'.");
+        String systemPropertiesPath = System.getProperty(SYSTEM_PROPERTY);
+        if (systemPropertiesPath != null) {
+            try (InputStream overwriteProperties = new FileInputStream(systemPropertiesPath)) {
+                properties.load(overwriteProperties);
+            }
         }
 
-        // let system properties override everything..
         properties.putAll(System.getProperties());
 
-        LOG.info("Loaded app.properties from " + propertiesPath);
         return properties;
     }
 }
