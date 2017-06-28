@@ -22,8 +22,10 @@ public class GravitonAuthApi extends GravitonApi {
 
     private Properties properties;
 
+    @Override
     protected HeaderBag getDefaultHeaders() {
-        String subnetName = "subnet-" + properties.getProperty("graviton.workerId");
+        String subnetName = properties.getProperty("graviton.authentication.prefix.username")
+                .concat(properties.getProperty("graviton.workerId"));
         String authHeaderName = properties.getProperty("graviton.authentication.header.name");
 
         return new HeaderBag.Builder()
