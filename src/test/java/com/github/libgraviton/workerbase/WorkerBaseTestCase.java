@@ -27,7 +27,7 @@ public abstract class WorkerBaseTestCase {
     protected Worker worker;
     protected WorkerConsumer workerConsumer;
     protected Channel queueChannel;
-    protected GravitonApi gravitonApi;
+    protected GravitonAuthApi gravitonApi;
     protected Response response;
     protected ObjectMapper objectMapper;
 
@@ -42,7 +42,7 @@ public abstract class WorkerBaseTestCase {
         objectMapper = new GravitonObjectMapper(properties);
 
         response = mock(Response.class);
-        gravitonApi = mock(GravitonApi.class, RETURNS_DEEP_STUBS);
+        gravitonApi = mock(GravitonAuthApi.class, RETURNS_DEEP_STUBS);
 
         // PUT mock
         when(gravitonApi.put(any(GravitonBase.class)).execute()).thenReturn(response);

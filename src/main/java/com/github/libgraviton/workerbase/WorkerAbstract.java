@@ -282,6 +282,6 @@ public abstract class WorkerAbstract {
     }
 
     protected GravitonApi initGravitonApi() {
-        return new GravitonApi();
+        return new GravitonAuthApi();
     }
 }
