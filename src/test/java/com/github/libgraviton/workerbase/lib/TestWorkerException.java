@@ -42,6 +42,6 @@ public class TestWorkerException extends WorkerAbstract {
     }
 
     protected GravitonApi initGravitonApi() {
-        return null;
+        return gravitonApi;
     }
 }

@@ -42,7 +42,7 @@ public class TestWorkerNoAuto extends WorkerAbstract {
     }
 
     protected GravitonApi initGravitonApi() {
-        return null;
+        return gravitonApi;
     }
     
 }

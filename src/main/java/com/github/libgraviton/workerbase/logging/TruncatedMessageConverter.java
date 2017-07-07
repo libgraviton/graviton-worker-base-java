@@ -33,6 +33,8 @@ public class TruncatedMessageConverter extends ClassicConverter {
 
     /**
      * For some reason getOptionList() is protected. With getOptions() it's exposed and testable.
+     *
+     * @return options list
      */
     public List<String> getOptions() {
         return getOptionList();
