@@ -58,6 +58,6 @@ public class TestFileWorker extends FileWorkerAbstract {
     }
 
     protected GravitonApi initGravitonApi() {
-        return null;
+        return gravitonApi;
     }
 }
