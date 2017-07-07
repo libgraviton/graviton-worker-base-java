@@ -1,8 +1,3 @@
-/**
- * abstract base class for file workers providing convenience.
- * it extends WorkerAbstract but provides more functions for /file api handling
- */
-
 package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.gdk.GravitonFileEndpoint;
@@ -33,7 +28,7 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
 
     protected File gravitonFile;
 
-    protected GravitonFileEndpoint fileEndpoint = initFileEndpoint();
+    protected GravitonFileEndpoint fileEndpoint;
 
     public boolean shouldHandleRequest(QueueEvent queueEvent) throws WorkerException, GravitonCommunicationException {
         // reset gravitonFile, to make sure we have no cached values that will interfere.
@@ -49,6 +44,12 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
             }
         }
         return actionOfInterestPresent;
+    }
+
+    @Override
+    public void onStartUp() throws WorkerException {
+        super.onStartUp();
+        fileEndpoint = initFileEndpoint();
     }
 
     /**

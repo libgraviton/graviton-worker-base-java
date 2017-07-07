@@ -1,7 +1,6 @@
 package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.libgraviton.gdk.GravitonApi;
 import com.github.libgraviton.gdk.api.Response;
 import com.github.libgraviton.gdk.data.GravitonBase;
 import com.github.libgraviton.gdk.serialization.mapper.GravitonObjectMapper;

@@ -1,7 +1,3 @@
-/**
- * abstract base class for workers providing convenience
- */
-
 package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.gdk.GravitonApi;
@@ -50,7 +46,7 @@ public abstract class WorkerAbstract {
 
     protected MessageAcknowledger acknowledger;
 
-    protected GravitonApi gravitonApi = initGravitonApi();
+    protected GravitonApi gravitonApi;
 
     public Properties getProperties() {
         return properties;
@@ -94,6 +90,7 @@ public abstract class WorkerAbstract {
      */
     public final void initialize(Properties properties) throws WorkerException, GravitonCommunicationException  {
         this.properties = properties;
+        this.gravitonApi = initGravitonApi();
         workerId = properties.getProperty("graviton.workerId");
 
         if (shouldAutoRegister()) {
@@ -282,6 +279,6 @@ public abstract class WorkerAbstract {
     }
 
     protected GravitonApi initGravitonApi() {
-        return new GravitonAuthApi();
+        return new GravitonAuthApi(properties);
     }
 }
