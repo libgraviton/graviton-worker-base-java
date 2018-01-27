@@ -90,6 +90,18 @@ public abstract class WorkerAbstract {
      */
     public final void initialize(Properties properties) throws WorkerException, GravitonCommunicationException  {
         this.properties = properties;
+
+        try {
+            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread t, Throwable e) {
+                    LOG.error("Uncaught Exception", e);
+                }
+            });
+        } catch (SecurityException e) {
+            LOG.error("Could not set the Default Uncaught Exception Handler", e);
+        }
+
         this.gravitonApi = initGravitonApi();
         workerId = properties.getProperty("graviton.workerId");
 
