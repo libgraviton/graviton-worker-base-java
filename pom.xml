@@ -52,7 +52,7 @@
         <dependency>
             <groupId>com.github.libgraviton</groupId>
             <artifactId>messaging</artifactId>
-            <version>0.3.0</version>
+            <version>0.3.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
