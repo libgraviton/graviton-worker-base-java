@@ -15,17 +15,15 @@
 
     <licenses>
         <license>
-            <name>GNU General Public License (GPL)</name>
-            <url>http://www.gnu.org/licenses/gpl.txt</url>
+            <name>MIT License</name>
+            <url>https://www.opensource.org/licenses/mit-license.php</url>
         </license>
     </licenses>
 
     <developers>
         <developer>
-            <name>Dario Nuevo</name>
-            <email>dn@xbe.ch</email>
-            <organization>Swisscom</organization>
-            <organizationUrl>http://www.swisscom.com</organizationUrl>
+            <name>GitHub Contributors</name>
+            <url>https://github.com/libgraviton/graviton-worker-base-java/graphs/contributors</url>
         </developer>
     </developers>
 
@@ -52,12 +50,12 @@
         <dependency>
             <groupId>com.github.libgraviton</groupId>
             <artifactId>messaging</artifactId>
-            <version>0.3.1</version>
+            <version>0.3.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
-            <artifactId>guava-collections</artifactId>
-            <version>r03</version>
+            <artifactId>guava</artifactId>
+            <version>27.0-jre</version>
         </dependency>
         <dependency>
             <groupId>com.github.libgraviton</groupId>
@@ -72,7 +70,7 @@
         <dependency>
             <groupId>io.sentry</groupId>
             <artifactId>sentry-logback</artifactId>
-            <version>1.6.5</version>
+            <version>1.7.13</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
