@@ -15,17 +15,15 @@
 
     <licenses>
         <license>
-            <name>GNU General Public License (GPL)</name>
-            <url>http://www.gnu.org/licenses/gpl.txt</url>
+            <name>MIT License</name>
+            <url>https://www.opensource.org/licenses/mit-license.php</url>
         </license>
     </licenses>
 
     <developers>
         <developer>
-            <name>Dario Nuevo</name>
-            <email>dn@xbe.ch</email>
-            <organization>Swisscom</organization>
-            <organizationUrl>http://www.swisscom.com</organizationUrl>
+            <name>GitHub Contributors</name>
+            <url>https://github.com/libgraviton/graviton-worker-base-java/graphs/contributors</url>
         </developer>
     </developers>
 
@@ -52,27 +50,27 @@
         <dependency>
             <groupId>com.github.libgraviton</groupId>
             <artifactId>messaging</artifactId>
-            <version>0.3.1</version>
+            <version>0.4.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
-            <artifactId>guava-collections</artifactId>
-            <version>r03</version>
+            <artifactId>guava</artifactId>
+            <version>27.0-jre</version>
         </dependency>
         <dependency>
             <groupId>com.github.libgraviton</groupId>
             <artifactId>gdk-core</artifactId>
-            <version>0.4.1</version>
+            <version>0.6.1</version>
         </dependency>
         <dependency>
             <groupId>com.github.libgraviton</groupId>
             <artifactId>gdk-essential-pojos</artifactId>
-            <version>0.2.0</version>
+            <version>0.3.0</version>
         </dependency>
         <dependency>
             <groupId>io.sentry</groupId>
             <artifactId>sentry-logback</artifactId>
-            <version>1.6.5</version>
+            <version>1.7.13</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -198,6 +196,14 @@
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.1</version>
+                <configuration>
+                    <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
         </plugins>

@@ -260,11 +260,12 @@ public abstract class WorkerAbstract {
     protected List<EventWorkerSubscription> getSubscriptions() {
         List<String> subscriptionKeys = Arrays.asList(properties.getProperty("graviton.subscription").split(","));
         List<EventWorkerSubscription> subscriptions = new ArrayList<>();
-
         for (String subscriptionKey: subscriptionKeys) {
             EventWorkerSubscription subscription = new EventWorkerSubscription();
-            subscription.setEvent(subscriptionKey);
-            subscriptions.add(subscription);
+            if (!subscriptionKey.isEmpty()) {
+                subscription.setEvent(subscriptionKey.trim());
+                subscriptions.add(subscription);
+            }
         }
         return subscriptions;
     }
