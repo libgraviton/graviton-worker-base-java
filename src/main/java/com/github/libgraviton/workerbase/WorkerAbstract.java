@@ -62,7 +62,7 @@ public abstract class WorkerAbstract {
 
 
     /**
-     * detects if worker is run from a jar file.
+     * detects if worker is running from a jar file.
      *
      * @return true if worker is run from a jar file else false
      */
