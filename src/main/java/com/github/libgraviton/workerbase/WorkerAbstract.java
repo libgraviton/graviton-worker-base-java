@@ -60,6 +60,18 @@ public abstract class WorkerAbstract {
         return isRegistered;
     }
 
+
+    /**
+     * detects if worker is run from a jar file.
+     *
+     * @return true if worker is run from a jar file else false
+     */
+    public static boolean isWorkerStartedFromJARFile() {
+        String protocol = WorkerAbstract.class.getResource("").getProtocol();
+
+        return protocol.equals("jar");
+    }
+
     /**
      * worker logic is implemented here
      *
