@@ -62,12 +62,13 @@ public abstract class WorkerAbstract {
 
 
     /**
-     * detects if worker is run from a jar file.
+     * detects if an object is run from inside of a jar file.
      *
+     * @param obj object to test
      * @return true if worker is run from a jar file else false
      */
-    public static boolean isWorkerStartedFromJARFile() {
-        String protocol = WorkerAbstract.class.getResource("").getProtocol();
+    public static boolean isWorkerStartedFromJARFile(Object obj) {
+        String protocol = obj.getClass().getResource("").getProtocol();
 
         return protocol.equals("jar");
     }
