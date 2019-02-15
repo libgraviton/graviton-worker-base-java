@@ -4,7 +4,7 @@
     <groupId>com.github.libgraviton</groupId>
     <artifactId>worker-base</artifactId>
     <packaging>jar</packaging>
-    <version>0.25.5</version>
+    <version>0.25.6</version>
     <name>Graviton Worker Base Library</name>
     <url>https://github.com/libgraviton/graviton-worker-base-java</url>
     <inceptionYear>2015</inceptionYear>
@@ -55,12 +55,12 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>27.0-jre</version>
+            <version>27.0.1-jre</version>
         </dependency>
         <dependency>
             <groupId>com.github.libgraviton</groupId>
             <artifactId>gdk-core</artifactId>
-            <version>0.6.1</version>
+            <version>0.6.2</version>
         </dependency>
         <dependency>
             <groupId>com.github.libgraviton</groupId>
@@ -70,7 +70,7 @@
         <dependency>
             <groupId>io.sentry</groupId>
             <artifactId>sentry-logback</artifactId>
-            <version>1.7.13</version>
+            <version>1.7.20</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
