@@ -15,6 +15,7 @@ import com.github.libgraviton.workerbase.exception.GravitonCommunicationExceptio
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import okhttp3.HttpUrl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,7 +136,7 @@ public abstract class WorkerAbstract {
         this.messageId = messageId;
         this.acknowledger = acknowledger;
 
-        String statusUrl = queueEvent.getStatus().get$ref();
+        String statusUrl = convertToGravitonUrl(queueEvent.getStatus().get$ref());
         try {
             processDelivery(queueEvent, statusUrl);
         } catch (Exception e) {
@@ -159,6 +160,27 @@ public abstract class WorkerAbstract {
                 }
             }
         }
+    }
+
+    /**
+     * Rewrite the status URL in relation to the configured GravitonApi Base url.
+     *
+     * @param url url
+     * @return corrected url
+     */
+    private String convertToGravitonUrl(String url) {
+        HttpUrl baseUrl = HttpUrl.parse(gravitonApi.getBaseUrl());
+
+        // convert
+        HttpUrl targetUrl = HttpUrl
+            .parse(url)
+            .newBuilder()
+            .host(baseUrl.host())
+            .port(baseUrl.port())
+            .scheme(baseUrl.scheme())
+            .build();
+
+        return targetUrl.toString();
     }
 
     protected void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {

@@ -57,6 +57,9 @@ public abstract class WorkerBaseTestCase {
         doReturn(body).when(eventStatusResponse).getBody();
         doCallRealMethod().when(eventStatusResponse).getBodyItem(eq(GravitonBase.class));
         when(gravitonApi.get(contains("/event/status")).execute()).thenReturn(eventStatusResponse);
+
+        // url mock
+        when(gravitonApi.getBaseUrl()).thenReturn("http://localhost:8080/");
     }
     
     protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {
