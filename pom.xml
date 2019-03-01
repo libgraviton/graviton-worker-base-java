@@ -4,7 +4,7 @@
     <groupId>com.github.libgraviton</groupId>
     <artifactId>worker-base</artifactId>
     <packaging>jar</packaging>
-    <version>0.25.7</version>
+    <version>0.25.8-SNAPSHOT</version>
     <name>Graviton Worker Base Library</name>
     <url>https://github.com/libgraviton/graviton-worker-base-java</url>
     <inceptionYear>2015</inceptionYear>
