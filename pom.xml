@@ -64,7 +64,7 @@
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>gdk-core</artifactId>
-      <version>0.6.4</version>
+      <version>0.6.5</version>
     </dependency>
     <dependency>
       <groupId>com.github.libgraviton</groupId>
@@ -74,7 +74,7 @@
     <dependency>
       <groupId>io.sentry</groupId>
       <artifactId>sentry-logback</artifactId>
-      <version>1.7.21</version>
+      <version>1.7.22</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
