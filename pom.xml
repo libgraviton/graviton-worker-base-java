@@ -40,6 +40,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <dependency.locations.enabled>false</dependency.locations.enabled>
     <dependency.details.enabled>false</dependency.details.enabled>
+    <jaegerVersion>0.35.3</jaegerVersion>
   </properties>
 
   <distributionManagement>
@@ -64,7 +65,7 @@
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>gdk-core</artifactId>
-      <version>0.6.5</version>
+      <version>0.6.6-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.github.libgraviton</groupId>
@@ -75,6 +76,16 @@
       <groupId>io.sentry</groupId>
       <artifactId>sentry-logback</artifactId>
       <version>1.7.22</version>
+    </dependency>
+    <dependency>
+      <groupId>io.jaegertracing</groupId>
+      <artifactId>jaeger-client</artifactId>
+      <version>${jaegerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-okhttp3</artifactId>
+      <version>2.0.1</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

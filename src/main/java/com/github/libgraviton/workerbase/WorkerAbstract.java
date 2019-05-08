@@ -15,6 +15,9 @@ import com.github.libgraviton.workerbase.exception.GravitonCommunicationExceptio
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.github.libgraviton.workerbase.util.TracingGateway;
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 import okhttp3.HttpUrl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +73,6 @@ public abstract class WorkerAbstract {
      */
     public static boolean isWorkerStartedFromJARFile(Object obj) {
         String protocol = obj.getClass().getResource("").getProtocol();
-
         return protocol.equals("jar");
     }
 
@@ -280,6 +282,9 @@ public abstract class WorkerAbstract {
      * @throws GravitonCommunicationException when registering worker is not possible
      */
     protected void register() throws GravitonCommunicationException {
+        Span registerSpan = GlobalTracer.get().buildSpan("register").start();
+        GlobalTracer.get().activateSpan(registerSpan);
+
         EventWorker eventWorker = new EventWorker();
         eventWorker.setId(workerId);
         eventWorker.setSubscription(getSubscriptions());
@@ -289,6 +294,8 @@ public abstract class WorkerAbstract {
             isRegistered = Boolean.TRUE;
         } catch (CommunicationException e) {
             throw new GravitonCommunicationException("Unable to register worker '" + workerId + "'.", e);
+        } finally {
+            registerSpan.finish();
         }
     }
 
@@ -327,6 +334,13 @@ public abstract class WorkerAbstract {
     }
 
     protected GravitonApi initGravitonApi() {
-        return new GravitonAuthApi(properties);
+        GravitonApi gravitonApi = new GravitonAuthApi(properties);
+
+        TracingGateway tracingGateway = new TracingGateway();
+
+        gravitonApi.getExecutor().setGateway(tracingGateway);
+
+
+        return gravitonApi;
     }
 }

@@ -11,6 +11,9 @@ import com.github.libgraviton.messaging.exception.CannotRegisterConsumer;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.PropertiesLoader;
+import io.jaegertracing.Configuration;
+import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +30,9 @@ import java.util.Properties;
  */
 public class Worker {
 
+    /**
+     * logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(Worker.class);
 
     /**
@@ -38,7 +44,7 @@ public class Worker {
      * worker
      */
     private WorkerAbstract worker;
-    
+
     /**
      * constructor
      *
@@ -53,10 +59,17 @@ public class Worker {
             throw new WorkerException(e);
         }
 
+        initGlobalTracer();
+
         LOG.info("Starting " + properties.getProperty("application.name") + " " + properties.getProperty("application.version"));
         worker.initialize(properties);
         worker.onStartUp();
         this.worker = worker;
+    }
+
+    private void initGlobalTracer() {
+        Tracer tracer = Configuration.fromEnv(properties.getProperty("application.name")).getTracer();
+        GlobalTracer.registerIfAbsent(tracer);
     }
     
     /**
