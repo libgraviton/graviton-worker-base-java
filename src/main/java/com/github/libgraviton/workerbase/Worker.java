@@ -12,7 +12,9 @@ import com.github.libgraviton.workerbase.exception.GravitonCommunicationExceptio
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.PropertiesLoader;
 import io.jaegertracing.Configuration;
+import io.jaegertracing.Configuration.CodecConfiguration;
 import io.opentracing.Tracer;
+import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +70,9 @@ public class Worker {
     }
 
     private void initGlobalTracer() {
-        Tracer tracer = Configuration.fromEnv(properties.getProperty("application.name")).getTracer();
+        Tracer tracer = Configuration
+            .fromEnv(properties.getProperty("application.name"))
+            .getTracer();
         GlobalTracer.registerIfAbsent(tracer);
     }
     
