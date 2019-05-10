@@ -11,10 +11,12 @@ import com.github.libgraviton.messaging.consumer.PropertyConsumer;
 import com.github.libgraviton.messaging.exception.CannotConsumeMessage;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
+import com.github.libgraviton.workerbase.util.tracing.TextMapExtractor;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import io.jaegertracing.internal.propagation.TextMapCodec;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
+import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.propagation.TextMapExtractAdapter;
@@ -51,30 +53,28 @@ public class WorkerConsumer implements AcknowledgingConsumer, PropertyConsumer {
 
     @Override
     public void consume(String messageId, String message) throws CannotConsumeMessage {
-        // is there a correlationId?
-        Span workSpan;
-        String spanName = "do-work";
-
-        if (basicProperties.getCorrelationId() != null) {
-            Map<String, String> textMap = new HashMap<>();
-            textMap.put("uber-trace-id", basicProperties.getCorrelationId());
-
-            SpanContext parentSpan = GlobalTracer.get().extract(Builtin.TEXT_MAP_EXTRACT, new TextMapExtractAdapter(textMap));
-
-            workSpan = GlobalTracer.get().buildSpan(spanName).asChildOf(parentSpan).start();
-        } else {
-            workSpan = GlobalTracer.get().buildSpan(spanName).start();
+        //if (basicProperties.getCorrelationId() != null) {
+        SpanContext parentSpan = GlobalTracer.get().extract(Builtin.TEXT_MAP, new TextMapExtractor(basicProperties));
+        SpanBuilder spanBuilder = GlobalTracer.get().buildSpan("do-work");
+        if (parentSpan != null) {
+            spanBuilder.asChildOf(parentSpan);
         }
 
-        QueueEvent queueEvent;
+        Span workSpan = spanBuilder.start();
+        GlobalTracer.get().activateSpan(workSpan);
+
         try {
+            QueueEvent queueEvent;
             queueEvent = JSON.std.beanFrom(QueueEvent.class, message);
+            GlobalTracer.get().activeSpan().setBaggageItem("queueEvent", message);
+
+            worker.handleDelivery(queueEvent, messageId, acknowledger);
         } catch (IOException e) {
+            GlobalTracer.get().activeSpan().setBaggageItem("errorMessage", e.getMessage());
             throw new CannotConsumeMessage(messageId, message, e);
         } finally {
             workSpan.finish();
         }
-        worker.handleDelivery(queueEvent, messageId, acknowledger);
     }
 
     @Override

@@ -143,8 +143,10 @@ public abstract class WorkerAbstract {
             processDelivery(queueEvent, statusUrl);
         } catch (Exception e) {
             LOG.error("Error in worker: " + workerId, e);
+            GlobalTracer.get().activeSpan().setBaggageItem("errorMessage", e.getMessage());
 
             if (shouldAutoUpdateStatus()) {
+                Span updateStatusSpan = GlobalTracer.get().buildSpan("status-update-error").start();
                 try {
                     EventStatus eventStatus = statusHandler.getEventStatusFromUrl(statusUrl);
                     EventStatusInformation information = new EventStatusInformation();
@@ -159,6 +161,8 @@ public abstract class WorkerAbstract {
                         LOG.error("Unable to update worker status at '" + statusUrl + "'.");
                     }
                     reportToMessageQueue();
+                } finally {
+                    updateStatusSpan.finish();
                 }
             }
         }
@@ -236,7 +240,9 @@ public abstract class WorkerAbstract {
     }
 
     protected void update(String eventStatusUrl, String workerId, EventStatusStatus.Status status) throws GravitonCommunicationException {
+        Span updateStatusSpan = GlobalTracer.get().buildSpan("status-update-" + status).start();
         update(statusHandler.getEventStatusFromUrl(eventStatusUrl), workerId, status);
+        updateStatusSpan.finish();
     }
 
     private void reportToMessageQueue() {
