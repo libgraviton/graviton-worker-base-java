@@ -15,6 +15,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -26,9 +28,11 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.contains;
+import static org.mockito.ArgumentMatchers.*;
+//import static org.mockito.Matchers.anyString;
+//import static org.mockito.Matchers.contains;
 import static org.mockito.Mockito.*;
+//import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
@@ -141,21 +145,22 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         com.github.libgraviton.gdk.gravitondyn.file.document.File file = new com.github.libgraviton.gdk.gravitondyn.file.document.File();
         file.setId("someTestId");
         mockStatic(WorkerUtil.class);
-        when(WorkerUtil.getGravitonFile(any(GravitonFileEndpoint.class),anyString())).thenReturn(file);
+
+        Mockito.when(WorkerUtil.getGravitonFile(any(GravitonFileEndpoint.class),anyString())).thenReturn(file);
 
         String file1Url = "testFile1";
         String file2Url = "testFile2";
         TestFileWorker testFileWorker = prepareTestWorker(new TestFileWorker());
 
         com.github.libgraviton.gdk.gravitondyn.file.document.File firstFile = testFileWorker.getGravitonFile(file1Url);
-        verifyStatic();
+        verifyStatic(WorkerUtil.class);
         assertEquals(file, firstFile);
 
         testFileWorker.getGravitonFile(file1Url);
-        verifyStatic(never());
+        verifyStatic(WorkerUtil.class, never());
 
         testFileWorker.getGravitonFile(file2Url);
-        verifyStatic();
+        verifyStatic(WorkerUtil.class);
     }
 
     @Test
