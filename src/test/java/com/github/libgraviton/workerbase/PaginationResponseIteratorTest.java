@@ -11,6 +11,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -28,7 +29,7 @@ public class PaginationResponseIteratorTest extends WorkerBaseTestCase {
         baseMock();
 
         String fileResponseContent = FileUtils.readFileToString(
-                new File("src/test/resources/json/fileResourceCollection.json"));
+                new File("src/test/resources/json/fileResourceCollection.json"), Charset.forName("UTF-8"));
 
         HeaderBag headers = new HeaderBag.Builder()
                 .set("link", "<http://localhost/file/?limit(1%2C1)>; rel=\"next\", " +

@@ -14,6 +14,7 @@ import org.powermock.api.mockito.PowerMockito;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.Properties;
 
 import static org.mockito.Mockito.*;
@@ -51,7 +52,7 @@ public abstract class WorkerBaseTestCase {
         
         // GET /event/status mock
         String body = FileUtils.readFileToString(
-                new File("src/test/resources/json/statusResponse.json"));
+                new File("src/test/resources/json/statusResponse.json"), Charset.forName("UTF-8"));
         Response eventStatusResponse = spy(Response.class);
         eventStatusResponse.setObjectMapper(objectMapper);
         doReturn(body).when(eventStatusResponse).getBody();
