@@ -27,8 +27,8 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.contains;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
@@ -157,6 +157,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
         testFileWorker.getGravitonFile(file2Url);
         verifyStatic(WorkerUtil.class);
+        WorkerUtil.getGravitonFile(any(), anyString());
     }
 
     @Test
