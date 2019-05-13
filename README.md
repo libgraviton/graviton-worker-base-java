@@ -1,6 +1,6 @@
 # graviton-worker-base-java
 
-[![Build Status](https://travis-ci.org/libgraviton/graviton-worker-base-java.svg?branch=develop)](https://travis-ci.org/libgraviton/graviton-worker-base-java) [![Coverage Status](https://coveralls.io/repos/libgraviton/graviton-worker-base-java/badge.svg?branch=develop&service=github)](https://coveralls.io/github/libgraviton/graviton-worker-base-java?branch=develop) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.libgraviton/worker-base/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.libgraviton/worker-base) [![javadoc.io](https://javadocio-badges.herokuapp.com/com.github.libgraviton/worker-base/badge.svg)](https://javadocio-badges.herokuapp.com/com.github.libgraviton/worker-base) 
+[![Build Status](https://travis-ci.org/libgraviton/graviton-worker-base-java.svg?branch=develop)](https://travis-ci.org/libgraviton/graviton-worker-base-java) [![Coverage Status](https://coveralls.io/repos/libgraviton/graviton-worker-base-java/badge.svg?branch=develop&service=github)](https://coveralls.io/github/libgraviton/graviton-worker-base-java?branch=develop) [ ![Download](https://api.bintray.com/packages/libgraviton/maven/graviton-worker-base-java/images/download.svg) ](https://bintray.com/libgraviton/maven/graviton-worker-base-java/_latestVersion) 
 
 ## What is it
 
@@ -37,11 +37,22 @@ Thus, once your worker implementing the base library is usable, you may specify 
 java -DpropFile=path/to/additional.properties <yourCommand>
 ```
 
-## API Doc
-
-Please see the [apidoc.io apidoc](http://www.javadoc.io/doc/com.github.libgraviton/worker-base) ;-)
-
 ## Using the library
+
+Due to frustrations with Maven central deployment, this library is now hosted at our own [bintray repository](https://bintray.com/libgraviton/maven/graviton-worker-base-java).
+
+Add this to your pom.xml:
+
+```xml
+<repository>
+    <snapshots>
+        <enabled>false</enabled>
+    </snapshots>
+    <id>bintray-libgraviton-maven</id>
+    <name>bintray</name>
+    <url>https://dl.bintray.com/libgraviton/maven</url>
+</repository>
+```
 
 You can use this library in your project by including this in your `pom.xml`:
 
