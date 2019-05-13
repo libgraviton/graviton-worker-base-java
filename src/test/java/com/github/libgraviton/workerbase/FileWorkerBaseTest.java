@@ -15,12 +15,11 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -28,11 +27,9 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
-//import static org.mockito.Matchers.anyString;
-//import static org.mockito.Matchers.contains;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.*;
-//import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
@@ -52,7 +49,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         // GET /file metadata mock
 
         String metadata1 = FileUtils.readFileToString(
-                new File("src/test/resources/json/fileResource.json"));
+                new File("src/test/resources/json/fileResource.json"), Charset.forName("UTF-8"));
         response1 = spy(Response.class);
         response1.setObjectMapper(objectMapper);
         doReturn(metadata1).when(response1).getBody();
@@ -61,7 +58,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
                 .thenReturn(response1);
 
         String metadata2 = FileUtils.readFileToString(
-                new File("src/test/resources/json/fileResourceWithAction.json"));
+                new File("src/test/resources/json/fileResourceWithAction.json"), Charset.forName("UTF-8"));
         response2 = spy(Response.class);
         response2.setObjectMapper(objectMapper);
         doReturn(metadata2).when(response2).getBody();
@@ -77,7 +74,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
 
         String message = FileUtils.readFileToString(
-                new File("src/test/resources/json/queueFileEvent.json"));
+                new File("src/test/resources/json/queueFileEvent.json"), Charset.forName("UTF-8"));
 
         workerConsumer.consume("34343", message);
 
@@ -119,7 +116,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
 
         String message = FileUtils.readFileToString(
-                new File("src/test/resources/json/queueFileEventWithAction.json"));
+                new File("src/test/resources/json/queueFileEventWithAction.json"), Charset.forName("UTF-8"));
         workerConsumer.consume("34343", message);
 
         // register
@@ -145,8 +142,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         com.github.libgraviton.gdk.gravitondyn.file.document.File file = new com.github.libgraviton.gdk.gravitondyn.file.document.File();
         file.setId("someTestId");
         mockStatic(WorkerUtil.class);
-
-        Mockito.when(WorkerUtil.getGravitonFile(any(GravitonFileEndpoint.class),anyString())).thenReturn(file);
+        when(WorkerUtil.getGravitonFile(any(GravitonFileEndpoint.class),anyString())).thenReturn(file);
 
         String file1Url = "testFile1";
         String file2Url = "testFile2";
@@ -161,6 +157,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
         testFileWorker.getGravitonFile(file2Url);
         verifyStatic(WorkerUtil.class);
+        WorkerUtil.getGravitonFile(any(), anyString());
     }
 
     @Test

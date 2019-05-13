@@ -21,6 +21,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -72,7 +73,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
 
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), Charset.forName("UTF-8"));
         workerConsumer.consume("34343", message);
 
         assertTrue(testWorker.shouldHandleRequestCalled);
@@ -100,7 +101,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
 
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), Charset.forName("UTF-8"));
         workerConsumer.consume("34343", message);
 
         verify(testWorker, times(1)).shouldHandleRequest(any(QueueEvent.class));
@@ -122,7 +123,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
 
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), Charset.forName("UTF-8"));
         workerConsumer.consume("34343", message);
         
         assertTrue(testWorker.concerningRequestCalled);
@@ -154,7 +155,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         
         // let worker throw WorkerException
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), Charset.forName("UTF-8"));
         workerConsumer.consume("34343", message);
 
         // register
@@ -176,7 +177,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         
         // let worker throw WorkerException
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), Charset.forName("UTF-8"));
         workerConsumer.consume("34343", message);
 
         // register
@@ -201,7 +202,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         
         // let worker throw CommunicationException
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()));
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), Charset.forName("UTF-8"));
         workerConsumer.consume("34343", message);
     }
     
