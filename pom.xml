@@ -64,7 +64,7 @@
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>gdk-core</artifactId>
-      <version>0.6.5</version>
+      <version>0.6.6</version>
     </dependency>
     <dependency>
       <groupId>com.github.libgraviton</groupId>
