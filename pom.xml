@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>0.27.2</version>
+  <version>0.27.3</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -59,12 +59,12 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>27.0.1-jre</version>
+      <version>28.2-jre</version>
     </dependency>
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>gdk-core</artifactId>
-      <version>0.6.6</version>
+      <version>0.7.0</version>
     </dependency>
     <dependency>
       <groupId>com.github.libgraviton</groupId>
@@ -74,12 +74,12 @@
     <dependency>
       <groupId>io.sentry</groupId>
       <artifactId>sentry-logback</artifactId>
-      <version>1.7.22</version>
+      <version>1.7.30</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>4.13</version>
       <scope>test</scope>
     </dependency>
     <!-- mockito 2 is currently not supported by powermock -->
