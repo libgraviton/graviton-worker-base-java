@@ -5,9 +5,12 @@ package com.github.libgraviton.workerbase.helper;
 
 import com.github.libgraviton.gdk.GravitonFileEndpoint;
 import com.github.libgraviton.gdk.api.Response;
+import com.github.libgraviton.gdk.api.gateway.OkHttpGateway;
+import com.github.libgraviton.gdk.api.gateway.okhttp.OkHttpGatewayFactory;
 import com.github.libgraviton.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,5 +113,21 @@ public class WorkerUtil {
         }
 
         return file;
+    }
+
+    public static OkHttpGateway getGatewayInstance() {
+        return new OkHttpGateway();
+    }
+
+    public static OkHttpGateway getGatewayInstance(OkHttpClient okHttpClient) {
+        return new OkHttpGateway(okHttpClient);
+    }
+
+    public static OkHttpGateway getAllTrustingGatewayInstance() throws Exception {
+        return new OkHttpGateway(OkHttpGatewayFactory.getAllTrustingInstance(false, null));
+    }
+
+    public static OkHttpGateway getAllTrustingGatewayInstance(OkHttpClient okHttpClient) throws Exception {
+        return new OkHttpGateway(OkHttpGatewayFactory.getAllTrustingInstance(false, okHttpClient));
     }
 }

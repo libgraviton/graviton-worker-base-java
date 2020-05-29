@@ -1,15 +1,7 @@
 package com.github.libgraviton.workerbase.util;
 
+import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import java.io.File;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.Request;
@@ -17,66 +9,29 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.Okio;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DownloadClient {
 
-  /**
-   * TrustManager that trusts all certs
-   */
-  private static final TrustManager[] trustAllCerts = new TrustManager[]{
-      new X509TrustManager() {
-        @Override
-        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType)
-            throws CertificateException {
-        }
-
-        @Override
-        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType)
-            throws CertificateException {
-        }
-
-        @Override
-        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-          return new java.security.cert.X509Certificate[]{};
-        }
-      }
-  };
-
-  /**
-   * SSL Context
-   */
-  private static final SSLContext trustAllSslContext;
-
-  static {
-    try {
-      trustAllSslContext = SSLContext.getInstance("SSL");
-      trustAllSslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-    } catch (NoSuchAlgorithmException | KeyManagementException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * SSL Socket Factory
-   */
-  private static final SSLSocketFactory trustAllSslSocketFactory = trustAllSslContext
-      .getSocketFactory();
+  private static final Logger LOG = LoggerFactory.getLogger(DownloadClient.class);
 
   public static OkHttpClient getDownloadClient(Boolean acceptAllSslCerts) {
-    OkHttpClient okHttpClient = new OkHttpClient();
-    Builder builder = okHttpClient.newBuilder()
-        .retryOnConnectionFailure(true);
+    OkHttpClient okHttpClient;
 
     if (acceptAllSslCerts) {
-      builder
-          .sslSocketFactory(trustAllSslSocketFactory, (X509TrustManager) trustAllCerts[0])
-          .hostnameVerifier(new HostnameVerifier() {
-            @Override
-            public boolean verify(String hostname, SSLSession session) {
-              return true;
-            }
-          });
+      try {
+        okHttpClient = WorkerUtil.getAllTrustingGatewayInstance().getOkHttp();
+      } catch (Exception e) {
+        LOG.error("Unable to construct all trusting OkHttpClient instance - falling back to normal one.");
+        okHttpClient = WorkerUtil.getGatewayInstance().getOkHttp();
+      }
+    } else {
+      okHttpClient = WorkerUtil.getGatewayInstance().getOkHttp();
     }
+
+    Builder builder = okHttpClient.newBuilder()
+        .retryOnConnectionFailure(true);
 
     return builder.build();
   }

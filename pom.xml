@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>0.28.0</version>
+  <version>0.29.0</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -59,12 +59,12 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>28.2-jre</version>
+      <version>29.0-jre</version>
     </dependency>
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>gdk-core</artifactId>
-      <version>0.7.0</version>
+      <version>0.9.0</version>
     </dependency>
     <dependency>
       <groupId>com.github.libgraviton</groupId>
