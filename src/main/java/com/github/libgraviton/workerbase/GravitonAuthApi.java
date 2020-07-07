@@ -39,11 +39,11 @@ public class GravitonAuthApi extends GravitonApi {
                 .set(authHeaderName, authHeaderValue);
 
         // transient headers?
-        for (Map.Entry<String, String> entry : transientHeaders.entrySet()) {
-            builder.set(entry.getKey(), entry.getValue());
-        }
-
         if (!transientHeaders.isEmpty()) {
+            for (Map.Entry<String, String> entry : transientHeaders.entrySet()) {
+                builder.set(entry.getKey(), entry.getValue());
+            }
+
             LOG.info("Including transient headers from QueueEvent in request: {}", transientHeaders);
         }
 
