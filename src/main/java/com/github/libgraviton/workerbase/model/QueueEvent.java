@@ -1,5 +1,8 @@
 package com.github.libgraviton.workerbase.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * <p>QueueEvent class.</p>
  *
@@ -11,6 +14,7 @@ public class QueueEvent {
     public String coreUserId;
     public GravitonRef document;
     public GravitonRef status;
+    public Map<String, String> transientHeaders = new HashMap<>();
     
     /**
      * <p>Getter for the field <code>event</code>.</p>
@@ -76,6 +80,12 @@ public class QueueEvent {
     public void setCoreUserId(String coreUserId) {
         this.coreUserId = coreUserId;
     }
-    
-    
+
+    public Map<String, String> getTransientHeaders() {
+        return transientHeaders;
+    }
+
+    public void setTransientHeaders(Map<String, String> transientHeaders) {
+        this.transientHeaders = transientHeaders;
+    }
 }
