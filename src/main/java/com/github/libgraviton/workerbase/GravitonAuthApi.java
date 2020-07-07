@@ -2,7 +2,11 @@ package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.gdk.GravitonApi;
 import com.github.libgraviton.gdk.api.header.HeaderBag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -14,9 +18,11 @@ import java.util.Properties;
  */
 public class GravitonAuthApi extends GravitonApi {
 
+    private static final Logger LOG = LoggerFactory.getLogger(GravitonAuthApi.class);
+
     protected String authHeaderName;
     protected String authHeaderValue;
-
+    private Map<String, String> transientHeaders = new HashMap<>();
 
     public GravitonAuthApi(Properties properties) {
         super();
@@ -27,9 +33,34 @@ public class GravitonAuthApi extends GravitonApi {
 
     @Override
     protected HeaderBag.Builder getDefaultHeaders() {
-        return new HeaderBag.Builder()
+        HeaderBag.Builder builder = new HeaderBag.Builder()
                 .set("Content-Type", "application/json")
                 .set("Accept", "application/json")
                 .set(authHeaderName, authHeaderValue);
+
+        // transient headers?
+        for (Map.Entry<String, String> entry : transientHeaders.entrySet()) {
+            builder.set(entry.getKey(), entry.getValue());
+        }
+
+        if (!transientHeaders.isEmpty()) {
+            LOG.info("Including transient headers from QueueEvent in request: {}", transientHeaders);
+        }
+
+        return builder;
+    }
+
+    /**
+     * transient headers as those that we receive in {@link com.github.libgraviton.workerbase.model.QueueEvent}
+     * and forward subsequently again on following requests during the request handling in the worker..
+     *
+     * @param transientHeaders
+     */
+    public void setTransientHeaders(Map<String, String> transientHeaders) {
+        this.transientHeaders = transientHeaders;
+    }
+
+    public void clearTransientHeaders() {
+        transientHeaders.clear();
     }
 }
