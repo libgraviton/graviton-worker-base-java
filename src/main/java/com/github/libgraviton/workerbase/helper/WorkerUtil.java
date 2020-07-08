@@ -115,6 +115,10 @@ public class WorkerUtil {
         return file;
     }
 
+    public static boolean isJarContext() {
+        return WorkerUtil.class.getResource("").getProtocol().equals("jar");
+    }
+
     public static OkHttpGateway getGatewayInstance() {
         return new OkHttpGateway();
     }

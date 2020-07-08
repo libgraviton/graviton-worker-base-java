@@ -13,6 +13,7 @@ import com.github.libgraviton.messaging.exception.CannotAcknowledgeMessage;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
+import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import okhttp3.HttpUrl;
 import org.slf4j.Logger;
@@ -70,7 +71,7 @@ public abstract class WorkerAbstract {
      * @return true if worker is run from a jar file else false
      */
     public static boolean isWorkerStartedFromJARFile(Object obj) {
-        return obj.getClass().getResource("").getProtocol().equals("jar");
+        return WorkerUtil.isJarContext();
     }
 
     /**
