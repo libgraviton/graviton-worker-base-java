@@ -42,6 +42,8 @@ public abstract class WorkerAbstract {
 
     protected Boolean isRegistered = Boolean.FALSE;
 
+    protected boolean useTransientHeaders = true;
+
     protected String messageId;
 
     protected MessageAcknowledger acknowledger;
@@ -136,7 +138,7 @@ public abstract class WorkerAbstract {
         String statusUrl = convertToGravitonUrl(queueEvent.getStatus().get$ref());
         try {
             // any transient headers?
-            if (shouldUseTransientHeaders()) {
+            if (shouldUseTransientHeaders() && isUseTransientHeaders()) {
                 gravitonApi.setTransientHeaders(queueEvent.getTransientHeaders());
             }
 
@@ -272,7 +274,7 @@ public abstract class WorkerAbstract {
     }
 
     /**
-     * the worker needs to OPT IN here - only if this is true, the "transient headers" feature is used
+     * the worker needs to OPT OUT here - only if this is true, the "transient headers" feature is used
      * where the backend headers are 1:1 forwarded (= transient) to subsequent requests inside the delivery
      * handling.
      *
@@ -283,7 +285,7 @@ public abstract class WorkerAbstract {
      * @return
      */
     public Boolean shouldUseTransientHeaders() {
-        return false;
+        return true;
     }
 
     /**
@@ -349,5 +351,13 @@ public abstract class WorkerAbstract {
 
     protected GravitonAuthApi initGravitonApi() {
         return new GravitonAuthApi(properties);
+    }
+
+    public void setUseTransientHeaders(boolean useTransientHeaders) {
+        this.useTransientHeaders = useTransientHeaders;
+    }
+
+    public boolean isUseTransientHeaders() {
+        return useTransientHeaders;
     }
 }
