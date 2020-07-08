@@ -1,6 +1,5 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.GravitonApi;
 import com.github.libgraviton.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusInformation;
@@ -14,6 +13,7 @@ import com.github.libgraviton.messaging.exception.CannotAcknowledgeMessage;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
+import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import okhttp3.HttpUrl;
 import org.slf4j.Logger;
@@ -43,11 +43,13 @@ public abstract class WorkerAbstract {
 
     protected Boolean isRegistered = Boolean.FALSE;
 
+    protected boolean useTransientHeaders = true;
+
     protected String messageId;
 
     protected MessageAcknowledger acknowledger;
 
-    protected GravitonApi gravitonApi;
+    protected GravitonAuthApi gravitonApi;
 
     public Properties getProperties() {
         return properties;
@@ -69,9 +71,7 @@ public abstract class WorkerAbstract {
      * @return true if worker is run from a jar file else false
      */
     public static boolean isWorkerStartedFromJARFile(Object obj) {
-        String protocol = obj.getClass().getResource("").getProtocol();
-
-        return protocol.equals("jar");
+        return WorkerUtil.isJarContext();
     }
 
     /**
@@ -138,8 +138,17 @@ public abstract class WorkerAbstract {
 
         String statusUrl = convertToGravitonUrl(queueEvent.getStatus().get$ref());
         try {
+            // any transient headers?
+            if (shouldUseTransientHeaders() && isUseTransientHeaders()) {
+                gravitonApi.setTransientHeaders(queueEvent.getTransientHeaders());
+            }
+
             processDelivery(queueEvent, statusUrl);
+
+            gravitonApi.clearTransientHeaders();
         } catch (Exception e) {
+            gravitonApi.clearTransientHeaders();
+
             LOG.error("Error in worker: " + workerId, e);
 
             if (shouldAutoUpdateStatus()) {
@@ -266,6 +275,21 @@ public abstract class WorkerAbstract {
     }
 
     /**
+     * the worker needs to OPT OUT here - only if this is true, the "transient headers" feature is used
+     * where the backend headers are 1:1 forwarded (= transient) to subsequent requests inside the delivery
+     * handling.
+     *
+     * this is mostly needed for workers that need to be aware in the tenant and username in the context of the
+     * request handling - as such, they basically impersonate the same user to the backend as the actual user that
+     * sent the Queue event
+     *
+     * @return
+     */
+    public Boolean shouldUseTransientHeaders() {
+        return true;
+    }
+
+    /**
      * will be called after we're initialized, can contain some initial logic in the worker.
      *
      * @throws WorkerException when a problem occurs that prevents the Worker from working properly
@@ -326,7 +350,15 @@ public abstract class WorkerAbstract {
         return new QueueManager(properties);
     }
 
-    protected GravitonApi initGravitonApi() {
+    protected GravitonAuthApi initGravitonApi() {
         return new GravitonAuthApi(properties);
+    }
+
+    public void setUseTransientHeaders(boolean useTransientHeaders) {
+        this.useTransientHeaders = useTransientHeaders;
+    }
+
+    public boolean isUseTransientHeaders() {
+        return useTransientHeaders;
     }
 }
