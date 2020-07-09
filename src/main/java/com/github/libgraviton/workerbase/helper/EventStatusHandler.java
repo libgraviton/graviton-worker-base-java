@@ -4,6 +4,7 @@ import com.github.libgraviton.gdk.GravitonApi;
 import com.github.libgraviton.gdk.api.Response;
 import com.github.libgraviton.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
+import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusInformation;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatusAction;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
@@ -29,7 +30,6 @@ public class EventStatusHandler {
         this.gravitonApi = gravitonApi;
     }
 
-
     /**
      * Update the event status object on Graviton side
      *
@@ -45,6 +45,36 @@ public class EventStatusHandler {
         workerStatus.setStatus(status);
         workerStatus.setAction(action);
         update(eventStatus, workerStatus);
+    }
+
+    /**
+     * Sets an EventStatus to error state with message and to FAILED
+     *
+     * @param eventStatus  adapted status that should be updated
+     * @param workerId id of this worker
+     * @param errorMessage error message to set
+     * @throws GravitonCommunicationException when status cannot be updated at Graviton
+     */
+    public void updateToErrorState(EventStatus eventStatus, String workerId, String errorMessage) throws GravitonCommunicationException {
+        EventStatusInformation information = new EventStatusInformation();
+        information.setWorkerId(workerId);
+        information.setType(EventStatusInformation.Type.ERROR);
+        information.setContent(errorMessage);
+        eventStatus.getInformation().add(information);
+        update(eventStatus, workerId, EventStatusStatus.Status.FAILED);
+    }
+
+    /**
+     * Sets an EventStatus to error state with message and to FAILED
+     *
+     * @param statusUrl  url to status
+     * @param workerId id of this worker
+     * @param errorMessage error message to set
+     * @throws GravitonCommunicationException when status cannot be updated at Graviton
+     */
+    public void updateToErrorState(String statusUrl, String workerId, String errorMessage) throws GravitonCommunicationException {
+        EventStatus eventStatus = getEventStatusFromUrl(statusUrl);
+        updateToErrorState(eventStatus, workerId, errorMessage);
     }
 
     /**
@@ -87,7 +117,11 @@ public class EventStatusHandler {
             throw new GravitonCommunicationException("Failed to update the event status.", e);
         }
 
-        LOG.debug("Updated /event/status/" + eventStatus.getId() + " to '" + workerStatus.getStatus() + "'.");
+        LOG.info(
+                "Updated /event/status/{} to '{}'.",
+                eventStatus.getId(),
+                workerStatus.getStatus()
+        );
     }
 
     public EventStatus getEventStatusFromUrl(String url) throws GravitonCommunicationException {

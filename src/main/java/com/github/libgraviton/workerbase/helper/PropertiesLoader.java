@@ -27,6 +27,10 @@ public class PropertiesLoader {
 
     private static final String SYSTEM_PROPERTY = "propFile";
 
+    public static Properties load() throws IOException {
+        return load(PropertiesLoader.class);
+    }
+
     /**
      * Loads the Properties in the following order (if a property entry ia already loaded, it will be overridden with the new value).
      * 1.) Default Properties (resource path)
@@ -46,7 +50,7 @@ public class PropertiesLoader {
      * @return loaded Properties
      * @throws IOException whenever the properties from a given path could not be loaded
      */
-    public static Properties load() throws IOException {
+    public static Properties load(Object initClass) throws IOException {
         Properties properties = new Properties();
 
         try (InputStream defaultProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(DEFAULT_PROPERTIES_PATH)) {
@@ -70,7 +74,7 @@ public class PropertiesLoader {
         }
 
         try (InputStream overwriteJarProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(OVERWRITE_PROPERTIES_JAR_PATH)) {
-            if (overwriteJarProperties != null && WorkerUtil.isJarContext()) {
+            if (overwriteJarProperties != null && WorkerUtil.isJarContext(initClass)) {
                 properties.load(overwriteJarProperties);
                 LOG.info("Loaded JAR runtime default properties from file '{}'", OVERWRITE_PROPERTIES_JAR_PATH);
             }
