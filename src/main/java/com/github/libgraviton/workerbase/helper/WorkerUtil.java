@@ -116,7 +116,11 @@ public class WorkerUtil {
     }
 
     public static boolean isJarContext() {
-        return WorkerUtil.class.getResource("").getProtocol().equals("jar");
+        return isJarContext(WorkerUtil.class);
+    }
+
+    public static boolean isJarContext(Object obj) {
+        return obj.getClass().getResource("").getProtocol().equals("jar");
     }
 
     public static OkHttpGateway getGatewayInstance() {
