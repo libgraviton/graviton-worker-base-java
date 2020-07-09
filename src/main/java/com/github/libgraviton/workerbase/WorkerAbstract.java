@@ -47,6 +47,8 @@ public abstract class WorkerAbstract {
 
     protected String messageId;
 
+    protected String statusUrl;
+
     protected MessageAcknowledger acknowledger;
 
     protected GravitonAuthApi gravitonApi;
@@ -71,7 +73,7 @@ public abstract class WorkerAbstract {
      * @return true if worker is run from a jar file else false
      */
     public static boolean isWorkerStartedFromJARFile(Object obj) {
-        return WorkerUtil.isJarContext();
+        return WorkerUtil.isJarContext(obj);
     }
 
     /**
@@ -116,7 +118,8 @@ public abstract class WorkerAbstract {
             LOG.error("Could not set the Default Uncaught Exception Handler", e);
         }
 
-        this.gravitonApi = initGravitonApi();
+        gravitonApi = initGravitonApi();
+        statusHandler = new EventStatusHandler(gravitonApi);
         workerId = properties.getProperty("graviton.workerId");
 
         if (shouldAutoRegister()) {
@@ -136,7 +139,7 @@ public abstract class WorkerAbstract {
         this.messageId = messageId;
         this.acknowledger = acknowledger;
 
-        String statusUrl = convertToGravitonUrl(queueEvent.getStatus().get$ref());
+        statusUrl = convertToGravitonUrl(queueEvent.getStatus().get$ref());
         try {
             // any transient headers?
             if (shouldUseTransientHeaders() && isUseTransientHeaders()) {
@@ -153,13 +156,7 @@ public abstract class WorkerAbstract {
 
             if (shouldAutoUpdateStatus()) {
                 try {
-                    EventStatus eventStatus = statusHandler.getEventStatusFromUrl(statusUrl);
-                    EventStatusInformation information = new EventStatusInformation();
-                    information.setWorkerId(workerId);
-                    information.setType(EventStatusInformation.Type.ERROR);
-                    information.setContent(e.toString());
-                    eventStatus.getInformation().add(information);
-                    update(eventStatus, workerId, EventStatusStatus.Status.FAILED);
+                    statusHandler.updateToErrorState(statusUrl, workerId, e.toString());
                 } catch (GravitonCommunicationException e1) {
                     // don't log again in case if previous exception was already a GravitonCommunicationException.
                     if (!(e instanceof GravitonCommunicationException)) {
@@ -193,8 +190,6 @@ public abstract class WorkerAbstract {
     }
 
     protected void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {
-        statusHandler = new EventStatusHandler(gravitonApi);
-
         if (!shouldHandleRequest(queueEvent)) {
             // set status to ignored if the worker doesn't care about the event
             update(statusUrl, workerId, EventStatusStatus.Status.IGNORED);
