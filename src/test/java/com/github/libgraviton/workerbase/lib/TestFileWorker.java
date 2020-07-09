@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase.lib;
 
-import com.github.libgraviton.gdk.GravitonApi;
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.workerbase.FileWorkerAbstract;
+import com.github.libgraviton.workerbase.GravitonAuthApi;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.model.QueueEvent;
@@ -57,7 +57,7 @@ public class TestFileWorker extends FileWorkerAbstract {
         return Arrays.asList("doYourStuff");
     }
 
-    protected GravitonApi initGravitonApi() {
+    protected GravitonAuthApi initGravitonApi() {
         return gravitonApi;
     }
 }

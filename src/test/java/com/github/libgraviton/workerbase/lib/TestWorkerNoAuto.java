@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase.lib;
 
-import com.github.libgraviton.gdk.GravitonApi;
+import com.github.libgraviton.workerbase.GravitonAuthApi;
 import com.github.libgraviton.workerbase.WorkerAbstract;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.model.QueueEvent;
@@ -41,7 +41,7 @@ public class TestWorkerNoAuto extends WorkerAbstract {
         return false;
     }
 
-    protected GravitonApi initGravitonApi() {
+    protected GravitonAuthApi initGravitonApi() {
         return gravitonApi;
     }
     

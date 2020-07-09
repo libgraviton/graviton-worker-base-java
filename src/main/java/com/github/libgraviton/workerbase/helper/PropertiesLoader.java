@@ -1,5 +1,8 @@
 package com.github.libgraviton.workerbase.helper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,9 +17,13 @@ import java.util.Properties;
  */
 public class PropertiesLoader {
 
+    private static final Logger LOG = LoggerFactory.getLogger(PropertiesLoader.class);
+
     private static final String DEFAULT_PROPERTIES_PATH = "default.properties";
 
     private static final String OVERWRITE_PROPERTIES_PATH = "app.properties";
+
+    private static final String OVERWRITE_PROPERTIES_JAR_PATH = "app_jar.properties";
 
     private static final String SYSTEM_PROPERTY = "propFile";
 
@@ -44,11 +51,13 @@ public class PropertiesLoader {
 
         try (InputStream defaultProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(DEFAULT_PROPERTIES_PATH)) {
             properties.load(defaultProperties);
+            LOG.info("Loaded default properties from file '{}'", DEFAULT_PROPERTIES_PATH);
         }
 
         try (InputStream overwriteProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(OVERWRITE_PROPERTIES_PATH)) {
             if (overwriteProperties != null) {
                 properties.load(overwriteProperties);
+                LOG.info("Loaded overwrite properties from file '{}'", OVERWRITE_PROPERTIES_PATH);
             }
         }
 
@@ -56,10 +65,19 @@ public class PropertiesLoader {
         if (systemPropertiesPath != null) {
             try (InputStream overwriteProperties = new FileInputStream(systemPropertiesPath)) {
                 properties.load(overwriteProperties);
+                LOG.info("Loaded system properties from file '{}'", SYSTEM_PROPERTY);
+            }
+        }
+
+        try (InputStream overwriteJarProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(OVERWRITE_PROPERTIES_JAR_PATH)) {
+            if (overwriteJarProperties != null && WorkerUtil.isJarContext()) {
+                properties.load(overwriteJarProperties);
+                LOG.info("Loaded JAR runtime default properties from file '{}'", OVERWRITE_PROPERTIES_JAR_PATH);
             }
         }
 
         properties.putAll(System.getProperties());
+        LOG.info("Loaded system properties (command line args)");
 
         return properties;
     }
