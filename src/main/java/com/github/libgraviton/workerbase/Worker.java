@@ -48,7 +48,7 @@ public class Worker {
      */
     public Worker(WorkerAbstract worker) throws WorkerException, GravitonCommunicationException {
         try {
-            properties = PropertiesLoader.load();
+            properties = PropertiesLoader.load(worker);
         } catch (IOException e) {
             throw new WorkerException(e);
         }
