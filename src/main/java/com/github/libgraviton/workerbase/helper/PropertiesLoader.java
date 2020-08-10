@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -82,6 +83,28 @@ public class PropertiesLoader {
 
         properties.putAll(System.getProperties());
         LOG.info("Loaded system properties (command line args)");
+
+        properties = addFromEnvironment(properties, env);
+        LOG.info("Loaded from ENV");
+
+        return properties;
+    }
+
+    /**
+     * parses and adds stuff from a map (mostly the environment by default) and adds them as properties
+     * @param properties
+     * @param map
+     * @return
+     */
+    public static Properties addFromEnvironment(Properties properties, Map<String, String> map) {
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            if (entry.getKey().startsWith(ENV_PREFIX)) {
+                String propName = entry.getKey().substring(ENV_PREFIX.length());
+
+                // replace "__" with "." for propname
+                properties.put(propName.replace("__", "."), entry.getValue());
+            }
+        }
 
         return properties;
     }
