@@ -28,8 +28,14 @@ public class PropertiesLoader {
 
     private static final String SYSTEM_PROPERTY = "propFile";
 
+    private static final String ENV_PREFIX = "worker_";
+
     public static Properties load() throws IOException {
-        return load(PropertiesLoader.class);
+        return load(PropertiesLoader.class, System.getenv());
+    }
+
+    public static Properties load(Object initClass) throws IOException {
+        return load(initClass, System.getenv());
     }
 
     /**
@@ -51,7 +57,7 @@ public class PropertiesLoader {
      * @return loaded Properties
      * @throws IOException whenever the properties from a given path could not be loaded
      */
-    public static Properties load(Object initClass) throws IOException {
+    public static Properties load(Object initClass, Map<String, String> env) throws IOException {
         Properties properties = new Properties();
 
         try (InputStream defaultProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(DEFAULT_PROPERTIES_PATH)) {
@@ -103,6 +109,39 @@ public class PropertiesLoader {
 
                 // replace "__" with "." for propname
                 properties.put(propName.replace("__", "."), entry.getValue());
+            }
+        }
+
+        return properties;
+    }
+
+    /**
+     * you can add additional resource files from the path, specifiying if exiting props should be overridden or not
+     * @param properties
+     * @param resourcePath
+     * @param doOverride
+     * @return
+     */
+    public static Properties addFromResource(Properties properties, String resourcePath, Boolean doOverride) throws Exception {
+        InputStream is = PropertiesLoader.class.getClassLoader().getResourceAsStream(resourcePath);
+        if (is == null) {
+            throw new Exception("Could not load resource '"+resourcePath+"' to load in PropertiesLoader!");
+        }
+
+        LOG.info("Loaded from resource path '{}'", resourcePath);
+
+        if (doOverride) {
+            properties.load(is);
+            return properties;
+        }
+
+        // no override? go through them
+        Properties newProps = new Properties();
+        newProps.load(is);
+
+        for (String propName : newProps.stringPropertyNames()) {
+            if (!properties.containsKey(propName)) {
+                properties.put(propName, newProps.getProperty(propName));
             }
         }
 
