@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
@@ -103,8 +102,8 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
                 testWorker.fileObj.getMetadata().getHash());
 
         assertEquals(0, testWorker.fileObj.getMetadata().getAction().size());
-        
-        assertThat(testWorker.fileObj.getMetadata(), instanceOf(FileMetadata.class));
+
+        assertTrue(testWorker.fileObj.getMetadata() instanceof FileMetadata);
         
         assertFalse(testWorker.actionPresent);
     }
