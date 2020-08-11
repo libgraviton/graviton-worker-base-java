@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>0.32.1-SNAPSHOT</version>
+  <version>0.32.1</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -64,7 +64,7 @@
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>gdk-core</artifactId>
-      <version>0.9.0</version>
+      <version>0.10.0</version>
     </dependency>
     <dependency>
       <groupId>com.github.libgraviton</groupId>
