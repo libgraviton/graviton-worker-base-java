@@ -166,7 +166,9 @@ public abstract class WorkerAbstract {
             }
 
             // acknowledge message here as we are done processing
-            reportToMessageQueue();
+            if (shouldAutoAcknowledgeOnException()) {
+                reportToMessageQueue();
+            }
         }
     }
 
@@ -259,6 +261,16 @@ public abstract class WorkerAbstract {
     public Boolean shouldAutoUpdateStatus()
     {
         return true;
+    }
+
+    /**
+     * can be overriden by worker implementation. should the lib acknowledge the queue action when an exception happened?
+     *
+     * @return true if yes, false if not
+     */
+    public Boolean shouldAutoAcknowledgeOnException()
+    {
+        return false;
     }
 
     /**
