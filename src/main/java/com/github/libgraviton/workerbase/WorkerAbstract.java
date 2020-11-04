@@ -149,7 +149,7 @@ public abstract class WorkerAbstract {
             processDelivery(queueEvent, statusUrl);
 
             gravitonApi.clearTransientHeaders();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             gravitonApi.clearTransientHeaders();
 
             LOG.error("Error in worker: " + workerId, e);
@@ -162,9 +162,11 @@ public abstract class WorkerAbstract {
                     if (!(e instanceof GravitonCommunicationException)) {
                         LOG.error("Unable to update worker status at '" + statusUrl + "'.");
                     }
-                    reportToMessageQueue();
                 }
             }
+
+            // acknowledge message here as we are done processing
+            reportToMessageQueue();
         }
     }
 
