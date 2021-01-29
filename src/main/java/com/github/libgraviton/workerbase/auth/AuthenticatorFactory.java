@@ -1,38 +1,28 @@
 package com.github.libgraviton.workerbase.auth;
 
 import com.github.libgraviton.workerbase.auth.exception.UnknownAuthenticator;
-import java.util.Properties;
-import javax.naming.AuthenticationException;
 
 /**
  * Resolver for auth strategy
  */
 public class AuthenticatorFactory {
 
-    private String strategy;
-    private String gatewayUrl;
-    private String gatewayUser;
-    private String gatewayPassword;
-
-    /**
-     * constructor
-     *
-     * @param properties properties
-     */
-    public AuthenticatorFactory(Properties properties) {
-        strategy = properties.getProperty("worker.auth.strategy", "");
-        gatewayUrl = properties.getProperty("fil.endpoint.host");
-        gatewayUser = properties.getProperty("worker.auth.gravitonGateway.authUsername");
-        gatewayPassword = properties.getProperty("worker.auth.gravitonGateway.authPassword");
-    }
-
     /**
      * Gets the strategy depending on the subscriptions
      *
-     * @param coreUserId The core user id
+     * @param strategy strategy
+     * @param gatewayUrl gateway url
+     * @param gatewayUser gateway technical user name
+     * @param gatewayPassword gateway technical user password
+     *
      * @return Authenticator the choosen auth strategy
      */
-    public Authenticator create(String coreUserId) throws UnknownAuthenticator {
+    public static Authenticator create(
+        String strategy,
+        String gatewayUrl,
+        String gatewayUser,
+        String gatewayPassword
+    ) throws UnknownAuthenticator {
         Authenticator authenticator;
 
         if (strategy.equals("GravitonGateway")) {
@@ -43,7 +33,7 @@ public class AuthenticatorFactory {
             throw new UnknownAuthenticator("Unknown authenticator '" + strategy + "'.");
         }
 
-        authenticator.setCoreUserId(coreUserId);
+        //authenticator.setCoreUserId(coreUserId);
 
         return authenticator;
     }
