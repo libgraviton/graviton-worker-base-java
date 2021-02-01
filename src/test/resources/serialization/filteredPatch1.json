@@ -1,0 +1,1 @@
+[{"op":"replace","path":"/status/0/status","value":"failed"},{"op":"add","path":"/information/-","value":"aValue"}]
