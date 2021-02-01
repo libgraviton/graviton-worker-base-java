@@ -1,9 +1,9 @@
 package com.github.libgraviton.workerbase.auth.request;
 
-import com.github.libgraviton.gdk.RequestExecutor;
-import com.github.libgraviton.gdk.api.Request;
-import com.github.libgraviton.gdk.api.Response;
-import com.github.libgraviton.gdk.exception.CommunicationException;
+import com.github.libgraviton.workerbase.gdk.RequestExecutor;
+import com.github.libgraviton.workerbase.gdk.api.Request;
+import com.github.libgraviton.workerbase.gdk.api.Response;
+import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.auth.Authenticator;
 import com.github.libgraviton.workerbase.auth.exception.CannotProcessAuth;
 import com.github.libgraviton.workerbase.helper.WorkerUtil;

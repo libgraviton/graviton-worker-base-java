@@ -1,11 +1,11 @@
 package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.libgraviton.gdk.api.Response;
-import com.github.libgraviton.gdk.data.GravitonBase;
-import com.github.libgraviton.gdk.serialization.mapper.GravitonObjectMapper;
-import com.github.libgraviton.gdk.util.PropertiesLoader;
-import com.github.libgraviton.messaging.MessageAcknowledger;
+import com.github.libgraviton.workerbase.gdk.api.Response;
+import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
+import com.github.libgraviton.workerbase.gdk.serialization.mapper.GravitonObjectMapper;
+import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
+import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.rabbitmq.client.Channel;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;

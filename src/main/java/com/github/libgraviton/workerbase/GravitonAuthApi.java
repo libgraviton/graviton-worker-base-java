@@ -1,7 +1,7 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.GravitonApi;
-import com.github.libgraviton.gdk.api.header.HeaderBag;
+import com.github.libgraviton.workerbase.gdk.GravitonApi;
+import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

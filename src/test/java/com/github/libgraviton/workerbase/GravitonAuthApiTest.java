@@ -1,7 +1,7 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.api.header.Header;
-import com.github.libgraviton.gdk.api.header.HeaderBag;
+import com.github.libgraviton.workerbase.gdk.api.header.Header;
+import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
 import com.github.libgraviton.workerbase.helper.PropertiesLoader;
 import org.junit.Test;
 

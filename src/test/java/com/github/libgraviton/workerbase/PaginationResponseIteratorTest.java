@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.api.Response;
-import com.github.libgraviton.gdk.api.header.HeaderBag;
-import com.github.libgraviton.gdk.data.GravitonBase;
+import com.github.libgraviton.workerbase.gdk.api.Response;
+import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
+import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;

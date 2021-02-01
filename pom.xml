@@ -51,25 +51,32 @@
   </distributionManagement>
 
   <dependencies>
+    <!--
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>messaging</artifactId>
       <version>0.5.0</version>
     </dependency>
+    -->
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>30.0-jre</version>
     </dependency>
     <dependency>
-      <groupId>com.github.libgraviton</groupId>
-      <artifactId>gdk-core</artifactId>
-      <version>0.10.0</version>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>4.7.2</version>
     </dependency>
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>gdk-essential-pojos</artifactId>
-      <version>0.3.0</version>
+      <version>1.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.rabbitmq</groupId>
+      <artifactId>amqp-client</artifactId>
+      <version>5.8.0</version>
     </dependency>
     <dependency>
       <groupId>io.sentry</groupId>

@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.GravitonFileEndpoint;
-import com.github.libgraviton.gdk.api.Response;
-import com.github.libgraviton.gdk.data.GravitonBase;
+import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
+import com.github.libgraviton.workerbase.gdk.api.Response;
+import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadata;

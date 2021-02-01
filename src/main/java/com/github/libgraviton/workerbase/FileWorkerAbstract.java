@@ -1,7 +1,7 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.GravitonFileEndpoint;
-import com.github.libgraviton.gdk.exception.CommunicationException;
+import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
+import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadata;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadataAction;

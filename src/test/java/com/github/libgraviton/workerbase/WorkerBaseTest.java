@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.exception.UnsuccessfulResponseException;
+import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatusAction;

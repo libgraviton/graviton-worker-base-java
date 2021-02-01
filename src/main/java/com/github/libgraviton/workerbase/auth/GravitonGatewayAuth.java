@@ -1,11 +1,11 @@
 package com.github.libgraviton.workerbase.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.libgraviton.gdk.api.HttpMethod;
-import com.github.libgraviton.gdk.api.Request.Builder;
-import com.github.libgraviton.gdk.api.Response;
-import com.github.libgraviton.gdk.api.header.HeaderBag;
-import com.github.libgraviton.gdk.exception.CommunicationException;
+import com.github.libgraviton.workerbase.gdk.api.HttpMethod;
+import com.github.libgraviton.workerbase.gdk.api.Request.Builder;
+import com.github.libgraviton.workerbase.gdk.api.Response;
+import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
+import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.auth.exception.CannotProcessAuth;
 import java.io.StringWriter;
 import org.json.JSONWriter;

@@ -1,7 +1,7 @@
 package com.github.libgraviton.workerbase.helper;
 
-import com.github.libgraviton.gdk.GravitonApi;
-import com.github.libgraviton.gdk.exception.CommunicationException;
+import com.github.libgraviton.workerbase.gdk.GravitonApi;
+import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;

@@ -10,7 +10,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
-import com.github.libgraviton.gdk.api.Request.Builder;
+import com.github.libgraviton.workerbase.gdk.api.Request.Builder;
 import com.github.libgraviton.workerbase.auth.exception.CannotProcessAuth;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Before;

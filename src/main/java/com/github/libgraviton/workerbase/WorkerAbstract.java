@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.exception.CommunicationException;
+import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusInformation;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
@@ -8,8 +8,8 @@ import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusSt
 import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventStatusAction;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
-import com.github.libgraviton.messaging.MessageAcknowledger;
-import com.github.libgraviton.messaging.exception.CannotAcknowledgeMessage;
+import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
+import com.github.libgraviton.workerbase.messaging.exception.CannotAcknowledgeMessage;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;

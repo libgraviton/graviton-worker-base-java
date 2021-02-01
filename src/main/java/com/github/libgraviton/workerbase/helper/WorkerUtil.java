@@ -3,12 +3,12 @@
  */
 package com.github.libgraviton.workerbase.helper;
 
-import com.github.libgraviton.gdk.GravitonFileEndpoint;
-import com.github.libgraviton.gdk.api.Response;
-import com.github.libgraviton.gdk.api.gateway.OkHttpGateway;
-import com.github.libgraviton.gdk.api.gateway.okhttp.OkHttpGatewayFactory;
-import com.github.libgraviton.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
+import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
+import com.github.libgraviton.workerbase.gdk.api.Response;
+import com.github.libgraviton.workerbase.gdk.api.gateway.OkHttpGateway;
+import com.github.libgraviton.workerbase.gdk.api.gateway.okhttp.OkHttpGatewayFactory;
+import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
