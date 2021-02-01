@@ -19,7 +19,6 @@ public class Endpoint implements Serializable {
      */
     private String path;
 
-
     /**
      * Loads the base url once from the properties the first time an Endpoint class will be used.
      */
@@ -31,7 +30,7 @@ public class Endpoint implements Serializable {
      * @param itemPath The endpoint itemUrl.
      */
     public Endpoint(String itemPath) {
-        this.itemPath = itemPath;
+        setData(itemPath, null);
     }
 
     /**
@@ -41,6 +40,10 @@ public class Endpoint implements Serializable {
      * @param path The endpoint path.
      */
     public Endpoint(String itemPath, String path) {
+        setData(itemPath, path);
+    }
+
+    protected void setData(String itemPath, String path) {
         this.itemPath = itemPath;
         this.path = path;
     }
