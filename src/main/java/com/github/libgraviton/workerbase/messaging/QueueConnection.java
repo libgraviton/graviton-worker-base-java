@@ -256,7 +256,7 @@ abstract public class QueueConnection {
 
         protected String password;
 
-        private String queueName;
+        protected String queueName;
 
         private int connectionAttempts = -1;
 
@@ -361,7 +361,7 @@ abstract public class QueueConnection {
                     .user(properties.getProperty("user", user))
                     .password(properties.getProperty("password", password))
                     .queueName(properties.getProperty("queue.name", queueName))
-                    .connectionAttempts(PropertyUtil.getIntger(properties, "connection.attempts", connectionAttempts))
+                    .connectionAttempts(PropertyUtil.getInteger(properties, "connection.attempts", connectionAttempts))
                     .connectionAttemptsWait(
                             PropertyUtil.getDouble(properties, "connection.attempts.wait", connectionAttemptsWait)
                     );

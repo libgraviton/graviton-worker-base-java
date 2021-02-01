@@ -29,7 +29,7 @@ public class PropertyUtil {
      *
      * @return The property's value or the default value
      */
-    public static int getIntger(Properties properties, String propertyName, int defaultValue) {
+    public static int getInteger(Properties properties, String propertyName, int defaultValue) {
         return Integer.valueOf(properties.getProperty(propertyName, Integer.toString(defaultValue)));
     }
 

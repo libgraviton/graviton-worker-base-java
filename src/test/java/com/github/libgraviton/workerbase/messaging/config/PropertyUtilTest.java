@@ -33,10 +33,10 @@ public class PropertyUtilTest {
         properties.setProperty("int-0", "0");
         properties.setProperty("int-7", "7");
 
-        assertEquals(0, PropertyUtil.getIntger(properties, "int-0", 1));
-        assertEquals(0, PropertyUtil.getIntger(properties, "int-0-inexistent", 0));
-        assertEquals(7, PropertyUtil.getIntger(properties, "int-7", 1));
-        assertEquals(7, PropertyUtil.getIntger(properties, "int-7-inexistent", 7));
+        assertEquals(0, PropertyUtil.getInteger(properties, "int-0", 1));
+        assertEquals(0, PropertyUtil.getInteger(properties, "int-0-inexistent", 0));
+        assertEquals(7, PropertyUtil.getInteger(properties, "int-7", 1));
+        assertEquals(7, PropertyUtil.getInteger(properties, "int-7-inexistent", 7));
     }
 
     @Test
