@@ -1,11 +1,11 @@
 package com.github.libgraviton.workerbase.messaging;
 
-import com.github.libgraviton.messaging.consumer.Consumer;
-import com.github.libgraviton.messaging.exception.CannotCloseConnection;
-import com.github.libgraviton.messaging.exception.CannotConnectToQueue;
-import com.github.libgraviton.messaging.exception.CannotPublishMessage;
-import com.github.libgraviton.messaging.exception.CannotRegisterConsumer;
-import com.github.libgraviton.messaging.mocks.MockedQueueConnection;
+import com.github.libgraviton.workerbase.messaging.consumer.Consumer;
+import com.github.libgraviton.workerbase.messaging.exception.CannotCloseConnection;
+import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
+import com.github.libgraviton.workerbase.messaging.exception.CannotPublishMessage;
+import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
+import com.github.libgraviton.workerbase.messaging.mocks.MockedQueueConnection;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -84,7 +84,7 @@ public class QueueConnectionTest {
         connection.open();
         connection.close();
 
-        // Expects no com.github.libgraviton.messaging.exception. If any is thrown, this test would fail.
+        // Expects no com.github.libgraviton.workerbase.messaging.exception. If any is thrown, this test would fail.
     }
 
     @Test

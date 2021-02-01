@@ -1,11 +1,11 @@
 package com.github.libgraviton.workerbase.gdk.api.gateway;
 
 
-import com.github.libgraviton.gdk.RequestExecutor;
-import com.github.libgraviton.gdk.api.HttpMethod;
-import com.github.libgraviton.gdk.api.Request;
-import com.github.libgraviton.gdk.api.header.HeaderBag;
-import com.github.libgraviton.gdk.exception.CommunicationException;
+import com.github.libgraviton.workerbase.gdk.RequestExecutor;
+import com.github.libgraviton.workerbase.gdk.api.HttpMethod;
+import com.github.libgraviton.workerbase.gdk.api.Request;
+import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
+import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import okhttp3.Call;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
@@ -61,7 +61,7 @@ public class OkHttpGatewayTest {
     public void testDoRequestHappyPath() throws CommunicationException {
         when(okHttpResponse.isSuccessful()).thenReturn(true);
 
-        com.github.libgraviton.gdk.api.Response response = gateway.execute(request);
+        com.github.libgraviton.workerbase.gdk.api.Response response = gateway.execute(request);
         assertEquals(responseBody, response.getBody());
     }
 

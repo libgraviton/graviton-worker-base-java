@@ -1,9 +1,10 @@
 package com.github.libgraviton.workerbase.messaging.strategy.rabbitmq;
 
-import com.github.libgraviton.messaging.consumer.AcknowledgingConsumer;
-import com.github.libgraviton.messaging.exception.CannotConnectToQueue;
-import com.github.libgraviton.messaging.exception.CannotPublishMessage;
-import com.github.libgraviton.messaging.exception.CannotRegisterConsumer;
+import com.github.libgraviton.workerbase.messaging.consumer.AcknowledgingConsumer;
+import com.github.libgraviton.workerbase.messaging.consumer.Consumer;
+import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
+import com.github.libgraviton.workerbase.messaging.exception.CannotPublishMessage;
+import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
 import com.rabbitmq.client.*;
 import org.junit.After;
 import org.junit.Before;
@@ -245,6 +246,6 @@ public class RabbitMqConnectionTest {
         connection.open();
         connection.close();
 
-        // Expects no com.github.libgraviton.messaging.exception. If any is thrown, this test would fail.
+        // Expects no com.github.libgraviton.workerbase.messaging.exception. If any is thrown, this test would fail.
     }
 }

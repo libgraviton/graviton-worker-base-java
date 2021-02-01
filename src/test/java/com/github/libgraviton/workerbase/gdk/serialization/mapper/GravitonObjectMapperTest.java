@@ -1,7 +1,8 @@
 package com.github.libgraviton.workerbase.gdk.serialization.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.libgraviton.gdk.util.PropertiesLoader;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
 import org.junit.Test;
 
 import java.util.Calendar;
@@ -16,7 +17,7 @@ public class GravitonObjectMapperTest {
     @Test
     public void testDateFormat() throws Exception {
         Properties properties = PropertiesLoader.load();
-        GravitonObjectMapper mapper = new GravitonObjectMapper(properties);
+        ObjectMapper mapper = GravitonObjectMapper.getInstance(properties);
 
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         calendar.set(2001, 10, 20, 9, 8, 7);

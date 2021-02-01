@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase.messaging.strategy.jms;
 
-import com.github.libgraviton.messaging.exception.CannotBuildConnection;
+import com.github.libgraviton.workerbase.messaging.exception.CannotBuildConnection;
 import org.junit.Before;
 import org.junit.Test;
 

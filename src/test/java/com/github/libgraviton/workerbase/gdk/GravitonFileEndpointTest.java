@@ -1,12 +1,12 @@
 package com.github.libgraviton.workerbase.gdk;
 
-import com.github.libgraviton.gdk.api.Request;
-import com.github.libgraviton.gdk.api.endpoint.Endpoint;
-import com.github.libgraviton.gdk.api.endpoint.EndpointManager;
-import com.github.libgraviton.gdk.api.header.HeaderBag;
-import com.github.libgraviton.gdk.api.multipart.Part;
-import com.github.libgraviton.gdk.data.GravitonBase;
-import com.github.libgraviton.gdk.data.SimpleClass;
+import com.github.libgraviton.workerbase.gdk.api.Request;
+import com.github.libgraviton.workerbase.gdk.api.endpoint.Endpoint;
+import com.github.libgraviton.workerbase.gdk.api.endpoint.EndpointManager;
+import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
+import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
+import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
+import com.github.libgraviton.workerbase.gdk.data.SimpleClass;
 import org.junit.Before;
 import org.junit.Test;
 

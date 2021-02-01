@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase.gdk.api;
 
-import com.github.libgraviton.gdk.exception.CommunicationException;
+import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;

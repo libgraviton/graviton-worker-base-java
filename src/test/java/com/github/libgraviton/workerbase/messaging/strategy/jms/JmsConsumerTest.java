@@ -1,7 +1,7 @@
 package com.github.libgraviton.workerbase.messaging.strategy.jms;
 
-import com.github.libgraviton.messaging.consumer.AcknowledgingConsumer;
-import com.github.libgraviton.messaging.consumer.Consumer;
+import com.github.libgraviton.workerbase.messaging.consumer.AcknowledgingConsumer;
+import com.github.libgraviton.workerbase.messaging.consumer.Consumer;
 import org.junit.Before;
 import org.junit.Test;
 

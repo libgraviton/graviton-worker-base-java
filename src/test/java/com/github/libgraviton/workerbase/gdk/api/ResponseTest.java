@@ -1,9 +1,9 @@
 package com.github.libgraviton.workerbase.gdk.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.libgraviton.gdk.data.NoopClass;
-import com.github.libgraviton.gdk.data.SerializationTestClass;
-import com.github.libgraviton.gdk.exception.DeserializationException;
+import com.github.libgraviton.workerbase.gdk.data.NoopClass;
+import com.github.libgraviton.workerbase.gdk.data.SerializationTestClass;
+import com.github.libgraviton.workerbase.gdk.exception.DeserializationException;
 import org.junit.Before;
 import org.junit.Test;
 

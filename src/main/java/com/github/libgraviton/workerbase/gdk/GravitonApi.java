@@ -3,7 +3,6 @@ package com.github.libgraviton.workerbase.gdk;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.libgraviton.workerbase.gdk.RequestExecutor;
 import com.github.libgraviton.workerbase.gdk.api.NoopRequest;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.EndpointManager;
@@ -82,7 +81,7 @@ public class GravitonApi {
             throw new IllegalStateException("Unable to load properties files.", e);
         }
         this.auth = new NoAuth();
-        this.objectMapper = new GravitonObjectMapper(properties);
+        this.objectMapper = GravitonObjectMapper.getInstance(properties);
         this.executor = new RequestExecutor(objectMapper);
     }
 

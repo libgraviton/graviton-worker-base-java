@@ -2,7 +2,7 @@ package com.github.libgraviton.workerbase.gdk.serialization;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.libgraviton.gdk.data.NoopClass;
+import com.github.libgraviton.workerbase.gdk.data.NoopClass;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase.gdk.okhttp;
 
-import com.github.libgraviton.gdk.util.okhttp.interceptor.RetryInterceptor;
+import com.github.libgraviton.workerbase.gdk.util.okhttp.interceptor.RetryInterceptor;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import okhttp3.OkHttpClient;

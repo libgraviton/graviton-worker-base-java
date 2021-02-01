@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase.gdk.api;
 
-import com.github.libgraviton.gdk.RequestExecutor;
-import com.github.libgraviton.gdk.api.multipart.Part;
-import com.github.libgraviton.gdk.exception.UnsuccessfulRequestException;
+import com.github.libgraviton.workerbase.gdk.RequestExecutor;
+import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
+import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulRequestException;
 import org.junit.Before;
 import org.junit.Test;
 

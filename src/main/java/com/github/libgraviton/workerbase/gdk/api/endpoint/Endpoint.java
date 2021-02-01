@@ -23,7 +23,7 @@ public class Endpoint implements Serializable {
     /**
      * Loads the base url once from the properties the first time an Endpoint class will be used.
      */
-    private static transient String baseUrl = PropertiesLoader.load("graviton.base.url");
+    private static final transient String baseUrl = PropertiesLoader.load("graviton.base.url");
 
     /**
      * Constructor. Sets the endpoint itemUrl.
@@ -67,10 +67,10 @@ public class Endpoint implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (null == obj || !(obj instanceof com.github.libgraviton.workerbase.gdk.api.endpoint.Endpoint)) {
+        if (null == obj || !(obj instanceof Endpoint)) {
             return false;
         }
-        com.github.libgraviton.workerbase.gdk.api.endpoint.Endpoint endpoint = (com.github.libgraviton.workerbase.gdk.api.endpoint.Endpoint) obj;
+        Endpoint endpoint = (Endpoint) obj;
         return ((null == itemPath && null == endpoint.itemPath) || (null != itemPath && itemPath.equals(endpoint.itemPath))) &&
                 ((null == path && null == endpoint.path) ||
                     (null != path && path.equals(endpoint.path)));

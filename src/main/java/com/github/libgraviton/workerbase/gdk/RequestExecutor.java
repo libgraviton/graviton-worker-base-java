@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RequestExecutor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(com.github.libgraviton.workerbase.gdk.RequestExecutor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RequestExecutor.class);
 
     /**
      * The object mapper used to serialize / deserialize to / from JSON

@@ -2,16 +2,16 @@ package com.github.libgraviton.workerbase.gdk;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.libgraviton.gdk.api.HttpMethod;
-import com.github.libgraviton.gdk.api.NoopRequest;
-import com.github.libgraviton.gdk.api.Request;
-import com.github.libgraviton.gdk.api.endpoint.Endpoint;
-import com.github.libgraviton.gdk.api.endpoint.EndpointManager;
-import com.github.libgraviton.gdk.api.query.rql.Rql;
-import com.github.libgraviton.gdk.data.NoopClass;
-import com.github.libgraviton.gdk.data.SimpleClass;
-import com.github.libgraviton.gdk.exception.SerializationException;
-import com.github.libgraviton.gdk.serialization.JsonPatcher;
+import com.github.libgraviton.workerbase.gdk.api.HttpMethod;
+import com.github.libgraviton.workerbase.gdk.api.NoopRequest;
+import com.github.libgraviton.workerbase.gdk.api.Request;
+import com.github.libgraviton.workerbase.gdk.api.endpoint.Endpoint;
+import com.github.libgraviton.workerbase.gdk.api.endpoint.EndpointManager;
+import com.github.libgraviton.workerbase.gdk.api.query.rql.Rql;
+import com.github.libgraviton.workerbase.gdk.data.NoopClass;
+import com.github.libgraviton.workerbase.gdk.data.SimpleClass;
+import com.github.libgraviton.workerbase.gdk.exception.SerializationException;
+import com.github.libgraviton.workerbase.gdk.serialization.JsonPatcher;
 import org.junit.Before;
 import org.junit.Test;
 

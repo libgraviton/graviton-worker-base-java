@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase.gdk.api.query.rql;
 
-import com.github.libgraviton.gdk.data.ComplexClass;
-import com.github.libgraviton.gdk.serialization.mapper.RqlObjectMapper;
-import com.github.libgraviton.gdk.util.PropertiesLoader;
+import com.github.libgraviton.workerbase.gdk.data.ComplexClass;
+import com.github.libgraviton.workerbase.gdk.serialization.mapper.RqlObjectMapper;
+import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;

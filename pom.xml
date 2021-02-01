@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>0.33.0-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -40,6 +40,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <dependency.locations.enabled>false</dependency.locations.enabled>
     <dependency.details.enabled>false</dependency.details.enabled>
+    <jackson-jr.version>2.12.1</jackson-jr.version>
   </properties>
 
   <distributionManagement>
@@ -59,6 +60,11 @@
     </dependency>
     -->
     <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.2.3</version>
+    </dependency>
+    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>30.0-jre</version>
@@ -69,9 +75,27 @@
       <version>4.7.2</version>
     </dependency>
     <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.7</version>
+    </dependency>
+    <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>gdk-essential-pojos</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
+      <!-- we don't package this up - needs to be provided at runtime, which it is - so no need to exclude things -->
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.flipkart.zjsonpatch</groupId>
+      <artifactId>zjsonpatch</artifactId>
+      <version>0.4.11</version>
+      <exclusions>
+        <exclusion>  <!-- declare the exclusion here -->
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.rabbitmq</groupId>
@@ -79,33 +103,70 @@
       <version>5.8.0</version>
     </dependency>
     <dependency>
+      <groupId>javax.jms</groupId>
+      <artifactId>javax.jms-api</artifactId>
+      <version>2.0.1</version>
+    </dependency>
+    <dependency>
       <groupId>io.sentry</groupId>
       <artifactId>sentry-logback</artifactId>
       <version>1.7.30</version>
+      <exclusions>
+        <exclusion>  <!-- declare the exclusion here -->
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20200518</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.jr</groupId>
+      <artifactId>jackson-jr-objects</artifactId>
+      <version>${jackson-jr.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-jsonSchema</artifactId>
+      <version>${jackson-jr.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson-jr.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-json-jackson</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+
+    <!-- test -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
-    <!-- mockito 2 is currently not supported by powermock -->
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>2.27.0</version>
+      <version>2.28.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.powermock</groupId>
       <artifactId>powermock-module-junit4</artifactId>
-      <version>2.0.2</version>
+      <version>2.0.9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.powermock</groupId>
       <artifactId>powermock-api-mockito2</artifactId>
-      <version>2.0.2</version>
+      <version>2.0.9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -113,6 +174,12 @@
       <artifactId>wiremock-jre8</artifactId>
       <version>2.27.2</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>  <!-- declare the exclusion here -->
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
@@ -184,24 +251,6 @@
             <format>xml</format>
           </formats>
           <maxmem>256m</maxmem>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>external.atlassian.jgitflow</groupId>
-        <artifactId>jgitflow-maven-plugin</artifactId>
-        <version>1.0-m5.1</version>
-        <configuration>
-          <enableSshAgent>true</enableSshAgent>
-          <useReleaseProfile>false</useReleaseProfile>
-          <noDeploy>true</noDeploy>
-          <flowInitContext>
-            <masterBranchName>master</masterBranchName>
-            <developBranchName>develop</developBranchName>
-            <featureBranchPrefix>feature/</featureBranchPrefix>
-            <releaseBranchPrefix>release/</releaseBranchPrefix>
-            <hotfixBranchPrefix>hotfix/</hotfixBranchPrefix>
-            <versionTagPrefix/>
-          </flowInitContext>
         </configuration>
       </plugin>
       <plugin>

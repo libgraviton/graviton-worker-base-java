@@ -1,8 +1,5 @@
 package com.github.libgraviton.workerbase.gdk.api.endpoint;
 
-import com.github.libgraviton.workerbase.gdk.api.endpoint.Endpoint;
-import com.github.libgraviton.workerbase.gdk.api.endpoint.EndpointInclusionStrategy;
-import com.github.libgraviton.workerbase.gdk.api.endpoint.EndpointManager;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.exception.UnableToLoadEndpointAssociationsException;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.exception.UnableToPersistEndpointAssociationsException;
 import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
@@ -18,7 +15,7 @@ import java.util.Map;
  */
 public class GeneratedEndpointManager extends EndpointManager {
 
-    private static final Logger LOG = LoggerFactory.getLogger(com.github.libgraviton.workerbase.gdk.api.endpoint.GeneratedEndpointManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GeneratedEndpointManager.class);
 
     public enum Mode {
         LOAD, CREATE
@@ -30,7 +27,6 @@ public class GeneratedEndpointManager extends EndpointManager {
      * The file holding the serialized service to POJO class association.
      */
     protected File serializationFile;
-
 
     /**
      * Constructor. Defines the serialization file.
@@ -45,11 +41,13 @@ public class GeneratedEndpointManager extends EndpointManager {
         if (Mode.LOAD.equals(mode)) {
             load();
         } else {
-            serializationFile.getParentFile().mkdirs();
-            try {
-                serializationFile.createNewFile();
-            } catch (IOException e) {
-                throw new UnableToLoadEndpointAssociationsException("Unable to create new file at '" + assocFilePath + "'.");
+            if (serializationFile != null) {
+                serializationFile.getParentFile().mkdirs();
+                try {
+                    serializationFile.createNewFile();
+                } catch (IOException e) {
+                    throw new UnableToLoadEndpointAssociationsException("Unable to create new file at '" + assocFilePath + "'.");
+                }
             }
         }
 
@@ -64,7 +62,7 @@ public class GeneratedEndpointManager extends EndpointManager {
      * @throws UnableToLoadEndpointAssociationsException When the serialization file cannot be loaded.
      */
     public GeneratedEndpointManager(Mode mode) throws UnableToLoadEndpointAssociationsException {
-        this(new File(assocFilePath), mode);
+        this(null, mode);
     }
 
     /**
@@ -111,21 +109,21 @@ public class GeneratedEndpointManager extends EndpointManager {
     }
 
     protected InputStream loadInputStream() throws UnableToLoadEndpointAssociationsException {
-        // try to load as resource first
-        LOG.debug("Load resource as stream from '" + assocFilePath + "'.");
-        InputStream inputStream = com.github.libgraviton.workerbase.gdk.api.endpoint.GeneratedEndpointManager.class.getClassLoader().getResourceAsStream(assocFilePath);
-
-        if(inputStream == null && serializationFile.exists()) {
-            LOG.debug("Resource not found. Fallback to serialization file '" + serializationFile.getAbsolutePath() + "'.");
+        // if serializationFile is set, this overrides the assocFilePath
+        if (serializationFile != null) {
             try {
                 // resource not found? Try to load as file
-                inputStream = new FileInputStream(serializationFile);
+                return new FileInputStream(serializationFile);
             } catch (FileNotFoundException e) {
                 throw new UnableToLoadEndpointAssociationsException(
                         "Resource / file '" + assocFilePath + "' does not exist."
                 );
             }
         }
+
+        // try to load as resource first
+        LOG.debug("Load resource as stream from '" + assocFilePath + "'.");
+        InputStream inputStream = GeneratedEndpointManager.class.getClassLoader().getResourceAsStream(assocFilePath);
 
         if (inputStream == null) {
             throw new UnableToLoadEndpointAssociationsException(

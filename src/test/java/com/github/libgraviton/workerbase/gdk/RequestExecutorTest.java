@@ -1,11 +1,12 @@
 package com.github.libgraviton.workerbase.gdk;
 
-import com.github.libgraviton.gdk.api.HttpMethod;
-import com.github.libgraviton.gdk.api.Request;
-import com.github.libgraviton.gdk.api.Response;
-import com.github.libgraviton.gdk.api.gateway.GravitonGateway;
-import com.github.libgraviton.gdk.exception.CommunicationException;
-import com.github.libgraviton.gdk.exception.UnsuccessfulResponseException;
+import com.github.libgraviton.workerbase.gdk.api.HttpMethod;
+import com.github.libgraviton.workerbase.gdk.api.Request;
+import com.github.libgraviton.workerbase.gdk.api.Response;
+import com.github.libgraviton.workerbase.gdk.api.gateway.GravitonGateway;
+import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
+import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,7 +37,7 @@ public class RequestExecutorTest {
         when(gateway.execute(eq(request))).thenReturn(response);
 
         Response actualResponse = executor.execute(request);
-        assertEquals(response, actualResponse);
+        Assert.assertEquals(response, actualResponse);
     }
 
     @Test(expected = UnsuccessfulResponseException.class)
@@ -53,6 +54,6 @@ public class RequestExecutorTest {
         when(gateway.execute(eq(request))).thenReturn(response);
 
         Response actualResponse = executor.execute(request);
-        assertEquals(response, actualResponse);
+        Assert.assertEquals(response, actualResponse);
     }
 }

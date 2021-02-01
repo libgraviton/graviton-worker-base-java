@@ -11,7 +11,7 @@ import java.util.Properties;
  */
 public class PropertiesLoader {
 
-    private static final String DEFAULT_PROPERTIES_PATH = "default-gdk.properties";
+    private static final String DEFAULT_PROPERTIES_PATH = "default.properties";
 
     private static final String OVERWRITE_PROPERTIES_PATH = "app.properties";
 
@@ -41,11 +41,11 @@ public class PropertiesLoader {
     public static Properties load() throws IOException {
         Properties properties = new Properties();
 
-        try (InputStream defaultProperties = com.github.libgraviton.workerbase.gdk.util.PropertiesLoader.class.getClassLoader().getResourceAsStream(DEFAULT_PROPERTIES_PATH)) {
+        try (InputStream defaultProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(DEFAULT_PROPERTIES_PATH)) {
             properties.load(defaultProperties);
         }
 
-        try (InputStream overwriteProperties = com.github.libgraviton.workerbase.gdk.util.PropertiesLoader.class.getClassLoader().getResourceAsStream(OVERWRITE_PROPERTIES_PATH)) {
+        try (InputStream overwriteProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(OVERWRITE_PROPERTIES_PATH)) {
             if (overwriteProperties != null) {
                 properties.load(overwriteProperties);
             }

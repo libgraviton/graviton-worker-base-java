@@ -1,6 +1,5 @@
 package com.github.libgraviton.workerbase.gdk;
 
-import com.github.libgraviton.workerbase.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
 import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
@@ -18,7 +17,7 @@ import org.slf4j.LoggerFactory;
  */
 public class GravitonFileEndpoint {
 
-    private static final Logger LOG = LoggerFactory.getLogger(com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GravitonFileEndpoint.class);
 
     private GravitonApi gravitonApi;
 

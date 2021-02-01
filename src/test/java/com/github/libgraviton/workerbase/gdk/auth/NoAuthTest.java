@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase.gdk.auth;
 
-import com.github.libgraviton.gdk.api.header.Header;
-import com.github.libgraviton.gdk.api.header.HeaderBag;
-import com.github.libgraviton.gdk.exception.CommunicationException;
+import com.github.libgraviton.workerbase.gdk.api.header.Header;
+import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
+import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import org.junit.Test;
 
 import java.util.Map;

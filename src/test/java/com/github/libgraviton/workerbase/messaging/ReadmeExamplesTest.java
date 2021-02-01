@@ -1,11 +1,11 @@
 package com.github.libgraviton.workerbase.messaging;
 
-import com.github.libgraviton.messaging.consumer.AcknowledgingConsumer;
-import com.github.libgraviton.messaging.consumer.Consumer;
-import com.github.libgraviton.messaging.exception.CannotAcknowledgeMessage;
-import com.github.libgraviton.messaging.exception.CannotConsumeMessage;
-import com.github.libgraviton.messaging.exception.CannotPublishMessage;
-import com.github.libgraviton.messaging.exception.CannotRegisterConsumer;
+import com.github.libgraviton.workerbase.messaging.consumer.AcknowledgingConsumer;
+import com.github.libgraviton.workerbase.messaging.consumer.Consumer;
+import com.github.libgraviton.workerbase.messaging.exception.CannotAcknowledgeMessage;
+import com.github.libgraviton.workerbase.messaging.exception.CannotConsumeMessage;
+import com.github.libgraviton.workerbase.messaging.exception.CannotPublishMessage;
+import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
 import org.junit.Before;
 import org.junit.Test;
 

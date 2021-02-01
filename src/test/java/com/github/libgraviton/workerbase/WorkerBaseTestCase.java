@@ -39,7 +39,7 @@ public abstract class WorkerBaseTestCase {
         System.setErr(new PrintStream(errContent));
 
         Properties properties = PropertiesLoader.load();
-        objectMapper = new GravitonObjectMapper(properties);
+        objectMapper = GravitonObjectMapper.getInstance(properties);
 
         response = mock(Response.class);
         gravitonApi = mock(GravitonAuthApi.class, RETURNS_DEEP_STUBS);

@@ -6,16 +6,12 @@ import java.text.SimpleDateFormat;
 import java.util.Properties;
 import java.util.TimeZone;
 
-/**
- * Created by taawemi6 on 14.03.17.
- */
-public class GravitonObjectMapper extends ObjectMapper {
-
-    public GravitonObjectMapper(Properties properties) {
-        super();
-
+public class GravitonObjectMapper {
+    public static ObjectMapper getInstance(Properties properties) {
+        ObjectMapper objectMapper = new ObjectMapper();
         SimpleDateFormat dateFormat = new SimpleDateFormat(properties.getProperty("graviton.date.format"));
         dateFormat.setTimeZone(TimeZone.getTimeZone(properties.getProperty("graviton.timezone")));
-        setDateFormat(dateFormat);
+        objectMapper.setDateFormat(dateFormat);
+        return objectMapper;
     }
 }

@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase.messaging.mocks;
 
-import com.github.libgraviton.messaging.QueueConnection;
-import com.github.libgraviton.messaging.consumer.Consumer;
-import com.github.libgraviton.messaging.exception.*;
+import com.github.libgraviton.workerbase.messaging.QueueConnection;
+import com.github.libgraviton.workerbase.messaging.consumer.Consumer;
+import com.github.libgraviton.workerbase.messaging.exception.*;
 
 public class MockedQueueConnection extends QueueConnection {
 

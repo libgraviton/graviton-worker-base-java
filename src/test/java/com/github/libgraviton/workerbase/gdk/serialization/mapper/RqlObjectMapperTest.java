@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase.gdk.serialization.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.libgraviton.gdk.data.SimpleClass;
-import com.github.libgraviton.gdk.util.PropertiesLoader;
+import com.github.libgraviton.workerbase.gdk.data.SimpleClass;
+import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
 import org.junit.Test;
 
 import java.util.Calendar;

@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase.gdk.api.endpoint;
 
-import com.github.libgraviton.gdk.util.PropertiesLoader;
+import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
 import org.junit.Before;
 import org.junit.Test;
 
