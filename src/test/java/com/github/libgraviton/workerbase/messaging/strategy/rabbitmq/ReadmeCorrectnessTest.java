@@ -5,8 +5,6 @@ import org.junit.Test;
 
 import java.util.Properties;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.matches;
 import static org.mockito.Mockito.*;
 
 /**

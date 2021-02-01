@@ -9,7 +9,6 @@ import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.rabbitmq.client.Channel;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
-import org.powermock.api.mockito.PowerMockito;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -66,7 +65,7 @@ public abstract class WorkerBaseTestCase {
     protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {
         worker = spy(new Worker(testWorker));
         queueChannel = mock(Channel.class);
-        workerConsumer = PowerMockito.spy(new WorkerConsumer(testWorker));
+        workerConsumer = spy(new WorkerConsumer(testWorker));
         workerConsumer.setAcknowledger(mock(MessageAcknowledger.class));
 
         QueueManager queueManager = mock(QueueManager.class);

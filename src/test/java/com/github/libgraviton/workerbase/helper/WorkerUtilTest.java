@@ -2,14 +2,9 @@ package com.github.libgraviton.workerbase.helper;
 
 import com.github.libgraviton.workerbase.WorkerBaseTestCase;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({com.rabbitmq.client.ConnectionFactory.class})
 public class WorkerUtilTest extends WorkerBaseTestCase {
 
     @Test

@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 public class GeneratedEndpointManagerTest {
 
     @Rule
-    public ExpectedException thrown= ExpectedException.none();
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testLoadAndPersist() throws Exception {

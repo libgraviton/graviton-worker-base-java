@@ -9,8 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +22,6 @@ import static org.mockito.Mockito.*;
  *         <https://github.com/libgraviton/graviton/graphs/contributors>
  * @link http://swisscom.ch
  */
-@RunWith(PowerMockRunner.class)
 public class EventStatusHandlerTest {
 
     private String filterTemplate = "?elemMatch(information,and(eq(content,{requestId}),eq(workerId,{workerId})))&elemMatch(status,and(ne(status,done),eq(workerId,{workerId})))";
