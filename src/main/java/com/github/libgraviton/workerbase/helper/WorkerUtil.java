@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * <p>WorkerUtil class.</p>
@@ -41,7 +42,7 @@ public class WorkerUtil {
      * @throws java.io.UnsupportedEncodingException if any.
      */
     public static String encodeRql(String expr) throws UnsupportedEncodingException {
-        String encoded = URLEncoder.encode(expr, "UTF-8");
+        String encoded = URLEncoder.encode(expr, StandardCharsets.UTF_8.toString());
         encoded = encoded
                 .replace("-", "%2D")
                 .replace("_", "%5F")
