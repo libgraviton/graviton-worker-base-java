@@ -11,9 +11,6 @@ public class WorkerUtilTest {
 
     @Test
     public void testRqlEncoding() throws Exception {
-
-        assertEquals("fred", URLEncoder.encode("hans", StandardCharsets.UTF_8.toString()));
-
         assertEquals(
             "http%3A%2F%2Flocalhost%2Fdude%2Fhans%2Ffreddy%2D1%2C%2D1",
             WorkerUtil.encodeRql("http://localhost/dude/hans/freddy-1,-1")

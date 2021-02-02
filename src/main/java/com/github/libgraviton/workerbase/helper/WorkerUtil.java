@@ -43,7 +43,6 @@ public class WorkerUtil {
      */
     public static String encodeRql(String expr) throws UnsupportedEncodingException {
         String encoded = URLEncoder.encode(expr, StandardCharsets.UTF_8.toString());
-        System.out.println("ENCODED STRING: " +encoded);
         encoded = encoded
                 .replace("-", "%2D")
                 .replace("_", "%5F")
