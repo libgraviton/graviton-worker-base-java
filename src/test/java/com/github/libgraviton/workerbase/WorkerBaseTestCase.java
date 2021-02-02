@@ -13,17 +13,13 @@ import org.junit.Before;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.PrintStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import static org.mockito.Mockito.*;
 
 public abstract class WorkerBaseTestCase {
-    
-    protected final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-    protected final ByteArrayOutputStream errContent = new ByteArrayOutputStream();    
-    
+
     protected Worker worker;
     protected WorkerConsumer workerConsumer;
     protected Channel queueChannel;
@@ -34,9 +30,6 @@ public abstract class WorkerBaseTestCase {
     @SuppressWarnings("unchecked")
     @Before
     public void baseMock() throws Exception {
-        
-        System.setOut(new PrintStream(outContent));
-        System.setErr(new PrintStream(errContent));
 
         Properties properties = PropertiesLoader.load();
         objectMapper = GravitonObjectMapper.getInstance(properties);
@@ -52,7 +45,7 @@ public abstract class WorkerBaseTestCase {
         
         // GET /event/status mock
         String body = FileUtils.readFileToString(
-                new File("src/test/resources/json/statusResponse.json"), Charset.forName("UTF-8"));
+                new File("src/test/resources/json/statusResponse.json"), StandardCharsets.UTF_8);
         Response eventStatusResponse = spy(Response.class);
         eventStatusResponse.setObjectMapper(objectMapper);
         doReturn(body).when(eventStatusResponse).getBody();
