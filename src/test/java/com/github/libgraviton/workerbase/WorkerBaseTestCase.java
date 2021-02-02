@@ -1,29 +1,25 @@
 package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.libgraviton.gdk.api.Response;
-import com.github.libgraviton.gdk.data.GravitonBase;
-import com.github.libgraviton.gdk.serialization.mapper.GravitonObjectMapper;
-import com.github.libgraviton.gdk.util.PropertiesLoader;
-import com.github.libgraviton.messaging.MessageAcknowledger;
+import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
+import com.github.libgraviton.workerbase.gdk.api.Response;
+import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
+import com.github.libgraviton.workerbase.gdk.serialization.mapper.GravitonObjectMapper;
+import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
+import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.rabbitmq.client.Channel;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
-import org.powermock.api.mockito.PowerMockito;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.PrintStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import static org.mockito.Mockito.*;
 
 public abstract class WorkerBaseTestCase {
-    
-    protected final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-    protected final ByteArrayOutputStream errContent = new ByteArrayOutputStream();    
-    
+
     protected Worker worker;
     protected WorkerConsumer workerConsumer;
     protected Channel queueChannel;
@@ -34,12 +30,9 @@ public abstract class WorkerBaseTestCase {
     @SuppressWarnings("unchecked")
     @Before
     public void baseMock() throws Exception {
-        
-        System.setOut(new PrintStream(outContent));
-        System.setErr(new PrintStream(errContent));
 
         Properties properties = PropertiesLoader.load();
-        objectMapper = new GravitonObjectMapper(properties);
+        objectMapper = GravitonObjectMapper.getInstance(properties);
 
         response = mock(Response.class);
         gravitonApi = mock(GravitonAuthApi.class, RETURNS_DEEP_STUBS);
@@ -52,7 +45,7 @@ public abstract class WorkerBaseTestCase {
         
         // GET /event/status mock
         String body = FileUtils.readFileToString(
-                new File("src/test/resources/json/statusResponse.json"), Charset.forName("UTF-8"));
+                new File("src/test/resources/json/statusResponse.json"), StandardCharsets.UTF_8);
         Response eventStatusResponse = spy(Response.class);
         eventStatusResponse.setObjectMapper(objectMapper);
         doReturn(body).when(eventStatusResponse).getBody();
@@ -66,7 +59,7 @@ public abstract class WorkerBaseTestCase {
     protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {
         worker = spy(new Worker(testWorker));
         queueChannel = mock(Channel.class);
-        workerConsumer = PowerMockito.spy(new WorkerConsumer(testWorker));
+        workerConsumer = spy(new WorkerConsumer(testWorker));
         workerConsumer.setAcknowledger(mock(MessageAcknowledger.class));
 
         QueueManager queueManager = mock(QueueManager.class);

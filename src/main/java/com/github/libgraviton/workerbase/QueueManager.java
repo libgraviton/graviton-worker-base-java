@@ -1,9 +1,9 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.messaging.QueueConnection;
-import com.github.libgraviton.messaging.exception.CannotConnectToQueue;
-import com.github.libgraviton.messaging.exception.CannotRegisterConsumer;
-import com.github.libgraviton.messaging.strategy.rabbitmq.RabbitMqConnection;
+import com.github.libgraviton.workerbase.messaging.QueueConnection;
+import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
+import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
+import com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConnection;
 
 import java.util.Properties;
 

@@ -3,9 +3,9 @@
  */
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.GravitonApi;
-import com.github.libgraviton.gdk.api.Response;
-import com.github.libgraviton.gdk.api.header.HeaderBag;
+import com.github.libgraviton.workerbase.gdk.GravitonApi;
+import com.github.libgraviton.workerbase.gdk.api.Response;
+import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
 import com.google.common.collect.AbstractIterator;
 
 import java.net.URLDecoder;

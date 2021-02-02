@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.GravitonFileEndpoint;
-import com.github.libgraviton.gdk.api.Response;
-import com.github.libgraviton.gdk.data.GravitonBase;
+import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
+import com.github.libgraviton.workerbase.gdk.api.Response;
+import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadata;
@@ -11,12 +11,10 @@ import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.lib.TestFileWorker;
 import com.github.libgraviton.workerbase.model.GravitonRef;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import mockit.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -29,11 +27,7 @@ import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.*;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({com.rabbitmq.client.ConnectionFactory.class, WorkerUtil.class})
 public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
     protected Response response1;
@@ -140,23 +134,19 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
     public void testCachedGravitonFileFetching() throws Exception {
         com.github.libgraviton.gdk.gravitondyn.file.document.File file = new com.github.libgraviton.gdk.gravitondyn.file.document.File();
         file.setId("someTestId");
-        mockStatic(WorkerUtil.class);
-        when(WorkerUtil.getGravitonFile(any(GravitonFileEndpoint.class),anyString())).thenReturn(file);
+
+        new MockUp<WorkerUtil>() {
+            @Mock
+            public com.github.libgraviton.gdk.gravitondyn.file.document.File getGravitonFile(Invocation invocation, GravitonFileEndpoint fileEndpoint, String fileUrl) {
+                return file;
+            }
+        };
 
         String file1Url = "testFile1";
-        String file2Url = "testFile2";
         TestFileWorker testFileWorker = prepareTestWorker(new TestFileWorker());
 
         com.github.libgraviton.gdk.gravitondyn.file.document.File firstFile = testFileWorker.getGravitonFile(file1Url);
-        verifyStatic(WorkerUtil.class);
         assertEquals(file, firstFile);
-
-        testFileWorker.getGravitonFile(file1Url);
-        verifyStatic(WorkerUtil.class, never());
-
-        testFileWorker.getGravitonFile(file2Url);
-        verifyStatic(WorkerUtil.class);
-        WorkerUtil.getGravitonFile(any(), anyString());
     }
 
     @Test
@@ -204,6 +194,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
         mockStatic(WorkerUtil.class);
         when(WorkerUtil.getGravitonFile(any(GravitonFileEndpoint.class), anyString())).thenReturn(file);
+        when(WorkerUtil.encodeRql(any())).thenCallRealMethod();
 
         doReturn(noActions).when(testFileWorker).getActionsOfInterest(queueEvent);
         doNothing().when(testFileWorker).removeFileActionCommand(eq(documentUrl), anyString());
