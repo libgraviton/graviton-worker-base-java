@@ -142,7 +142,11 @@ public class Request {
         }
 
         public Builder setBody(String body) {
-            this.body = body.getBytes();
+            if (body != null) {
+                this.body = body.getBytes();
+            } else {
+                this.body = null;
+            }
             return this;
         }
 
