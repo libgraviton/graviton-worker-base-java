@@ -11,7 +11,7 @@ import java.nio.charset.Charset;
 
 public class BasicAuth implements HeaderAuth {
 
-    private static final Logger LOG = LoggerFactory.getLogger(com.github.libgraviton.workerbase.gdk.auth.BasicAuth.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BasicAuth.class);
 
     private String username;
     private String password;
