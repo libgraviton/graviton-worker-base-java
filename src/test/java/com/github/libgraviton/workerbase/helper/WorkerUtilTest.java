@@ -1,11 +1,10 @@
 package com.github.libgraviton.workerbase.helper;
 
-import com.github.libgraviton.workerbase.WorkerBaseTestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class WorkerUtilTest extends WorkerBaseTestCase {
+public class WorkerUtilTest {
 
     @Test
     public void testRqlEncoding() throws Exception {        
