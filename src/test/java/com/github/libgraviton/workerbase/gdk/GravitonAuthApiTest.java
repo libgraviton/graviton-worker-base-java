@@ -1,4 +1,4 @@
-package com.github.libgraviton.workerbase;
+package com.github.libgraviton.workerbase.gdk;
 
 import com.github.libgraviton.workerbase.gdk.api.header.Header;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;

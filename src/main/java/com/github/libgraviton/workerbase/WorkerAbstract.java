@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase;
 
+import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
-import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusInformation;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatusAction;
 import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventStatusAction;
