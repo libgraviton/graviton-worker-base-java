@@ -54,18 +54,23 @@
   </distributionManagement>
 
   <dependencies>
-    <!--
+    <!-- logging -->
     <dependency>
-      <groupId>com.github.libgraviton</groupId>
-      <artifactId>messaging</artifactId>
-      <version>0.5.0</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.14.0</version>
     </dependency>
-    -->
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.2.3</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.14.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>2.14.0</version>
+    </dependency>
+
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
@@ -111,10 +116,10 @@
     </dependency>
     <dependency>
       <groupId>io.sentry</groupId>
-      <artifactId>sentry-logback</artifactId>
-      <version>1.7.30</version>
+      <artifactId>sentry-log4j2</artifactId>
+      <version>4.0.0</version>
       <exclusions>
-        <exclusion>  <!-- declare the exclusion here -->
+        <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>*</artifactId>
         </exclusion>
