@@ -45,6 +45,17 @@
     <jmockit.version>1.49</jmockit.version>
   </properties>
 
+  <repositories>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>bintray-libgraviton-maven</id>
+      <name>bintray</name>
+      <url>https://dl.bintray.com/libgraviton/maven</url>
+    </repository>
+  </repositories>
+
   <distributionManagement>
     <repository>
       <id>bintray-libgraviton-maven</id>
