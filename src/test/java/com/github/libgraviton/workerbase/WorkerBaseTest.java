@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.exception.UnsuccessfulResponseException;
+import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatusAction;
@@ -14,9 +14,6 @@ import com.github.libgraviton.workerbase.model.QueueEvent;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,8 +24,6 @@ import java.util.List;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({com.rabbitmq.client.ConnectionFactory.class})
 public class WorkerBaseTest extends WorkerBaseTestCase {
 
     @Before

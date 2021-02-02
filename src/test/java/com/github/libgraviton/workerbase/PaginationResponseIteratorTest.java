@@ -1,14 +1,11 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.gdk.api.Response;
-import com.github.libgraviton.gdk.api.header.HeaderBag;
-import com.github.libgraviton.gdk.data.GravitonBase;
+import com.github.libgraviton.workerbase.gdk.api.Response;
+import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
+import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -17,8 +14,6 @@ import java.util.Map;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({com.rabbitmq.client.ConnectionFactory.class})
 public class PaginationResponseIteratorTest extends WorkerBaseTestCase {
 
     Response response;
@@ -98,7 +93,5 @@ public class PaginationResponseIteratorTest extends WorkerBaseTestCase {
         verify(response, times(2)).getHeaders();
         
         assertEquals(4, counter);
-    }    
- 
-
+    }
 }

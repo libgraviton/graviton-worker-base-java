@@ -3,12 +3,12 @@
  */
 package com.github.libgraviton.workerbase.helper;
 
-import com.github.libgraviton.gdk.GravitonFileEndpoint;
-import com.github.libgraviton.gdk.api.Response;
-import com.github.libgraviton.gdk.api.gateway.OkHttpGateway;
-import com.github.libgraviton.gdk.api.gateway.okhttp.OkHttpGatewayFactory;
-import com.github.libgraviton.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
+import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
+import com.github.libgraviton.workerbase.gdk.api.Response;
+import com.github.libgraviton.workerbase.gdk.api.gateway.OkHttpGateway;
+import com.github.libgraviton.workerbase.gdk.api.gateway.okhttp.OkHttpGatewayFactory;
+import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * <p>WorkerUtil class.</p>
@@ -41,7 +42,7 @@ public class WorkerUtil {
      * @throws java.io.UnsupportedEncodingException if any.
      */
     public static String encodeRql(String expr) throws UnsupportedEncodingException {
-        String encoded = URLEncoder.encode(expr, "UTF-8");
+        String encoded = URLEncoder.encode(expr, StandardCharsets.UTF_8.toString());
         encoded = encoded
                 .replace("-", "%2D")
                 .replace("_", "%5F")

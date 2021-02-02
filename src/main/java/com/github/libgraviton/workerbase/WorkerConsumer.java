@@ -5,9 +5,9 @@
 package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.jr.ob.JSON;
-import com.github.libgraviton.messaging.MessageAcknowledger;
-import com.github.libgraviton.messaging.consumer.AcknowledgingConsumer;
-import com.github.libgraviton.messaging.exception.CannotConsumeMessage;
+import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
+import com.github.libgraviton.workerbase.messaging.consumer.AcknowledgingConsumer;
+import com.github.libgraviton.workerbase.messaging.exception.CannotConsumeMessage;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
 import java.io.IOException;
