@@ -10,4 +10,6 @@ public interface GravitonGateway {
 
     void forceHttp1();
 
+    void doTrustEverybody() throws Exception;
+
 }

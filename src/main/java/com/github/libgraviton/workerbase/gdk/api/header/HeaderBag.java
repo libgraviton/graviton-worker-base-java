@@ -1,18 +1,12 @@
 package com.github.libgraviton.workerbase.gdk.api.header;
 
-import com.github.libgraviton.workerbase.gdk.api.header.Header;
-import com.github.libgraviton.workerbase.gdk.api.header.LinkHeader;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HeaderBag {
 
-    private Map<String, Header> headers;
+    private final Map<String, Header> headers;
 
     private HeaderBag(Map<String, Header> headers) {
         this.headers = new HashMap<>(headers);
@@ -27,6 +21,10 @@ public class HeaderBag {
             headers.put(headerName, new Header());
         }
         return headers.get(headerName);
+    }
+
+    public void set(String headerName, String headerValue) {
+        headers.put(headerName, new Header(Arrays.asList(headerValue)));
     }
 
     public String getLink(LinkHeader linkHeader) {

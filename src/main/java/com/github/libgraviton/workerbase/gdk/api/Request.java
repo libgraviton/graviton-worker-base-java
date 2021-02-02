@@ -151,6 +151,15 @@ public class Request {
             return this;
         }
 
+        /**
+         * return the body.
+         *
+         * @return body
+         */
+        public String getBody() {
+            return body == null ? null : new String(body);
+        }
+
         public Builder setParts(List<Part> parts) {
             this.parts = parts;
             return this;

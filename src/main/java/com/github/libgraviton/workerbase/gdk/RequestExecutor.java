@@ -8,6 +8,8 @@ import com.github.libgraviton.workerbase.gdk.api.gateway.OkHttpGateway;
 import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
+import com.github.libgraviton.workerbase.gdk.requestexecutor.auth.Authenticator;
+import com.github.libgraviton.workerbase.gdk.requestexecutor.exception.AuthenticatorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +34,8 @@ public class RequestExecutor {
      */
     protected GravitonGateway gateway;
 
+    protected Authenticator authenticator;
+
     public RequestExecutor() {
         this(new ObjectMapper());
     }
@@ -41,11 +45,31 @@ public class RequestExecutor {
         this.objectMapper = objectMapper;
     }
 
+    public Authenticator getAuthenticator() {
+        return authenticator;
+    }
+
+    public void setAuthenticator(Authenticator authenticator) {
+        this.authenticator = authenticator;
+    }
+
+    public void doTrustEverybody() {
+        try {
+            gateway.doTrustEverybody();
+        } catch (Exception e) {
+            LOG.error("Could not trust everybody", e);
+        }
+
+        LOG.info("We are going to trust all certificates...");
+    }
+
     /**
      * forces HTTP1 on the request execution
      */
     public void forceHttp1() {
         gateway.forceHttp1();
+
+        LOG.info("Forcing HTTP/1.*");
     }
 
     /**
@@ -58,6 +82,14 @@ public class RequestExecutor {
      * @throws CommunicationException If the request was not successful
      */
     public Response execute(Request request) throws CommunicationException {
+        if (authenticator != null) {
+            try {
+                request = authenticator.onRequest(request);
+            } catch (AuthenticatorException e) {
+                throw new CommunicationException("Authenticator exception", e);
+            }
+        }
+
         LOG.info(String.format("Starting '%s' to '%s'...", request.getMethod(), request.getUrl()));
         if(LOG.isDebugEnabled()) {
             logBody(request);
@@ -78,6 +110,16 @@ public class RequestExecutor {
             throw new UnsuccessfulResponseException(response);
         }
         return response;
+    }
+
+    public void close() {
+        if (authenticator != null) {
+            try {
+                authenticator.onClose();
+            } catch (AuthenticatorException e) {
+                LOG.error("Error on Authenticator.close()", e);
+            }
+        }
     }
 
     protected void logBody(Request request) {
@@ -112,6 +154,10 @@ public class RequestExecutor {
 
     public void setGateway(GravitonGateway gateway) {
         this.gateway = gateway;
+    }
+
+    public GravitonGateway getGateway() {
+        return gateway;
     }
 
     public void setObjectMapper(ObjectMapper objectMapper) {

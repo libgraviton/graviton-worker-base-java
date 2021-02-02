@@ -9,7 +9,7 @@ public class Header implements Iterable<String> {
     private List<String> values;
 
     public Header() {
-        this(new ArrayList<String>());
+        this(new ArrayList<>());
     }
 
     public Header(List<String> values) {

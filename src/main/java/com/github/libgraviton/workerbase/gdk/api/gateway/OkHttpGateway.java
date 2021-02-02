@@ -2,7 +2,6 @@ package com.github.libgraviton.workerbase.gdk.api.gateway;
 
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.Response;
-import com.github.libgraviton.workerbase.gdk.api.gateway.GravitonGateway;
 import com.github.libgraviton.workerbase.gdk.api.gateway.okhttp.OkHttpGatewayFactory;
 import com.github.libgraviton.workerbase.gdk.api.header.Header;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
@@ -34,25 +33,26 @@ public class OkHttpGateway implements GravitonGateway {
         this.okHttp = okHttp.newBuilder().protocols(Collections.singletonList(Protocol.HTTP_1_1)).build();
     }
 
+    public void doTrustEverybody() throws Exception {
+        this.okHttp = OkHttpGatewayFactory.getAllTrustingInstance(false, okHttp);
+    }
+
     public OkHttpClient getOkHttp() {
         return okHttp;
     }
 
     public Response execute(Request request) throws CommunicationException {
         okhttp3.Request okHttpRequest = generateRequest(request);
-        okhttp3.Response okHttpResponse;
-        byte[] body;
-        try {
-            okHttpResponse = okHttp.newCall(okHttpRequest).execute();
-            body = okHttpResponse.body().bytes();
+
+        try (okhttp3.Response okHttpResponse = okHttp.newCall(okHttpRequest).execute()) {
+            byte[] body = okHttpResponse.body().bytes();
+            return generateResponse(request, okHttpResponse, body);
         } catch (IOException e) {
             throw new UnsuccessfulRequestException(
                     String.format("'%s' to '%s' failed.", request.getMethod(), request.getUrl()),
                     e
             );
         }
-
-        return generateResponse(request, okHttpResponse, body);
     }
 
     private okhttp3.Request generateRequest(Request request) {
