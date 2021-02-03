@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -109,8 +109,12 @@
       <artifactId>zjsonpatch</artifactId>
       <version>0.4.11</version>
       <exclusions>
-        <exclusion>  <!-- declare the exclusion here -->
+        <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
@@ -132,6 +136,14 @@
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.module</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
