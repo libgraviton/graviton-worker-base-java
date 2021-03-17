@@ -28,6 +28,8 @@ public class Request {
 
     protected List<Part> parts;
 
+    protected Map<String, String> params = new HashMap<>();
+
     protected Request() {
     }
 
@@ -37,6 +39,7 @@ public class Request {
         headers = builder.headerBuilder.build();
         body = builder.body;
         parts = builder.parts;
+        params = builder.params;
     }
 
     public URL getUrl() {
@@ -61,6 +64,10 @@ public class Request {
 
     public List<Part> getParts() {
         return parts;
+    }
+
+    public Map<String, String> getParams() {
+        return params;
     }
 
     public boolean isMultipartRequest() {
@@ -102,6 +109,10 @@ public class Request {
             return this;
         }
 
+        public String getUrl() {
+            return url;
+        }
+
         public Builder addParam(String paramName, String paramValue) {
             params.put(paramName, paramValue);
             return this;
@@ -112,9 +123,17 @@ public class Request {
             return this;
         }
 
+        public Map<String, String> getParams() {
+            return params;
+        }
+
         public Builder setMethod(HttpMethod method) {
             this.method = method;
             return this;
+        }
+
+        public HttpMethod getMethod() {
+            return method;
         }
 
         public Builder addHeader(String headerName, String headerValue) {
@@ -129,6 +148,10 @@ public class Request {
         public Builder setHeaders(HeaderBag headerBag) {
             headerBuilder = new HeaderBag.Builder(headerBag);
             return this;
+        }
+
+        public HeaderBag.Builder getHeaders() {
+            return headerBuilder;
         }
 
         public Builder setQuery(Query query) {
@@ -172,6 +195,10 @@ public class Request {
         public Builder addPart(Part part) {
             this.parts.add(part);
             return this;
+        }
+
+        public List<Part> getParts() {
+            return parts;
         }
 
         public Builder head() {
@@ -240,10 +267,5 @@ public class Request {
 
             return new URL(url);
         }
-
-        protected Map<String, String> getParams() {
-            return params;
-        }
     }
-
 }
