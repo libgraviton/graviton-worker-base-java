@@ -13,11 +13,8 @@ import com.github.libgraviton.workerbase.messaging.exception.CannotAcknowledgeMe
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
-import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import okhttp3.HttpUrl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,13 +28,7 @@ import java.util.Properties;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-public abstract class WorkerAbstract {
-
-    private static final Logger LOG = LoggerFactory.getLogger(WorkerAbstract.class);
-
-    protected Properties properties;
-
-    protected String workerId;
+public abstract class WorkerAbstract extends BaseWorker implements QueueWorkerInterface {
 
     protected EventStatusHandler statusHandler;
 
@@ -53,27 +44,8 @@ public abstract class WorkerAbstract {
 
     protected GravitonAuthApi gravitonApi;
 
-    public Properties getProperties() {
-        return properties;
-    }
-
-    public String getWorkerId() {
-        return workerId;
-    }
-
     public Boolean getRegistered() {
         return isRegistered;
-    }
-
-
-    /**
-     * detects if an object is run from inside of a jar file.
-     *
-     * @param obj object to test
-     * @return true if worker is run from a jar file else false
-     */
-    public static boolean isWorkerStartedFromJARFile(Object obj) {
-        return WorkerUtil.isJarContext(obj);
     }
 
     /**
@@ -104,23 +76,12 @@ public abstract class WorkerAbstract {
      * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
      *
      */
+    @Override
     public final void initialize(Properties properties) throws WorkerException, GravitonCommunicationException  {
-        this.properties = properties;
-
-        try {
-            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    LOG.error("Uncaught Exception", e);
-                }
-            });
-        } catch (SecurityException e) {
-            LOG.error("Could not set the Default Uncaught Exception Handler", e);
-        }
+        super.initialize(properties);
 
         gravitonApi = initGravitonApi();
         statusHandler = new EventStatusHandler(gravitonApi);
-        workerId = properties.getProperty("graviton.workerId");
 
         if (shouldAutoRegister()) {
             register();
@@ -296,15 +257,6 @@ public abstract class WorkerAbstract {
      */
     public Boolean shouldUseTransientHeaders() {
         return true;
-    }
-
-    /**
-     * will be called after we're initialized, can contain some initial logic in the worker.
-     *
-     * @throws WorkerException when a problem occurs that prevents the Worker from working properly
-     */
-    public void onStartUp() throws WorkerException
-    {
     }
 
     /**

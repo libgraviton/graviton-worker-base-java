@@ -63,7 +63,7 @@ public abstract class WorkerBaseTestCase {
         workerConsumer.setAcknowledger(mock(MessageAcknowledger.class));
 
         QueueManager queueManager = mock(QueueManager.class);
-        doReturn(queueManager).when(worker).getQueueManager();
+        //doReturn(queueManager).when(worker).getQueueManager();
         doNothing().when(queueManager).connect(any(WorkerAbstract.class));
 
         return worker;

@@ -4,8 +4,6 @@
 
 package com.github.libgraviton.workerbase;
 
-import com.fasterxml.jackson.jr.ob.JSON;
-import com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
@@ -15,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -32,21 +29,14 @@ public class Worker {
     /**
      * properties
      */
-    private Properties properties;
+    private final Properties properties;
     
     /**
      * worker
      */
     private WorkerAbstract worker;
-    
-    /**
-     * constructor
-     *
-     * @param worker worker instance
-     * @throws WorkerException if setup failed.
-     * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
-     */
-    public Worker(WorkerAbstract worker) throws WorkerException, GravitonCommunicationException {
+
+    public Worker(WorkerInterface worker) throws Exception {
         try {
             properties = PropertiesLoader.load(worker);
         } catch (IOException e) {
@@ -54,9 +44,38 @@ public class Worker {
         }
 
         LOG.info("Starting " + properties.getProperty("application.name") + " " + properties.getProperty("application.version"));
+
         worker.initialize(properties);
         worker.onStartUp();
+    }
+
+    /**
+     * constructor for "normal" queue based workers..
+     *
+     * @param worker worker instance
+     * @throws WorkerException if setup failed.
+     * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
+     */
+    public Worker(WorkerAbstract worker) throws Exception {
+        this((WorkerInterface) worker);
         this.worker = worker;
+    }
+
+    /**
+     * constructor for standalone workers
+     *
+     * @param worker worker instance
+     * @throws WorkerException if setup failed.
+     * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
+     */
+    public Worker(StandaloneWorker worker) throws Exception {
+        this((WorkerInterface) worker);
+        worker.run();
+    }
+
+    private void initWorker(WorkerInterface worker) throws Exception {
+        worker.initialize(properties);
+        worker.onStartUp();
     }
     
     /**
@@ -64,39 +83,16 @@ public class Worker {
      *
      * @throws WorkerException If connecting to queue is impossible
      */
-    public void run() throws WorkerException {
-        try {
-            applyVcapConfig();
-        } catch (IOException e) {
-            LOG.warn("Unable to load vcap config. Skip this step.");
+    public void run() throws Exception {
+        if (worker == null) {
+            throw new WorkerException("No worker set to be run in the traditional way...");
         }
-        QueueManager queueManager = getQueueManager();
+
+        QueueManager queueManager = worker.getQueueManager();
         try {
             queueManager.connect(worker);
         } catch (CannotConnectToQueue | CannotRegisterConsumer e) {
             throw new WorkerException("Unable to initialize worker.", e);
-        }
-    }
-
-    /**
-     * Let's see if we have VCAP ENV vars that we should apply to configuration
-     *
-     */
-    private void applyVcapConfig() throws IOException {
-        String vcap = this.getVcap();
-        if (vcap != null) {
-            DeferredMap vcapConf = (DeferredMap) JSON.std.anyFrom(vcap);
-            if (vcapConf.containsKey("rabbitmq-3.0")) {
-                @SuppressWarnings("unchecked")
-                DeferredMap vcapCreds = ((ArrayList<DeferredMap>) vcapConf.get("rabbitmq-3.0")).get(0);
-                vcapCreds = (DeferredMap) vcapCreds.get("credentials");
-
-                properties.setProperty("queue.host", vcapCreds.get("host").toString());
-                properties.setProperty("queue.port", vcapCreds.get("port").toString());
-                properties.setProperty("queue.user", vcapCreds.get("user").toString());
-                properties.setProperty("queue.password", vcapCreds.get("password").toString());
-                properties.setProperty("queue.virtualhost", vcapCreds.get("virtualhost").toString());
-            }
         }
     }
 
@@ -107,18 +103,5 @@ public class Worker {
      */
     public Properties getProperties() {
         return properties;
-    }
-    
-    /**
-     * Getter for vcap config
-     *
-     * @return vcap variable
-     */
-    public String getVcap() {
-        return System.getenv("VCAP_SERVICES");
-    }
-
-    public QueueManager getQueueManager() {
-        return worker.getQueueManager();
     }
 }
