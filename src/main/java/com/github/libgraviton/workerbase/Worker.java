@@ -44,6 +44,9 @@ public class Worker {
         }
 
         LOG.info("Starting " + properties.getProperty("application.name") + " " + properties.getProperty("application.version"));
+
+        worker.initialize(properties);
+        worker.onStartUp();
     }
 
     /**
@@ -67,7 +70,6 @@ public class Worker {
      */
     public Worker(StandaloneWorker worker) throws Exception {
         this((WorkerInterface) worker);
-        initWorker(worker);
         worker.run();
     }
 
@@ -82,8 +84,6 @@ public class Worker {
      * @throws WorkerException If connecting to queue is impossible
      */
     public void run() throws Exception {
-        initWorker(worker);
-
         if (worker == null) {
             throw new WorkerException("No worker set to be run in the traditional way...");
         }
