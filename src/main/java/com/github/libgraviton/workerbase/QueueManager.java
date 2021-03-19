@@ -34,7 +34,7 @@ public class QueueManager {
      * @throws CannotConnectToQueue if connection to queue cannot be established
      * @throws CannotRegisterConsumer if connection was successfully established, but consumer registration failed
      */
-    public void connect(WorkerAbstract worker) throws CannotConnectToQueue, CannotRegisterConsumer {
+    public void connect(QueueWorkerInterface worker) throws CannotConnectToQueue, CannotRegisterConsumer {
         connection.consume(new WorkerConsumer(worker));
     }
 }

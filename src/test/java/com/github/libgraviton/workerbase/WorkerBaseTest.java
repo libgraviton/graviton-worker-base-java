@@ -200,27 +200,6 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         String message = FileUtils.readFileToString(new File(jsonFile.getFile()), Charset.forName("UTF-8"));
         workerConsumer.consume("34343", message);
     }
-    
-    @Test
-    public void testVcapConfiguration() throws Exception {
-        
-        TestWorker testWorker = prepareTestWorker(new TestWorker());
-        worker = getWrappedWorker(testWorker);
-        
-        String vcapCreds = "{\"rabbitmq-3.0\": [{\"credentials\": {\"host\": \"test\", \"port\": 32321,"+
-                "\"user\": \"hansuser\", \"password\": \"hans22\", \"virtualhost\": \"hanshost\"}}]}";
-        
-        when(worker.getVcap())
-        .thenReturn(vcapCreds);        
-        
-        worker.run();
-
-        assertEquals("test", worker.getProperties().getProperty("queue.host"));
-        assertEquals("32321", worker.getProperties().getProperty("queue.port"));
-        assertEquals("hansuser", worker.getProperties().getProperty("queue.user"));
-        assertEquals("hans22", worker.getProperties().getProperty("queue.password"));
-        assertEquals("hanshost", worker.getProperties().getProperty("queue.virtualhost"));
-    }
 
     @Test
     public void testIsTerminatedState() throws Exception {

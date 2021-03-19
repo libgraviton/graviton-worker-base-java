@@ -21,7 +21,7 @@ import java.io.IOException;
  */
 public class WorkerConsumer implements AcknowledgingConsumer {
 
-    private WorkerAbstract worker;
+    private QueueWorkerInterface worker;
 
     private MessageAcknowledger acknowledger;
 
@@ -30,7 +30,7 @@ public class WorkerConsumer implements AcknowledgingConsumer {
      *
      * @param worker worker
      */
-    public WorkerConsumer(WorkerAbstract worker) {
+    public WorkerConsumer(QueueWorkerInterface worker) {
         this.worker = worker;
     }
 
