@@ -3,5 +3,7 @@ jdk:
   - openjdk8
   - openjdk13
 dist: bionic
+services:
+  - rabbitmq
 after_success:
   - mvn clean -DTRAVIS_JOB_ID=$TRAVIS_JOB_ID cobertura:cobertura coveralls:report
