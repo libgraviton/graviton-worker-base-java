@@ -9,6 +9,7 @@ import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsu
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.PropertiesLoader;
+import io.prometheus.client.exporter.HTTPServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,12 +71,27 @@ public class Worker {
      */
     public Worker(StandaloneWorker worker) throws Exception {
         this((WorkerInterface) worker);
+        initPrometheus();
         worker.run();
     }
 
     private void initWorker(WorkerInterface worker) throws Exception {
         worker.initialize(properties);
         worker.onStartUp();
+    }
+
+    /**
+     * initializes our simple httpserver for prom metrics
+     *
+     * @throws IOException
+     */
+    private void initPrometheus() {
+        try {
+            HTTPServer server = new HTTPServer(9999);
+            LOG.info("Started prometheus HTTPServer for metrics on http://*:9999/metrics");
+        } catch (Throwable t) {
+            LOG.error("Could not start prometheus metrics HTTPServer", t);
+        }
     }
     
     /**
@@ -87,6 +103,8 @@ public class Worker {
         if (worker == null) {
             throw new WorkerException("No worker set to be run in the traditional way...");
         }
+
+        initPrometheus();
 
         QueueManager queueManager = worker.getQueueManager();
         try {
