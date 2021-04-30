@@ -85,9 +85,13 @@ public class Worker {
      *
      * @throws IOException
      */
-    private void initPrometheus() throws IOException {
-        HTTPServer server = new HTTPServer(9999);
-        LOG.info("Started prometheus HTTPServer for metrics on http://*:9999/metrics");
+    private void initPrometheus() {
+        try {
+            HTTPServer server = new HTTPServer(9999);
+            LOG.info("Started prometheus HTTPServer for metrics on http://*:9999/metrics");
+        } catch (Throwable t) {
+            LOG.error("Could not start prometheus metrics HTTPServer", t);
+        }
     }
     
     /**
