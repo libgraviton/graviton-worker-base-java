@@ -1,6 +1,6 @@
 # graviton-worker-base-java
 
-[![Build Status](https://travis-ci.org/libgraviton/graviton-worker-base-java.svg?branch=develop)](https://travis-ci.org/libgraviton/graviton-worker-base-java) [![Coverage Status](https://coveralls.io/repos/libgraviton/graviton-worker-base-java/badge.svg?branch=develop&service=github)](https://coveralls.io/github/libgraviton/graviton-worker-base-java?branch=develop) [ ![Download](https://api.bintray.com/packages/libgraviton/maven/graviton-worker-base-java/images/download.svg) ](https://bintray.com/libgraviton/maven/graviton-worker-base-java/_latestVersion) 
+[![Build Status](https://travis-ci.org/libgraviton/graviton-worker-base-java.svg?branch=develop)](https://travis-ci.org/libgraviton/graviton-worker-base-java) [![Coverage Status](https://coveralls.io/repos/libgraviton/graviton-worker-base-java/badge.svg?branch=develop&service=github)](https://coveralls.io/github/libgraviton/graviton-worker-base-java?branch=develop)
 
 ## What is it
 
