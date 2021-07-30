@@ -18,8 +18,12 @@ public class PrometheusServer {
 
   private static final Logger LOG = LoggerFactory.getLogger(PrometheusServer.class);
 
+  private static boolean started = false;
+
   public PrometheusServer(Properties properties) {
-    init(properties.getProperty("prom.jvm", "false").equals("true"));
+    if (!started) {
+      init(properties.getProperty("prom.jvm", "false").equals("true"));
+    }
   }
 
   private void init(boolean loadJvmMetrics) {
@@ -29,6 +33,8 @@ public class PrometheusServer {
     } catch (Throwable t) {
       LOG.error("Could not start prometheus metrics HTTPServer", t);
     }
+
+    started = true;
 
     // load jvm metrics?
     if (!loadJvmMetrics) {
