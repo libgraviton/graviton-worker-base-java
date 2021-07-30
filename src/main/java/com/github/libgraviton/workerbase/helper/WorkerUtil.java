@@ -10,6 +10,14 @@ import com.github.libgraviton.workerbase.gdk.api.gateway.OkHttpGateway;
 import com.github.libgraviton.workerbase.gdk.api.gateway.okhttp.OkHttpGatewayFactory;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +40,26 @@ public class WorkerUtil {
     public static final int RETRY_COUNT = 5;
 
     public static final int SEC_WAIT_BEFORE_RETRY = 3;
+
+    // create a trust manager that does not validate certificate chains
+    final private static TrustManager[] trustAllCerts = new TrustManager[]{
+        new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                String i;
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                String i;
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+        }
+    };
 
     /**
      * <p>encodeRql.</p>
@@ -138,5 +166,22 @@ public class WorkerUtil {
 
     public static OkHttpGateway getAllTrustingGatewayInstance(OkHttpClient okHttpClient) throws Exception {
         return new OkHttpGateway(OkHttpGatewayFactory.getAllTrustingInstance(false, okHttpClient));
+    }
+
+    public static SSLSocketFactory getAllTrustingSocketFactory(String algo)
+        throws NoSuchAlgorithmException, KeyManagementException {
+        SSLContext sslContext = SSLContext.getInstance(algo);
+        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+        return sslContext.getSocketFactory();
+    }
+
+    public static SSLSocketFactory getAllTrustingSocketFactory()
+        throws NoSuchAlgorithmException, KeyManagementException {
+        return getAllTrustingSocketFactory("SSL");
+    }
+
+    public static TrustManager[] getAllTrustingTrustManagers() {
+        return trustAllCerts;
     }
 }
