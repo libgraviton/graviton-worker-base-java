@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>1.5.1</version>
+  <version>1.5.2</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -40,8 +40,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <dependency.locations.enabled>false</dependency.locations.enabled>
     <dependency.details.enabled>false</dependency.details.enabled>
-    <jackson-jr.version>2.13.0</jackson-jr.version>
-    <log4j.version>2.16.0</log4j.version>
+    <jackson-jr.version>2.13.1</jackson-jr.version>
+    <log4j.version>2.17.0</log4j.version>
+    <promclient.version>0.14.1</promclient.version>
 
     <jmockit.version>1.49</jmockit.version>
   </properties>
@@ -123,7 +124,7 @@
     <dependency>
       <groupId>com.rabbitmq</groupId>
       <artifactId>amqp-client</artifactId>
-      <version>5.13.0</version>
+      <version>5.14.0</version>
     </dependency>
     <dependency>
       <groupId>javax.jms</groupId>
@@ -195,22 +196,22 @@
     <dependency>
       <groupId>io.prometheus</groupId>
       <artifactId>simpleclient</artifactId>
-      <version>0.12.0</version>
+      <version>${promclient.version}</version>
     </dependency>
     <dependency>
       <groupId>io.prometheus</groupId>
       <artifactId>simpleclient_httpserver</artifactId>
-      <version>0.12.0</version>
+      <version>${promclient.version}</version>
     </dependency>
     <dependency>
       <groupId>io.prometheus</groupId>
       <artifactId>simpleclient_servlet</artifactId>
-      <version>0.12.0</version>
+      <version>${promclient.version}</version>
     </dependency>
     <dependency>
       <groupId>io.prometheus</groupId>
       <artifactId>simpleclient_hotspot</artifactId>
-      <version>0.12.0</version>
+      <version>${promclient.version}</version>
     </dependency>
 
     <!-- test -->
