@@ -39,9 +39,17 @@ public class Worker {
 
     public Worker(WorkerInterface worker) throws Exception {
         try {
+            LOG.info(
+                "Initializing properties. Java runtime '{}', version '{}', TZ '{}'",
+                System.getProperty("java.runtime.name"),
+                System.getProperty("java.runtime.version"),
+                System.getProperty("user.timezone")
+            );
+
             properties = PropertiesLoader.load(worker);
-        } catch (IOException e) {
-            throw new WorkerException(e);
+        } catch (Throwable t) {
+            LOG.error("Error loading properties", t);
+            throw new WorkerException(t);
         }
 
         LOG.info("Starting " + properties.getProperty("application.name") + " " + properties.getProperty("application.version"));
