@@ -26,8 +26,15 @@ public class EventStatusHandler {
 
     protected GravitonApi gravitonApi;
 
+    final int retryLimit;
+
     public EventStatusHandler(GravitonApi gravitonApi) {
+        this(gravitonApi, 15);
+    }
+
+    public EventStatusHandler(GravitonApi gravitonApi, int retryLimit) {
         this.gravitonApi = gravitonApi;
+        this.retryLimit = retryLimit;
     }
 
     /**
@@ -125,10 +132,28 @@ public class EventStatusHandler {
     }
 
     public EventStatus getEventStatusFromUrl(String url) throws GravitonCommunicationException {
+        return getEventStatusFromUrl(url, 0);
+    }
+
+    private EventStatus getEventStatusFromUrl(String url, int retryCount) throws GravitonCommunicationException {
         try {
             Response response = gravitonApi.get(url).execute();
             return response.getBodyItem(EventStatus.class);
         } catch (CommunicationException e) {
+            if (retryCount < retryLimit) {
+                LOG.warn(
+                        "Could not get EventStatus at url {} - will retry up to {} times, currently retried {} times.",
+                        url,
+                        retryLimit,
+                        retryCount
+                );
+                try {
+                    Thread.sleep(1000);
+                } catch (Throwable t) {
+                    // ignored
+                }
+                return getEventStatusFromUrl(url, retryCount+1);
+            }
             throw new GravitonCommunicationException("Failed to GET event status from '" + url + "'.", e);
         }
     }
@@ -165,6 +190,10 @@ public class EventStatusHandler {
      * @throws GravitonCommunicationException when Event Status cannot be retrieved from Graviton
      */
     public List<EventStatus> findEventStatus(String filter) throws GravitonCommunicationException {
+        return findEventStatus(filter, 0);
+    }
+
+    private List<EventStatus> findEventStatus(String filter, int retryCount) throws GravitonCommunicationException {
         String eventStatusEndpointUrl = gravitonApi
                 .getEndpointManager()
                 .getEndpoint(EventStatus.class.getName())
@@ -174,6 +203,21 @@ public class EventStatusHandler {
             Response response = gravitonApi.get(eventStatusEndpointUrl + filter).execute();
             return response.getBodyItems(EventStatus.class);
         } catch (CommunicationException e) {
+            if (retryCount < retryLimit) {
+                LOG.warn(
+                        "Could not get EventStatus with filter {} - will retry up to {} times, currently retried {} times.",
+                        filter,
+                        retryLimit,
+                        retryCount
+                );
+                try {
+                    Thread.sleep(1000);
+                } catch (Throwable t) {
+                    // ignored
+                }
+                return findEventStatus(filter, retryCount+1);
+            }
+
             throw new GravitonCommunicationException("Could not GET matching EventStatus for filter '" + filter + "'.", e);
         }
     }
