@@ -61,37 +61,38 @@ public class PropertiesLoader {
         Properties properties = new Properties();
 
         try (InputStream defaultProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(DEFAULT_PROPERTIES_PATH)) {
+            LOG.info("Loading default properties from file '{}'", DEFAULT_PROPERTIES_PATH);
             properties.load(defaultProperties);
-            LOG.info("Loaded default properties from file '{}'", DEFAULT_PROPERTIES_PATH);
         }
 
         try (InputStream overwriteProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(OVERWRITE_PROPERTIES_PATH)) {
             if (overwriteProperties != null) {
+                LOG.info("Loading overwrite properties from file '{}'", OVERWRITE_PROPERTIES_PATH);
                 properties.load(overwriteProperties);
-                LOG.info("Loaded overwrite properties from file '{}'", OVERWRITE_PROPERTIES_PATH);
             }
         }
 
         String systemPropertiesPath = System.getProperty(SYSTEM_PROPERTY);
         if (systemPropertiesPath != null) {
             try (InputStream overwriteProperties = new FileInputStream(systemPropertiesPath)) {
+                LOG.info("Loading system properties from file '{}'", SYSTEM_PROPERTY);
                 properties.load(overwriteProperties);
-                LOG.info("Loaded system properties from file '{}'", SYSTEM_PROPERTY);
+
             }
         }
 
         try (InputStream overwriteJarProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(OVERWRITE_PROPERTIES_JAR_PATH)) {
             if (overwriteJarProperties != null && WorkerUtil.isJarContext(initClass)) {
+                LOG.info("Loading JAR runtime default properties from file '{}'", OVERWRITE_PROPERTIES_JAR_PATH);
                 properties.load(overwriteJarProperties);
-                LOG.info("Loaded JAR runtime default properties from file '{}'", OVERWRITE_PROPERTIES_JAR_PATH);
             }
         }
 
+        LOG.info("Loading system properties (command line args)");
         properties.putAll(System.getProperties());
-        LOG.info("Loaded system properties (command line args)");
 
-        properties = addFromEnvironment(properties, env);
-        LOG.info("Loaded from ENV");
+        LOG.info("Loading from ENV");
+        addFromEnvironment(properties, env);
 
         return properties;
     }
@@ -102,7 +103,7 @@ public class PropertiesLoader {
      * @param map
      * @return
      */
-    public static Properties addFromEnvironment(Properties properties, Map<String, String> map) {
+    public static void addFromEnvironment(Properties properties, Map<String, String> map) {
         for (Map.Entry<String, String> entry : map.entrySet()) {
             if (entry.getKey().startsWith(ENV_PREFIX)) {
                 String propName = entry.getKey().substring(ENV_PREFIX.length());
@@ -111,8 +112,6 @@ public class PropertiesLoader {
                 properties.put(propName.replace("__", "."), entry.getValue());
             }
         }
-
-        return properties;
     }
 
     /**

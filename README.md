@@ -100,5 +100,5 @@ mvn jgitflow:release-finish
 After the release-finish, it will try to deploy to `ossrh` automatically. Please make sure you only do this if everything is configured as expected.
 
 ```
-mvn -DperformRelease=true deploy
+mvn -Dmaven.javadoc.skip=true -DperformRelease=true deploy
 ```
