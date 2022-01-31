@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>1.6.0</version>
+  <version>1.6.1</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -41,7 +41,7 @@
     <dependency.locations.enabled>false</dependency.locations.enabled>
     <dependency.details.enabled>false</dependency.details.enabled>
     <jackson-jr.version>2.13.1</jackson-jr.version>
-    <log4j.version>2.17.0</log4j.version>
+    <log4j.version>2.17.1</log4j.version>
     <promclient.version>0.14.1</promclient.version>
 
     <jmockit.version>1.49</jmockit.version>
