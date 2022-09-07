@@ -278,7 +278,7 @@ public abstract class WorkerAbstract extends BaseWorker implements QueueWorkerIn
     }
 
     protected List<EventWorkerSubscription> getSubscriptions() {
-        List<String> subscriptionKeys = Arrays.asList(properties.getProperty("graviton.subscription").split(","));
+        String[] subscriptionKeys = properties.getProperty("graviton.subscription").split(",");
         List<EventWorkerSubscription> subscriptions = new ArrayList<>();
         for (String subscriptionKey: subscriptionKeys) {
             EventWorkerSubscription subscription = new EventWorkerSubscription();

@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>1.6.3-SNAPSHOT</version>
+  <version>1.7.0-SNAPSHOT</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -40,8 +40,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <dependency.locations.enabled>false</dependency.locations.enabled>
     <dependency.details.enabled>false</dependency.details.enabled>
-    <jackson-jr.version>2.13.3</jackson-jr.version>
-    <log4j.version>2.17.2</log4j.version>
+    <jackson-jr.version>2.13.4</jackson-jr.version>
+    <log4j.version>2.18.0</log4j.version>
     <promclient.version>0.15.0</promclient.version>
 
     <jmockit.version>1.49</jmockit.version>
@@ -92,7 +92,7 @@
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
-      <version>4.9.3</version>
+      <version>4.10.0</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -133,7 +133,7 @@
     <dependency>
       <groupId>com.rabbitmq</groupId>
       <artifactId>amqp-client</artifactId>
-      <version>5.14.1</version>
+      <version>5.15.0</version>
     </dependency>
     <dependency>
       <groupId>javax.jms</groupId>
@@ -143,7 +143,7 @@
     <dependency>
       <groupId>io.sentry</groupId>
       <artifactId>sentry-log4j2</artifactId>
-      <version>5.7.4</version>
+      <version>6.4.1</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -162,7 +162,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20211205</version>
+      <version>20220320</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.jr</groupId>
@@ -188,7 +188,7 @@
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-json-jackson</artifactId>
-      <version>3.0.4</version>
+      <version>3.1.0-M7</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -201,26 +201,16 @@
       </exclusions>
     </dependency>
 
-    <!-- prom -->
+    <!-- metrics -->
     <dependency>
-      <groupId>io.prometheus</groupId>
-      <artifactId>simpleclient</artifactId>
-      <version>${promclient.version}</version>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+      <version>1.9.3</version>
     </dependency>
     <dependency>
-      <groupId>io.prometheus</groupId>
-      <artifactId>simpleclient_httpserver</artifactId>
-      <version>${promclient.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.prometheus</groupId>
-      <artifactId>simpleclient_servlet</artifactId>
-      <version>${promclient.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.prometheus</groupId>
-      <artifactId>simpleclient_hotspot</artifactId>
-      <version>${promclient.version}</version>
+      <groupId>io.github.mweirauch</groupId>
+      <artifactId>micrometer-jvm-extras</artifactId>
+      <version>0.2.2</version>
     </dependency>
 
     <!-- test -->

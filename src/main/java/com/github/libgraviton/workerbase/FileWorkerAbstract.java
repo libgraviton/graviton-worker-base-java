@@ -36,7 +36,7 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
         String documentUrl = queueEvent.getDocument().get$ref();
         List<String> actions = getActionsOfInterest(queueEvent);
 
-        Boolean actionOfInterestPresent = false;
+        boolean actionOfInterestPresent = false;
         for (String action: actions) {
             if (isActionCommandPresent(getGravitonFile(documentUrl), action)) {
                 removeFileActionCommand(documentUrl, action);

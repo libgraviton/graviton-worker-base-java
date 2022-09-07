@@ -13,7 +13,6 @@ import com.github.libgraviton.workerbase.util.PrometheusServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Properties;
 
 /**
@@ -79,7 +78,7 @@ public class Worker {
      */
     public Worker(StandaloneWorker worker) throws Exception {
         this((WorkerInterface) worker);
-        new PrometheusServer(properties);
+        new PrometheusServer(worker.getWorkerId(), properties);
         worker.run();
     }
 
@@ -98,7 +97,7 @@ public class Worker {
             throw new WorkerException("No worker set to be run in the traditional way...");
         }
 
-        new PrometheusServer(properties);
+        new PrometheusServer(worker.getWorkerId(), properties);
 
         QueueManager queueManager = worker.getQueueManager();
         try {
