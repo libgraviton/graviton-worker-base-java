@@ -78,13 +78,9 @@ public class Worker {
      */
     public Worker(StandaloneWorker worker) throws Exception {
         this((WorkerInterface) worker);
+        // call this here as this.run is not called(?) by standalone
         new PrometheusServer(worker.getWorkerId(), properties);
         worker.run();
-    }
-
-    private void initWorker(WorkerInterface worker) throws Exception {
-        worker.initialize(properties);
-        worker.onStartUp();
     }
 
     /**
