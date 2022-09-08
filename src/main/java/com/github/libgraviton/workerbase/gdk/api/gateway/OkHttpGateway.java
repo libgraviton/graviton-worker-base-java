@@ -75,7 +75,7 @@ public class OkHttpGateway implements GravitonGateway {
         MultipartBody.Builder builder = new MultipartBody.Builder();
         for (Part part : request.getParts()) {
             MultipartBody.Part bodyPart;
-            RequestBody requestBody = RequestBody.create(null, part.getBody());
+            RequestBody requestBody = RequestBody.create(part.getBody());
             if (part.getFormName() != null) {
                 bodyPart = MultipartBody.Part.createFormData(part.getFormName(), null, requestBody);
             } else {
@@ -90,7 +90,7 @@ public class OkHttpGateway implements GravitonGateway {
 
     private RequestBody generateDefaultRequestBody(Request request) {
         return null == request.getBodyBytes() ? null :
-                RequestBody.create(MediaType.parse(request.getHeaders().get("Content-Type") + "; charset=utf-8"), request.getBodyBytes());
+                RequestBody.create(request.getBodyBytes(), MediaType.parse(request.getHeaders().get("Content-Type") + "; charset=utf-8"));
     }
 
     private Response generateResponse(Request request, okhttp3.Response okHttpResponse, byte[] body) {

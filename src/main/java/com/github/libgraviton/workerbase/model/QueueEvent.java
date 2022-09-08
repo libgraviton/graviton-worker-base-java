@@ -10,6 +10,12 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public class QueueEvent {
+
+    public static final String STATE_RECEIVED = "received";
+    public static final String STATE_IGNORED = "ignored";
+    public static final String STATE_HANDLED = "handled";
+    public static final String STATE_ERRORED = "failed";
+
     public String event;
     public String coreUserId;
     public GravitonRef document;

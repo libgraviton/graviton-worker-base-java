@@ -16,7 +16,7 @@ import java.util.Properties;
  */
 public class QueueManager {
 
-    private QueueConnection connection;
+    private final QueueConnection connection;
 
     public QueueManager(Properties properties) {
         connection = new RabbitMqConnection.Builder()

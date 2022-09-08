@@ -21,7 +21,7 @@ import java.io.IOException;
  */
 public class WorkerConsumer implements AcknowledgingConsumer {
 
-    private QueueWorkerInterface worker;
+    private final QueueWorkerInterface worker;
 
     private MessageAcknowledger acknowledger;
 

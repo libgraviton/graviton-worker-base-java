@@ -1,15 +1,19 @@
 package com.github.libgraviton.workerbase.util;
 
-import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.exporter.HTTPServer;
-import io.prometheus.client.hotspot.BufferPoolsExports;
-import io.prometheus.client.hotspot.ClassLoadingExports;
-import io.prometheus.client.hotspot.GarbageCollectorExports;
-import io.prometheus.client.hotspot.MemoryAllocationExports;
-import io.prometheus.client.hotspot.MemoryPoolsExports;
-import io.prometheus.client.hotspot.StandardExports;
-import io.prometheus.client.hotspot.ThreadExports;
-import io.prometheus.client.hotspot.VersionInfoExports;
+import com.sun.net.httpserver.HttpServer;
+import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
+import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,15 +24,31 @@ public class PrometheusServer {
 
   private static boolean started = false;
 
-  public PrometheusServer(Properties properties) {
+  public PrometheusServer(String appName, Properties properties) {
     if (!started) {
-      init(properties.getProperty("prom.jvm", "false").equals("true"));
+      init(appName, properties.getProperty("prom.jvm", "false").equals("true"));
     }
   }
 
-  private void init(boolean loadJvmMetrics) {
+  private void init(String appName, boolean loadJvmMetrics) {
+
+    final PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+
+    // app name
+    registry.config().commonTags("application", appName);
+
     try {
-      HTTPServer server = new HTTPServer(9999);
+      HttpServer server = HttpServer.create(new InetSocketAddress(9999), 0);
+      server.createContext("/metrics", httpExchange -> {
+        String response = registry.scrape();
+        httpExchange.sendResponseHeaders(200, response.getBytes().length);
+        try (OutputStream os = httpExchange.getResponseBody()) {
+          os.write(response.getBytes());
+        }
+      });
+
+      new Thread(server::start).start();
+
       LOG.info("Started prometheus HTTPServer for metrics on http://0.0.0.0:9999/metrics");
     } catch (Throwable t) {
       LOG.error("Could not start prometheus metrics HTTPServer", t);
@@ -37,17 +57,17 @@ public class PrometheusServer {
     started = true;
 
     // load jvm metrics?
-    if (!loadJvmMetrics) {
-      return;
+    if (loadJvmMetrics) {
+      new ProcessMemoryMetrics().bindTo(registry);
+      new ProcessThreadMetrics().bindTo(registry);
+      new ClassLoaderMetrics().bindTo(registry);
+      new JvmMemoryMetrics().bindTo(registry);
+      new JvmGcMetrics().bindTo(registry);
+      new ProcessorMetrics().bindTo(registry);
+      new JvmThreadMetrics().bindTo(registry);
     }
 
-    new StandardExports().register(CollectorRegistry.defaultRegistry);
-    new MemoryPoolsExports().register(CollectorRegistry.defaultRegistry);
-    new MemoryAllocationExports().register(CollectorRegistry.defaultRegistry);
-    new BufferPoolsExports().register(CollectorRegistry.defaultRegistry);
-    new GarbageCollectorExports().register(CollectorRegistry.defaultRegistry);
-    new ThreadExports().register(CollectorRegistry.defaultRegistry);
-    new ClassLoadingExports().register(CollectorRegistry.defaultRegistry);
-    new VersionInfoExports().register(CollectorRegistry.defaultRegistry);
+    // add to global
+    Metrics.addRegistry(registry);
   }
 }
