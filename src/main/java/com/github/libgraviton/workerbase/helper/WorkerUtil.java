@@ -144,10 +144,12 @@ public class WorkerUtil {
         return file;
     }
 
+    @Deprecated
     public static boolean isJarContext() {
         return isJarContext(WorkerUtil.class);
     }
 
+    @Deprecated
     public static boolean isJarContext(Object obj) {
         return obj.getClass().getResource("").getProtocol().equals("jar");
     }
