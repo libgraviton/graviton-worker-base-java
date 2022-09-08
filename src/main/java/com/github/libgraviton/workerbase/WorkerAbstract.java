@@ -14,6 +14,10 @@ import com.github.libgraviton.workerbase.exception.GravitonCommunicationExceptio
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.google.common.util.concurrent.AtomicLongMap;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tags;
 import okhttp3.HttpUrl;
 
 import java.util.ArrayList;
@@ -30,6 +34,8 @@ import java.util.Properties;
  */
 public abstract class WorkerAbstract extends BaseWorker implements QueueWorkerInterface {
 
+    private final AtomicLongMap<String> eventStates = AtomicLongMap.create();
+
     protected EventStatusHandler statusHandler;
 
     protected Boolean isRegistered = Boolean.FALSE;
@@ -37,8 +43,6 @@ public abstract class WorkerAbstract extends BaseWorker implements QueueWorkerIn
     protected boolean useTransientHeaders = true;
 
     protected String messageId;
-
-    protected String statusUrl;
 
     protected MessageAcknowledger acknowledger;
 
@@ -83,6 +87,17 @@ public abstract class WorkerAbstract extends BaseWorker implements QueueWorkerIn
         gravitonApi = initGravitonApi();
         statusHandler = new EventStatusHandler(gravitonApi);
 
+        // create our metrics..
+        for (String theState : List.of(QueueEvent.STATE_RECEIVED, QueueEvent.STATE_IGNORED, QueueEvent.STATE_HANDLED, QueueEvent.STATE_ERRORED)) {
+            eventStates.put(theState, 0);
+
+            Tags tags = Tags.of("state", theState);
+            Gauge.builder("worker_queue_events", eventStates, map -> map.get(theState))
+                    .tags(tags)
+                    .description("Total worker queue events received/handled/ignored/errors.")
+                    .register(Metrics.globalRegistry);
+        }
+
         if (shouldAutoRegister()) {
             register();
         }
@@ -97,21 +112,46 @@ public abstract class WorkerAbstract extends BaseWorker implements QueueWorkerIn
      */
     public final void handleDelivery(QueueEvent queueEvent, String messageId, MessageAcknowledger acknowledger) {
 
+        // add as received
+        eventStates.incrementAndGet(QueueEvent.STATE_RECEIVED);
+
         this.messageId = messageId;
         this.acknowledger = acknowledger;
 
-        statusUrl = convertToGravitonUrl(queueEvent.getStatus().get$ref());
+        String statusUrl = convertToGravitonUrl(queueEvent.getStatus().get$ref());
         try {
             // any transient headers?
             if (shouldUseTransientHeaders() && isUseTransientHeaders()) {
                 gravitonApi.setTransientHeaders(queueEvent.getTransientHeaders());
             }
 
-            processDelivery(queueEvent, statusUrl);
+            if (!shouldHandleRequest(queueEvent)) {
+                eventStates.incrementAndGet(QueueEvent.STATE_IGNORED);
 
-            gravitonApi.clearTransientHeaders();
+                if (shouldAutoUpdateStatus()) {
+                    update(statusUrl, workerId, EventStatusStatus.Status.IGNORED);
+                }
+
+                return;
+            }
+
+            if (shouldAutoUpdateStatus()) {
+                update(statusUrl, workerId, EventStatusStatus.Status.WORKING);
+            }
+
+            // call the worker
+            handleRequest(queueEvent);
+
+            if (shouldAutoUpdateStatus()) {
+                update(statusUrl, workerId, EventStatusStatus.Status.DONE);
+            }
+
+            // mark as handled
+            eventStates.incrementAndGet(QueueEvent.STATE_HANDLED);
         } catch (Throwable e) {
-            gravitonApi.clearTransientHeaders();
+
+            // mark as errored
+            eventStates.incrementAndGet(QueueEvent.STATE_ERRORED);
 
             LOG.error("Error in worker: " + workerId, e);
 
@@ -130,6 +170,8 @@ public abstract class WorkerAbstract extends BaseWorker implements QueueWorkerIn
             if (shouldAutoAcknowledgeOnException()) {
                 reportToMessageQueue();
             }
+        } finally {
+            gravitonApi.clearTransientHeaders();
         }
     }
 
@@ -154,23 +196,9 @@ public abstract class WorkerAbstract extends BaseWorker implements QueueWorkerIn
         return targetUrl.toString();
     }
 
-    protected void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {
-        if (!shouldHandleRequest(queueEvent)) {
-            // set status to ignored if the worker doesn't care about the event
-            update(statusUrl, workerId, EventStatusStatus.Status.IGNORED);
-            return;
-        }
-
-        if (shouldAutoUpdateStatus()) {
-            update(statusUrl, workerId, EventStatusStatus.Status.WORKING);
-        }
-
-        // call the worker
-        handleRequest(queueEvent);
-
-        if (shouldAutoUpdateStatus()) {
-            update(statusUrl, workerId, EventStatusStatus.Status.DONE);
-        }
+    @Deprecated
+    final protected void processDelivery(QueueEvent queueEvent, String statusUrl) throws WorkerException, GravitonCommunicationException {
+        // DO NOT IMPLEMENT processDelivery anymore in the worker! marking as final, it's not called anymore..
     }
 
     protected void update(EventStatus eventStatus, String workerId, EventStatusStatus.Status status) throws GravitonCommunicationException {
