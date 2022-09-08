@@ -43,8 +43,7 @@ abstract public class BaseWorker implements WorkerInterface {
    * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
    *
    */
-  public void initialize(
-      Properties properties) throws WorkerException, GravitonCommunicationException {
+  public void initialize(Properties properties) throws WorkerException, GravitonCommunicationException {
 
     this.properties = properties;
     workerId = properties.getProperty("graviton.workerId");
@@ -62,6 +61,7 @@ abstract public class BaseWorker implements WorkerInterface {
    * @param obj object to test
    * @return true if worker is run from a jar file else false
    */
+  @Deprecated
   public static boolean isWorkerStartedFromJARFile(Object obj) {
     return WorkerUtil.isJarContext(obj);
   }
