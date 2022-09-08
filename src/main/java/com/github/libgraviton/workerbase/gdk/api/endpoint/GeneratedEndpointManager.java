@@ -21,7 +21,7 @@ public class GeneratedEndpointManager extends EndpointManager {
         LOAD, CREATE
     }
 
-    private static String assocFilePath = PropertiesLoader.load("graviton.assoc.file.location");
+    private static final String assocFilePath = PropertiesLoader.load("graviton.assoc.file.location");
 
     /**
      * The file holding the serialized service to POJO class association.
