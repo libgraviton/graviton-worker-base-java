@@ -8,6 +8,7 @@ import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusSt
 import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventStatusAction;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
+import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.github.libgraviton.workerbase.messaging.exception.CannotAcknowledgeMessage;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
@@ -32,13 +33,11 @@ import java.util.Properties;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-public abstract class WorkerAbstract extends BaseWorker implements QueueWorkerInterface {
+public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWorkerInterface {
 
     private final AtomicLongMap<String> eventStates = AtomicLongMap.create();
 
     protected EventStatusHandler statusHandler;
-
-    protected Boolean isRegistered = Boolean.FALSE;
 
     protected boolean useTransientHeaders = true;
 
@@ -47,30 +46,6 @@ public abstract class WorkerAbstract extends BaseWorker implements QueueWorkerIn
     protected MessageAcknowledger acknowledger;
 
     protected GravitonAuthApi gravitonApi;
-
-    public Boolean getRegistered() {
-        return isRegistered;
-    }
-
-    /**
-     * worker logic is implemented here
-     *
-     * @param body message body as object
-     * @throws WorkerException whenever a worker is unable to finish its task.
-     * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
-     */
-    abstract public void handleRequest(QueueEvent body) throws WorkerException, GravitonCommunicationException;
-    
-    /**
-     * Here, the worker should decide if this requests concerns him in the first
-     * place. If false is returned, we ignore the message..
-     *
-     * @param body queueevent object
-     * @return boolean true if not, false if yes
-     * @throws WorkerException whenever a worker is unable to determine if it should handle the request
-     * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
-     */
-    abstract public boolean shouldHandleRequest(QueueEvent body) throws WorkerException, GravitonCommunicationException;
     
     /**
      * initializes this worker, will be called by the library
@@ -299,7 +274,6 @@ public abstract class WorkerAbstract extends BaseWorker implements QueueWorkerIn
 
         try {
             gravitonApi.put(eventWorker).execute();
-            isRegistered = Boolean.TRUE;
         } catch (CommunicationException e) {
             throw new GravitonCommunicationException("Unable to register worker '" + workerId + "'.", e);
         }
@@ -349,5 +323,16 @@ public abstract class WorkerAbstract extends BaseWorker implements QueueWorkerIn
 
     public boolean isUseTransientHeaders() {
         return useTransientHeaders;
+    }
+
+    /**
+     * detects if an object is run from inside of a jar file.
+     *
+     * @param obj object to test
+     * @return true if worker is run from a jar file else false
+     */
+    @Deprecated
+    public static boolean isWorkerStartedFromJARFile(Object obj) {
+        return WorkerUtil.isJarContext(obj);
     }
 }
