@@ -19,7 +19,7 @@ public class GravitonFileEndpoint {
 
     private static final Logger LOG = LoggerFactory.getLogger(GravitonFileEndpoint.class);
 
-    private GravitonApi gravitonApi;
+    private final GravitonApi gravitonApi;
 
     public GravitonFileEndpoint() {
         this.gravitonApi = new GravitonApi();
@@ -30,7 +30,7 @@ public class GravitonFileEndpoint {
     }
 
     public Request.Builder getFile(String url) {
-        LOG.debug("Requesting file");
+        LOG.debug("Requesting file {}", url);
 
         // without the 'Accept' - 'application/json' header, we get the file instead of the metadata
         HeaderBag.Builder headers = gravitonApi.getDefaultHeaders()
@@ -51,7 +51,7 @@ public class GravitonFileEndpoint {
     }
 
     public Request.Builder getMetadata(String url) {
-        LOG.debug("Requesting file metadata");
+        LOG.debug("Requesting file metadata {}", url);
         return gravitonApi.get(url);
     }
 
