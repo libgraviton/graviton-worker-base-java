@@ -8,7 +8,7 @@ import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadata;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadataAction;
 import com.github.libgraviton.workerbase.helper.WorkerUtil;
-import com.github.libgraviton.workerbase.lib.TestFileWorker;
+import com.github.libgraviton.workerbase.lib.TestFileQueueWorker;
 import com.github.libgraviton.workerbase.model.GravitonRef;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import mockit.*;
@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -42,7 +42,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         // GET /file metadata mock
 
         String metadata1 = FileUtils.readFileToString(
-                new File("src/test/resources/json/fileResource.json"), Charset.forName("UTF-8"));
+                new File("src/test/resources/json/fileResource.json"), StandardCharsets.UTF_8);
         response1 = spy(Response.class);
         response1.setObjectMapper(objectMapper);
         doReturn(metadata1).when(response1).getBody();
@@ -51,7 +51,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
                 .thenReturn(response1);
 
         String metadata2 = FileUtils.readFileToString(
-                new File("src/test/resources/json/fileResourceWithAction.json"), Charset.forName("UTF-8"));
+                new File("src/test/resources/json/fileResourceWithAction.json"), StandardCharsets.UTF_8);
         response2 = spy(Response.class);
         response2.setObjectMapper(objectMapper);
         doReturn(metadata2).when(response2).getBody();
@@ -62,12 +62,12 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
     @Test
     public void testBasicFileHandling() throws Exception {
-        TestFileWorker testWorker = prepareTestWorker(new TestFileWorker());
+        TestFileQueueWorker testWorker = prepareTestWorker(new TestFileQueueWorker());
         worker = getWrappedWorker(testWorker);
         worker.run();
 
         String message = FileUtils.readFileToString(
-                new File("src/test/resources/json/queueFileEvent.json"), Charset.forName("UTF-8"));
+                new File("src/test/resources/json/queueFileEvent.json"), StandardCharsets.UTF_8);
 
         workerConsumer.consume("34343", message);
 
@@ -75,14 +75,14 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         verify(gravitonApi, times(1)).put(isA(EventWorker.class));
 
         verify(gravitonApi, times(2)).get(contains("/event/status/"));
-        verify(gravitonApi, times(2)).get(contains("/file/"));
+        verify(gravitonApi, times(1)).get(contains("/file/"));
         // working update & done update
         verify(gravitonApi, times(2)).patch(isA(EventStatus.class));
 
         assertEquals("16f52c4b00523e2ba27480ce6905ed1d", testWorker.fileObj.getId());
         assertEquals("dude", testWorker.fileObj.getLinks().get(0).getType());
         assertEquals("http://localhost:8000/dude", testWorker.fileObj.getLinks().get(0).get$ref());
-        assertEquals(new Integer(200), testWorker.fileObj.getMetadata().getSize());
+        assertEquals(Integer.valueOf(200), testWorker.fileObj.getMetadata().getSize());
         assertEquals("image/jpeg", testWorker.fileObj.getMetadata().getMime());
 
         DateFormat dateFormat = objectMapper.getDateFormat();
@@ -97,30 +97,28 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
         assertEquals(0, testWorker.fileObj.getMetadata().getAction().size());
 
-        assertTrue(testWorker.fileObj.getMetadata() instanceof FileMetadata);
+        assertTrue(testWorker.fileObj.getMetadata() != null);
         
         assertFalse(testWorker.actionPresent);
     }
     
     @Test
     public void testActionHandling() throws Exception {
-        TestFileWorker testWorker = prepareTestWorker(new TestFileWorker());
+        TestFileQueueWorker testWorker = prepareTestWorker(new TestFileQueueWorker());
         worker = getWrappedWorker(testWorker);
         worker.run();
 
         String message = FileUtils.readFileToString(
-                new File("src/test/resources/json/queueFileEventWithAction.json"), Charset.forName("UTF-8"));
+                new File("src/test/resources/json/queueFileEventWithAction.json"), StandardCharsets.UTF_8);
         workerConsumer.consume("34343", message);
 
         // register
         verify(gravitonApi, times(1)).put(isA(EventWorker.class));
 
         verify(gravitonApi, times(2)).get(contains("/event/status/"));
-        verify(gravitonApi, times(2)).get(contains("/file/"));
+        verify(gravitonApi, times(1)).get(contains("/file/"));
         // working update & done update
         verify(gravitonApi, times(2)).patch(isA(EventStatus.class));
-        // file action remove
-        verify(gravitonApi, times(1)).patch(isA(com.github.libgraviton.gdk.gravitondyn.file.document.File.class));
 
         assertEquals("16f52c4b00523e2ba27480ce6905ed1e", testWorker.fileObj.getId());
         
@@ -143,7 +141,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         };
 
         String file1Url = "testFile1";
-        TestFileWorker testFileWorker = prepareTestWorker(new TestFileWorker());
+        TestFileQueueWorker testFileWorker = prepareTestWorker(new TestFileQueueWorker());
 
         com.github.libgraviton.gdk.gravitondyn.file.document.File firstFile = testFileWorker.getGravitonFile(file1Url);
         assertEquals(file, firstFile);
@@ -151,7 +149,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
     @Test
     public void testShouldHandleRequestWithoutActions() throws Exception {
-        TestFileWorker testFileWorker = spy(prepareTestWorker(new TestFileWorker()));
+        TestFileQueueWorker testFileWorker = spy(prepareTestWorker(new TestFileQueueWorker()));
         testFileWorker.shouldHandleRequestMocked = false;
         QueueEvent queueEvent = new QueueEvent();
         GravitonRef gravitonRef = new GravitonRef();
@@ -162,15 +160,15 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         List<String> noActions = Arrays.asList();
 
         doReturn(noActions).when(testFileWorker).getActionsOfInterest(queueEvent);
-        doNothing().when(testFileWorker).removeFileActionCommand(eq(documentUrl), anyString());
+        doNothing().when(testFileWorker).removeFileActionCommand(any(), anyList());
 
         assertFalse(testFileWorker.shouldHandleRequest(queueEvent));
-        verify(testFileWorker, never()).removeFileActionCommand(eq(documentUrl), anyString());
+        verify(testFileWorker, never()).removeFileActionCommand(any(), anyList());
     }
 
     @Test
     public void testShouldHandleRequestWithActions() throws Exception {
-        TestFileWorker testFileWorker = spy(prepareTestWorker(new TestFileWorker()));
+        TestFileQueueWorker testFileWorker = spy(prepareTestWorker(new TestFileQueueWorker()));
         testFileWorker.shouldHandleRequestMocked = false;
         QueueEvent queueEvent = new QueueEvent();
         GravitonRef gravitonRef = new GravitonRef();
@@ -197,15 +195,15 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         when(WorkerUtil.encodeRql(any())).thenCallRealMethod();
 
         doReturn(noActions).when(testFileWorker).getActionsOfInterest(queueEvent);
-        doNothing().when(testFileWorker).removeFileActionCommand(eq(documentUrl), anyString());
+        doNothing().when(testFileWorker).removeFileActionCommand(eq(file), anyList());
 
         assertTrue(testFileWorker.shouldHandleRequest(queueEvent));
-        verify(testFileWorker, times(2)).removeFileActionCommand(eq(documentUrl), anyString());
+        verify(testFileWorker, times(1)).removeFileActionCommand(eq(file), anyList());
 
         assertEquals("someId123", queueEvent.getCoreUserId());
     }
 
-    private <T extends FileWorkerAbstract> T prepareTestWorker(T worker) {
+    private <T extends FileQueueWorkerAbstract> T prepareTestWorker(T worker) {
         worker.gravitonApi = gravitonApi;
         worker.fileEndpoint = new GravitonFileEndpoint(gravitonApi);
         return worker;

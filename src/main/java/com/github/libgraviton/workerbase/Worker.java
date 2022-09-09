@@ -34,7 +34,7 @@ public class Worker {
     /**
      * worker
      */
-    private WorkerAbstract worker;
+    private QueueWorkerAbstract worker;
 
     public Worker(WorkerInterface worker) throws Exception {
         try {
@@ -64,7 +64,7 @@ public class Worker {
      * @throws WorkerException if setup failed.
      * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
      */
-    public Worker(WorkerAbstract worker) throws Exception {
+    public Worker(QueueWorkerAbstract worker) throws Exception {
         this((WorkerInterface) worker);
         this.worker = worker;
     }

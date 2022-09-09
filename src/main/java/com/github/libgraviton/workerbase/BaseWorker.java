@@ -55,15 +55,4 @@ abstract public class BaseWorker implements WorkerInterface {
     }
   }
 
-  /**
-   * detects if an object is run from inside of a jar file.
-   *
-   * @param obj object to test
-   * @return true if worker is run from a jar file else false
-   */
-  @Deprecated
-  public static boolean isWorkerStartedFromJARFile(Object obj) {
-    return WorkerUtil.isJarContext(obj);
-  }
-
 }

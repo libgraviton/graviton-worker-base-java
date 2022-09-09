@@ -1,11 +1,11 @@
 package com.github.libgraviton.workerbase.lib;
 
+import com.github.libgraviton.workerbase.QueueWorkerAbstract;
 import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
-import com.github.libgraviton.workerbase.WorkerAbstract;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
-public class TestWorkerException extends WorkerAbstract {
+public class TestQueueWorkerException extends QueueWorkerAbstract {
 
     public boolean handleRequestCalled = false;
     public boolean throwWorkerException = true;

@@ -9,6 +9,9 @@ import com.github.libgraviton.workerbase.exception.GravitonCommunicationExceptio
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.google.common.base.Joiner;
+import io.micrometer.core.instrument.util.StringUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,28 +25,64 @@ import java.util.List;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-public abstract class FileWorkerAbstract extends WorkerAbstract {
+public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implements FileQueueWorkerInterface {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FileWorkerAbstract.class);
-
-    protected File gravitonFile;
+    private static final Logger LOG = LoggerFactory.getLogger(FileQueueWorkerAbstract.class);
 
     protected GravitonFileEndpoint fileEndpoint;
 
+    // just to pass around!
+    private File currentFile;
+
     public boolean shouldHandleRequest(QueueEvent queueEvent) throws WorkerException, GravitonCommunicationException {
-        // reset gravitonFile, to make sure we have no cached values that will interfere.
-        gravitonFile = null;
-        String documentUrl = queueEvent.getDocument().get$ref();
         List<String> actions = getActionsOfInterest(queueEvent);
 
-        boolean actionOfInterestPresent = false;
-        for (String action: actions) {
-            if (isActionCommandPresent(getGravitonFile(documentUrl), action)) {
-                removeFileActionCommand(documentUrl, action);
-                actionOfInterestPresent = true;
-            }
+        // get the file
+        currentFile = getFileFromQueueEvent(queueEvent);
+
+        if (currentFile == null) {
+            // something is off..
+            return false;
         }
-        return actionOfInterestPresent;
+
+        FileMetadata fileMetadata = currentFile.getMetadata();
+
+        if (fileMetadata == null || fileMetadata.getAction().isEmpty()) {
+            // no actions defined..
+            return false;
+        }
+
+        // get all actions in the file
+        List<String> referencedActions = fileMetadata.getAction().stream().map(FileMetadataAction::getCommand).toList();
+
+        // any intersect? if so, we should handle it.
+        List<String> matching = ListUtils.intersection(actions, referencedActions);
+
+        if (matching.isEmpty()) {
+            return false;
+        }
+
+        // something matches. clear the actions from the files first.
+        removeFileActionCommand(currentFile, matching);
+
+        return !ListUtils.intersection(actions, referencedActions).isEmpty();
+    }
+
+    private File getFileFromQueueEvent(QueueEvent queueEvent) throws GravitonCommunicationException {
+        return getGravitonFile(queueEvent.getDocument().get$ref());
+    }
+
+    final public void handleRequest(QueueEvent body) throws WorkerException, GravitonCommunicationException {
+        // get the file..
+        File fileToPass;
+        if (currentFile != null) {
+            fileToPass = currentFile;
+            currentFile = null;
+        } else {
+            fileToPass = getFileFromQueueEvent(body);
+        }
+
+        handleFileRequest(body, fileToPass);
     }
 
     @Override
@@ -68,12 +107,7 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
      * @return file instance
      */
     public File getGravitonFile(String fileUrl) throws GravitonCommunicationException {
-        if (gravitonFile != null && fileUrl.contains(gravitonFile.getId())) {
-            return gravitonFile;
-        }
-
-        gravitonFile = WorkerUtil.getGravitonFile(fileEndpoint, fileUrl);
-        return gravitonFile;
+        return WorkerUtil.getGravitonFile(fileEndpoint, fileUrl);
     }    
     
     /**
@@ -97,33 +131,28 @@ public abstract class FileWorkerAbstract extends WorkerAbstract {
     /**
      * removes the action.0.command action from the /file resource, PUTs it to the backend removed
      *
-     * @param documentUrl document url
-     * @param action action string to remove
      * @throws GravitonCommunicationException when file action command could not be removed at Graviton
      */
-    public void removeFileActionCommand(String documentUrl, String action) throws GravitonCommunicationException {
-        gravitonFile = null;
-        gravitonFile = getGravitonFile(documentUrl);
+    protected void removeFileActionCommand(File gravitonFile, List<String> actions) throws GravitonCommunicationException {
         FileMetadata metadata = gravitonFile.getMetadata();
-        List<FileMetadataAction> metadataActions = metadata.getAction();
-        List<FileMetadataAction> matchingActions = new ArrayList<>();
 
-        for (FileMetadataAction metadataAction : metadataActions) {
-            if (action.equals(metadataAction.getCommand())) {
-                matchingActions.add(metadataAction);
-            }
-        }
+        // get the matching ones..
+        List<FileMetadataAction> matchingActions = metadata
+                .getAction()
+                .stream()
+                .filter(s -> actions.contains(s.getCommand())).toList();
 
         if (matchingActions.size() > 0) {
-            metadataActions.removeAll(matchingActions);
+            // remove them
+            gravitonFile.getMetadata().getAction().removeAll(matchingActions);
 
             try {
                 fileEndpoint.patch(gravitonFile).execute();
             } catch (CommunicationException e) {
-                throw new GravitonCommunicationException("Unable to remove file action command '" + action + "' from '" + documentUrl + "'.", e);
+                throw new GravitonCommunicationException("Unable to remove file action elements from '" + gravitonFile.getId() + "'.", e);
             }
 
-            LOG.info("Removed action property from " + documentUrl);
+            LOG.info("Removed action elements '{}' property from file ID '{}'", actions.toArray(), gravitonFile.getId());
         }        
     }
 

@@ -7,9 +7,9 @@ import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusSt
 import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventStatusAction;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
-import com.github.libgraviton.workerbase.lib.TestWorker;
-import com.github.libgraviton.workerbase.lib.TestWorkerException;
-import com.github.libgraviton.workerbase.lib.TestWorkerNoAuto;
+import com.github.libgraviton.workerbase.lib.TestQueueWorker;
+import com.github.libgraviton.workerbase.lib.TestQueueWorkerException;
+import com.github.libgraviton.workerbase.lib.TestQueueWorkerNoAuto;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -33,7 +33,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
 
     @Test
     public void testRegistrationPreparation() throws Exception {
-        TestWorker testWorker = prepareTestWorker(new TestWorker());
+        TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
         // to initialize worker
         worker = getWrappedWorker(testWorker);
         List<EventWorkerSubscription> subscriptions = testWorker.getSubscriptions();
@@ -51,7 +51,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
                 .thenReturn("http://localhost:8000/event/action/");
 
 
-        TestWorker testWorker = prepareTestWorker(new TestWorker());
+        TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
         // to initialize worker
         worker = getWrappedWorker(testWorker);
         EventStatusStatusAction actionRef = testWorker.getWorkerAction();
@@ -61,7 +61,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
 
     @Test
     public void testBasicExecution() throws Exception {
-        TestWorker testWorker = prepareTestWorker(new TestWorker());
+        TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
         worker = getWrappedWorker(testWorker);
         // execution should work even if message queue ack is not successful
         doThrow(new IOException()).when(queueChannel).basicAck(any(Long.class), any(Boolean.class));
@@ -90,7 +90,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
 
     @Test
     public void testStatusUpdateOnShouldNotHandleRequest() throws Exception {
-        TestWorker testWorker = spy(prepareTestWorker(new TestWorker()));
+        TestQueueWorker testWorker = spy(prepareTestWorker(new TestQueueWorker()));
         doReturn(false).when(testWorker).shouldHandleRequest(any(QueueEvent.class));
         worker = getWrappedWorker(testWorker);
         worker.run();
@@ -113,7 +113,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     
     @Test
     public void testNoAutoWorker() throws Exception {
-        TestWorkerNoAuto testWorker = spy(prepareTestWorker(new TestWorkerNoAuto()));
+        TestQueueWorkerNoAuto testWorker = spy(prepareTestWorker(new TestQueueWorkerNoAuto()));
         worker = getWrappedWorker(testWorker);
         worker.run();
 
@@ -144,7 +144,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     
     @Test
     public void testWorkerException() throws Exception {
-        TestWorkerException testWorker = prepareTestWorker(new TestWorkerException());
+        TestQueueWorkerException testWorker = prepareTestWorker(new TestQueueWorkerException());
         worker = getWrappedWorker(testWorker);
         worker.run();
         
@@ -165,7 +165,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     
     @Test
     public void testWorkerExceptionNoAuto() throws Exception {
-        TestWorkerException testWorker = prepareTestWorker(new TestWorkerException());
+        TestQueueWorkerException testWorker = prepareTestWorker(new TestQueueWorkerException());
         testWorker.doAutoStuff = false;
         worker = getWrappedWorker(testWorker);
         worker.run();
@@ -191,7 +191,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         /*** change mocking so we get an unsuccessful response on /event/status update -> worker shall throw GravitonCommunicationException ***/
         when(gravitonApi.patch(any(EventStatus.class)).execute()).thenThrow(UnsuccessfulResponseException.class);
         
-        TestWorker testWorker = prepareTestWorker(new TestWorker());
+        TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
         worker = getWrappedWorker(testWorker);
         worker.run();
         
@@ -203,7 +203,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
 
     @Test
     public void testIsTerminatedState() throws Exception {
-        TestWorker testWorker = prepareTestWorker(new TestWorker());
+        TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
 
         assertTrue(testWorker.isTerminatedState(EventStatusStatus.Status.FAILED));
         assertTrue(testWorker.isTerminatedState(EventStatusStatus.Status.DONE));
@@ -212,7 +212,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         assertFalse(testWorker.isTerminatedState(EventStatusStatus.Status.WORKING));
     }
 
-    private <T extends WorkerAbstract> T prepareTestWorker(T worker) {
+    private <T extends QueueWorkerAbstract> T prepareTestWorker(T worker) {
         worker.gravitonApi = gravitonApi;
         return worker;
     }
