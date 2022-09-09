@@ -8,7 +8,7 @@ import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadata;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadataAction;
 import com.github.libgraviton.workerbase.helper.WorkerUtil;
-import com.github.libgraviton.workerbase.lib.TestFileWorker;
+import com.github.libgraviton.workerbase.lib.TestFileQueueWorker;
 import com.github.libgraviton.workerbase.model.GravitonRef;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import mockit.*;
@@ -62,7 +62,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
     @Test
     public void testBasicFileHandling() throws Exception {
-        TestFileWorker testWorker = prepareTestWorker(new TestFileWorker());
+        TestFileQueueWorker testWorker = prepareTestWorker(new TestFileQueueWorker());
         worker = getWrappedWorker(testWorker);
         worker.run();
 
@@ -104,7 +104,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
     
     @Test
     public void testActionHandling() throws Exception {
-        TestFileWorker testWorker = prepareTestWorker(new TestFileWorker());
+        TestFileQueueWorker testWorker = prepareTestWorker(new TestFileQueueWorker());
         worker = getWrappedWorker(testWorker);
         worker.run();
 
@@ -143,7 +143,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         };
 
         String file1Url = "testFile1";
-        TestFileWorker testFileWorker = prepareTestWorker(new TestFileWorker());
+        TestFileQueueWorker testFileWorker = prepareTestWorker(new TestFileQueueWorker());
 
         com.github.libgraviton.gdk.gravitondyn.file.document.File firstFile = testFileWorker.getGravitonFile(file1Url);
         assertEquals(file, firstFile);
@@ -151,7 +151,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
     @Test
     public void testShouldHandleRequestWithoutActions() throws Exception {
-        TestFileWorker testFileWorker = spy(prepareTestWorker(new TestFileWorker()));
+        TestFileQueueWorker testFileWorker = spy(prepareTestWorker(new TestFileQueueWorker()));
         testFileWorker.shouldHandleRequestMocked = false;
         QueueEvent queueEvent = new QueueEvent();
         GravitonRef gravitonRef = new GravitonRef();
@@ -170,7 +170,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
     @Test
     public void testShouldHandleRequestWithActions() throws Exception {
-        TestFileWorker testFileWorker = spy(prepareTestWorker(new TestFileWorker()));
+        TestFileQueueWorker testFileWorker = spy(prepareTestWorker(new TestFileQueueWorker()));
         testFileWorker.shouldHandleRequestMocked = false;
         QueueEvent queueEvent = new QueueEvent();
         GravitonRef gravitonRef = new GravitonRef();
@@ -205,7 +205,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         assertEquals("someId123", queueEvent.getCoreUserId());
     }
 
-    private <T extends FileWorkerAbstract> T prepareTestWorker(T worker) {
+    private <T extends FileQueueWorkerAbstract> T prepareTestWorker(T worker) {
         worker.gravitonApi = gravitonApi;
         worker.fileEndpoint = new GravitonFileEndpoint(gravitonApi);
         return worker;

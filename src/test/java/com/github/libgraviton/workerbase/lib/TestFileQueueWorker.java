@@ -1,7 +1,7 @@
 package com.github.libgraviton.workerbase.lib;
 
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
-import com.github.libgraviton.workerbase.FileWorkerAbstract;
+import com.github.libgraviton.workerbase.FileQueueWorkerAbstract;
 import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
@@ -10,7 +10,7 @@ import com.github.libgraviton.workerbase.model.QueueEvent;
 import java.util.Arrays;
 import java.util.List;
 
-public class TestFileWorker extends FileWorkerAbstract {
+public class TestFileQueueWorker extends FileQueueWorkerAbstract {
 
     public boolean concerningRequestCalled = false;
     public boolean shouldHandleRequestMocked = true;
@@ -25,9 +25,9 @@ public class TestFileWorker extends FileWorkerAbstract {
      * 
      * @throws WorkerException
      */
-    public void handleRequest(QueueEvent queueEvent) throws WorkerException {
+    public void handleFileRequest(QueueEvent queueEvent, File file) throws WorkerException {
         try {
-            fileObj = getGravitonFile(queueEvent.getDocument().get$ref());
+            fileObj = file;
             actionPresent = isActionCommandPresent(this.fileObj, getActionsOfInterest(queueEvent).get(0));
             removeFileActionCommand(queueEvent.getDocument().get$ref(), getActionsOfInterest(queueEvent).get(0));
         } catch (GravitonCommunicationException e) {

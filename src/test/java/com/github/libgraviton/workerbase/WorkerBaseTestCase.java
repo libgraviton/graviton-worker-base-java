@@ -11,7 +11,6 @@ import com.rabbitmq.client.Channel;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
@@ -56,7 +55,7 @@ public abstract class WorkerBaseTestCase {
         when(gravitonApi.getBaseUrl()).thenReturn("http://localhost:8080/");
     }
     
-    protected Worker getWrappedWorker(WorkerAbstract testWorker) throws Exception {
+    protected Worker getWrappedWorker(QueueWorkerAbstract testWorker) throws Exception {
         worker = spy(new Worker(testWorker));
         queueChannel = mock(Channel.class);
         workerConsumer = spy(new WorkerConsumer(testWorker));
@@ -64,7 +63,7 @@ public abstract class WorkerBaseTestCase {
 
         QueueManager queueManager = mock(QueueManager.class);
         //doReturn(queueManager).when(worker).getQueueManager();
-        doNothing().when(queueManager).connect(any(WorkerAbstract.class));
+        doNothing().when(queueManager).connect(any(QueueWorkerAbstract.class));
 
         return worker;
     }
