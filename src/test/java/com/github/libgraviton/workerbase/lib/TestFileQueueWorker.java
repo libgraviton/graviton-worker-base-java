@@ -22,18 +22,11 @@ public class TestFileQueueWorker extends FileQueueWorkerAbstract {
      * worker logic is implemented here
      * 
      * @param queueEvent message body as object
-     * 
-     * @throws WorkerException
-     */
-    public void handleFileRequest(QueueEvent queueEvent, File file) throws WorkerException {
-        try {
-            fileObj = file;
-            actionPresent = isActionCommandPresent(this.fileObj, getActionsOfInterest(queueEvent).get(0));
-            removeFileActionCommand(queueEvent.getDocument().get$ref(), getActionsOfInterest(queueEvent).get(0));
-        } catch (GravitonCommunicationException e) {
-            e.printStackTrace();
-        }
 
+     */
+    public void handleFileRequest(QueueEvent queueEvent, File file) {
+        fileObj = file;
+        actionPresent = isActionCommandPresent(this.fileObj, getActionsOfInterest(queueEvent).get(0));
     }
 
     /**

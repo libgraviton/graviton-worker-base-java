@@ -75,14 +75,14 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         verify(gravitonApi, times(1)).put(isA(EventWorker.class));
 
         verify(gravitonApi, times(2)).get(contains("/event/status/"));
-        verify(gravitonApi, times(2)).get(contains("/file/"));
+        verify(gravitonApi, times(1)).get(contains("/file/"));
         // working update & done update
         verify(gravitonApi, times(2)).patch(isA(EventStatus.class));
 
         assertEquals("16f52c4b00523e2ba27480ce6905ed1d", testWorker.fileObj.getId());
         assertEquals("dude", testWorker.fileObj.getLinks().get(0).getType());
         assertEquals("http://localhost:8000/dude", testWorker.fileObj.getLinks().get(0).get$ref());
-        assertEquals(new Integer(200), testWorker.fileObj.getMetadata().getSize());
+        assertEquals(Integer.valueOf(200), testWorker.fileObj.getMetadata().getSize());
         assertEquals("image/jpeg", testWorker.fileObj.getMetadata().getMime());
 
         DateFormat dateFormat = objectMapper.getDateFormat();
@@ -116,11 +116,9 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         verify(gravitonApi, times(1)).put(isA(EventWorker.class));
 
         verify(gravitonApi, times(2)).get(contains("/event/status/"));
-        verify(gravitonApi, times(2)).get(contains("/file/"));
+        verify(gravitonApi, times(1)).get(contains("/file/"));
         // working update & done update
         verify(gravitonApi, times(2)).patch(isA(EventStatus.class));
-        // file action remove
-        verify(gravitonApi, times(1)).patch(isA(com.github.libgraviton.gdk.gravitondyn.file.document.File.class));
 
         assertEquals("16f52c4b00523e2ba27480ce6905ed1e", testWorker.fileObj.getId());
         
@@ -162,10 +160,10 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         List<String> noActions = Arrays.asList();
 
         doReturn(noActions).when(testFileWorker).getActionsOfInterest(queueEvent);
-        doNothing().when(testFileWorker).removeFileActionCommand(eq(documentUrl), anyString());
+        doNothing().when(testFileWorker).removeFileActionCommand(any(), anyList());
 
         assertFalse(testFileWorker.shouldHandleRequest(queueEvent));
-        verify(testFileWorker, never()).removeFileActionCommand(eq(documentUrl), anyString());
+        verify(testFileWorker, never()).removeFileActionCommand(any(), anyList());
     }
 
     @Test
@@ -197,10 +195,10 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         when(WorkerUtil.encodeRql(any())).thenCallRealMethod();
 
         doReturn(noActions).when(testFileWorker).getActionsOfInterest(queueEvent);
-        doNothing().when(testFileWorker).removeFileActionCommand(eq(documentUrl), anyString());
+        doNothing().when(testFileWorker).removeFileActionCommand(eq(file), anyList());
 
         assertTrue(testFileWorker.shouldHandleRequest(queueEvent));
-        verify(testFileWorker, times(2)).removeFileActionCommand(eq(documentUrl), anyString());
+        verify(testFileWorker, times(1)).removeFileActionCommand(eq(file), anyList());
 
         assertEquals("someId123", queueEvent.getCoreUserId());
     }

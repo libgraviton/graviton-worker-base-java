@@ -9,6 +9,8 @@ import com.github.libgraviton.workerbase.exception.GravitonCommunicationExceptio
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.google.common.base.Joiner;
+import io.micrometer.core.instrument.util.StringUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,12 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
 
         // get the file
         currentFile = getFileFromQueueEvent(queueEvent);
+
+        if (currentFile == null) {
+            // something is off..
+            return false;
+        }
+
         FileMetadata fileMetadata = currentFile.getMetadata();
 
         if (fileMetadata == null || fileMetadata.getAction().isEmpty()) {
@@ -48,6 +56,15 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
         List<String> referencedActions = fileMetadata.getAction().stream().map(FileMetadataAction::getCommand).toList();
 
         // any intersect? if so, we should handle it.
+        List<String> matching = ListUtils.intersection(actions, referencedActions);
+
+        if (matching.isEmpty()) {
+            return false;
+        }
+
+        // something matches. clear the actions from the files first.
+        removeFileActionCommand(currentFile, matching);
+
         return !ListUtils.intersection(actions, referencedActions).isEmpty();
     }
 
@@ -114,32 +131,28 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
     /**
      * removes the action.0.command action from the /file resource, PUTs it to the backend removed
      *
-     * @param documentUrl document url
-     * @param action action string to remove
      * @throws GravitonCommunicationException when file action command could not be removed at Graviton
      */
-    public void removeFileActionCommand(String documentUrl, String action) throws GravitonCommunicationException {
-        File gravitonFile = getGravitonFile(documentUrl);
+    protected void removeFileActionCommand(File gravitonFile, List<String> actions) throws GravitonCommunicationException {
         FileMetadata metadata = gravitonFile.getMetadata();
-        List<FileMetadataAction> metadataActions = metadata.getAction();
-        List<FileMetadataAction> matchingActions = new ArrayList<>();
 
-        for (FileMetadataAction metadataAction : metadataActions) {
-            if (action.equals(metadataAction.getCommand())) {
-                matchingActions.add(metadataAction);
-            }
-        }
+        // get the matching ones..
+        List<FileMetadataAction> matchingActions = metadata
+                .getAction()
+                .stream()
+                .filter(s -> actions.contains(s.getCommand())).toList();
 
         if (matchingActions.size() > 0) {
-            metadataActions.removeAll(matchingActions);
+            // remove them
+            gravitonFile.getMetadata().getAction().removeAll(matchingActions);
 
             try {
                 fileEndpoint.patch(gravitonFile).execute();
             } catch (CommunicationException e) {
-                throw new GravitonCommunicationException("Unable to remove file action command '" + action + "' from '" + documentUrl + "'.", e);
+                throw new GravitonCommunicationException("Unable to remove file action elements from '" + gravitonFile.getId() + "'.", e);
             }
 
-            LOG.info("Removed action property from " + documentUrl);
+            LOG.info("Removed action elements '{}' property from file ID '{}'", actions.toArray(), gravitonFile.getId());
         }        
     }
 
