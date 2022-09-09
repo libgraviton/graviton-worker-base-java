@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -42,7 +42,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         // GET /file metadata mock
 
         String metadata1 = FileUtils.readFileToString(
-                new File("src/test/resources/json/fileResource.json"), Charset.forName("UTF-8"));
+                new File("src/test/resources/json/fileResource.json"), StandardCharsets.UTF_8);
         response1 = spy(Response.class);
         response1.setObjectMapper(objectMapper);
         doReturn(metadata1).when(response1).getBody();
@@ -51,7 +51,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
                 .thenReturn(response1);
 
         String metadata2 = FileUtils.readFileToString(
-                new File("src/test/resources/json/fileResourceWithAction.json"), Charset.forName("UTF-8"));
+                new File("src/test/resources/json/fileResourceWithAction.json"), StandardCharsets.UTF_8);
         response2 = spy(Response.class);
         response2.setObjectMapper(objectMapper);
         doReturn(metadata2).when(response2).getBody();
@@ -67,7 +67,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
 
         String message = FileUtils.readFileToString(
-                new File("src/test/resources/json/queueFileEvent.json"), Charset.forName("UTF-8"));
+                new File("src/test/resources/json/queueFileEvent.json"), StandardCharsets.UTF_8);
 
         workerConsumer.consume("34343", message);
 
@@ -97,7 +97,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
 
         assertEquals(0, testWorker.fileObj.getMetadata().getAction().size());
 
-        assertTrue(testWorker.fileObj.getMetadata() instanceof FileMetadata);
+        assertTrue(testWorker.fileObj.getMetadata() != null);
         
         assertFalse(testWorker.actionPresent);
     }
@@ -109,7 +109,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
 
         String message = FileUtils.readFileToString(
-                new File("src/test/resources/json/queueFileEventWithAction.json"), Charset.forName("UTF-8"));
+                new File("src/test/resources/json/queueFileEventWithAction.json"), StandardCharsets.UTF_8);
         workerConsumer.consume("34343", message);
 
         // register
