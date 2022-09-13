@@ -136,7 +136,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
     protected void removeFileActionCommand(File gravitonFile, List<String> actions) throws GravitonCommunicationException {
         FileMetadata metadata = gravitonFile.getMetadata();
 
-        // get the matching ones..
+        // get the matching ones
         List<FileMetadataAction> matchingActions = metadata
                 .getAction()
                 .stream()

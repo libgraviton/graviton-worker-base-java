@@ -21,10 +21,6 @@ public class GravitonFileEndpoint {
 
     private final GravitonApi gravitonApi;
 
-    public GravitonFileEndpoint() {
-        this.gravitonApi = new GravitonApi();
-    }
-
     public GravitonFileEndpoint(GravitonApi gravitonApi) {
         this.gravitonApi = gravitonApi;
     }

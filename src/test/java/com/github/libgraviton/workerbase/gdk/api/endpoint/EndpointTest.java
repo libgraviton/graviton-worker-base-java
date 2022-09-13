@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase.gdk.api.endpoint;
 
-import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,7 +48,7 @@ public class EndpointTest {
 
     @Test
     public void testEndpointUrls() throws Exception {
-        Properties properties = PropertiesLoader.load();
+        Properties properties = WorkerProperties.load();
         String baseUrl = properties.getProperty("graviton.base.url");
         assertEquals(baseUrl, Endpoint.getBaseUrl());
 
