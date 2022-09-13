@@ -1,5 +1,8 @@
 package com.github.libgraviton.workerbase.helper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +17,8 @@ import java.util.Properties;
  * 3) accept both instance and static use - and still have the same properties
  */
 public class WorkerProperties {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WorkerProperties.class);
 
     private static Properties loadedProperties = new Properties();
     private static boolean alreadyLoaded = false;
@@ -52,13 +57,17 @@ public class WorkerProperties {
     }
 
     public static String getProperty(String name) {
-        return propertyOverrides.getOrDefault(
-                name,
-                loadedProperties.getProperty(name)
-        );
-    }
+        if (!alreadyLoaded) {
+            LOG.warn("Properties were called here without explicit call to WorkerProperties.load() before! " +
+                    "This is discouraged as the error handling is disabled here. Please fix that. Continuing ignoring errors.");
 
-    public static String getPropertyForceLoad(String name) {
+            try {
+                WorkerProperties.load();
+            } catch (IOException e) {
+                LOG.error("Error on explicit loading properties", e);
+            }
+        }
+
         return propertyOverrides.getOrDefault(
                 name,
                 loadedProperties.getProperty(name)
