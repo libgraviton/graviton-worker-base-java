@@ -1,6 +1,7 @@
 package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
+import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
@@ -43,6 +44,8 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
     protected String messageId;
 
+    protected GravitonFileEndpoint fileEndpoint;
+
     protected MessageAcknowledger acknowledger;
 
     protected GravitonAuthApi gravitonApi;
@@ -61,6 +64,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
         gravitonApi = initGravitonApi();
         statusHandler = new EventStatusHandler(gravitonApi);
+        fileEndpoint = new GravitonFileEndpoint(gravitonApi);
 
         // create our metrics..
         for (String theState : List.of(QueueEvent.STATE_RECEIVED, QueueEvent.STATE_IGNORED, QueueEvent.STATE_HANDLED, QueueEvent.STATE_ERRORED)) {

@@ -2,7 +2,7 @@ package com.github.libgraviton.workerbase.gdk.serialization.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.libgraviton.workerbase.gdk.data.SimpleClass;
-import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import org.junit.Test;
 
 import java.util.Calendar;
@@ -17,7 +17,7 @@ public class RqlObjectMapperTest {
 
     @Test
     public void testDateFormat() throws Exception {
-        Properties properties = PropertiesLoader.load();
+        Properties properties = WorkerProperties.load();
         RqlObjectMapper mapper = new RqlObjectMapper(properties);
 
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -29,7 +29,7 @@ public class RqlObjectMapperTest {
 
     @Test
     public void testIgnoreNullValues() throws Exception {
-        Properties properties = PropertiesLoader.load();
+        Properties properties = WorkerProperties.load();
         RqlObjectMapper mapper = new RqlObjectMapper(properties);
 
         SimpleClass simpleClass = new SimpleClass();

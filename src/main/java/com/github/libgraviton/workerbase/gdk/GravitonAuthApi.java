@@ -24,7 +24,7 @@ public class GravitonAuthApi extends GravitonApi {
     private Map<String, String> transientHeaders = new HashMap<>();
 
     public GravitonAuthApi(Properties properties) {
-        super();
+        super(properties);
         this.authHeaderValue = properties.getProperty("graviton.authentication.prefix.username")
                 .concat(properties.getProperty("graviton.workerId"));
         this.authHeaderName = properties.getProperty("graviton.authentication.header.name");

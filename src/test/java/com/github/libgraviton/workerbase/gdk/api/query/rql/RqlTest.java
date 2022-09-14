@@ -2,7 +2,7 @@ package com.github.libgraviton.workerbase.gdk.api.query.rql;
 
 import com.github.libgraviton.workerbase.gdk.data.ComplexClass;
 import com.github.libgraviton.workerbase.gdk.serialization.mapper.RqlObjectMapper;
-import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
@@ -30,7 +30,7 @@ public class RqlTest {
         complexClass.setaClass(aClass1);
         complexClass.setClasses(Arrays.asList(aClass1, aClass2));
 
-        Properties properties = PropertiesLoader.load();
+        Properties properties = WorkerProperties.load();
 
         Rql rql = new Rql.Builder()
                 .setLimit(1)

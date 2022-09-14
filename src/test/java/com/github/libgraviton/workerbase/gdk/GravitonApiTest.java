@@ -23,9 +23,9 @@ public class GravitonApiTest {
 
     private GravitonApi gravitonApi;
 
-    private String itemUrl = "http://someUrl/item123";
+    private final String itemUrl = "http://someUrl/item123";
 
-    private String endpointUrl = "http://someUrl/";
+    private final String endpointUrl = "http://someUrl/";
 
     private String baseUrl = "someBaseUrl";
 

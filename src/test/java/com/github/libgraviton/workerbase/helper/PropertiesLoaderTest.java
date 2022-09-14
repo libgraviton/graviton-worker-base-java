@@ -16,7 +16,7 @@ public class PropertiesLoaderTest {
         map.put("worker_hans", "dude");
         map.put("worker_entrY__subKey", "the.value__");
 
-        Properties props = PropertiesLoader.load(PropertiesLoader.class, map);
+        Properties props = PropertiesLoader.load(map);
 
         assertEquals("dude", props.getProperty("hans"));
         assertEquals("the.value__", props.getProperty("entrY.subKey"));

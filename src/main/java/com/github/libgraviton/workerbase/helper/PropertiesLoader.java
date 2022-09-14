@@ -16,7 +16,7 @@ import java.util.Properties;
  *         https://github.com/libgraviton/graviton/graphs/contributors
  * @see <a href="http://swisscom.chm">http://swisscom.ch</a>
  */
-public class PropertiesLoader {
+class PropertiesLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesLoader.class);
 
@@ -30,12 +30,8 @@ public class PropertiesLoader {
 
     private static final String ENV_PREFIX = "worker_";
 
-    public static Properties load() throws IOException {
-        return load(PropertiesLoader.class, System.getenv());
-    }
-
-    public static Properties load(Object initClass) throws IOException {
-        return load(initClass, System.getenv());
+    static Properties load() throws IOException {
+        return load(System.getenv());
     }
 
     /**
@@ -57,7 +53,7 @@ public class PropertiesLoader {
      * @return loaded Properties
      * @throws IOException whenever the properties from a given path could not be loaded
      */
-    public static Properties load(Object initClass, Map<String, String> env) throws IOException {
+    static Properties load(Map<String, String> env) throws IOException {
         Properties properties = new Properties();
 
         try (InputStream defaultProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(DEFAULT_PROPERTIES_PATH)) {
@@ -82,7 +78,7 @@ public class PropertiesLoader {
         }
 
         try (InputStream overwriteJarProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(OVERWRITE_PROPERTIES_JAR_PATH)) {
-            if (overwriteJarProperties != null && WorkerUtil.isJarContext(initClass)) {
+            if (overwriteJarProperties != null) {
                 LOG.info("Loading JAR runtime default properties from file '{}'", OVERWRITE_PROPERTIES_JAR_PATH);
                 properties.load(overwriteJarProperties);
             }
@@ -103,7 +99,7 @@ public class PropertiesLoader {
      * @param map
      * @return
      */
-    public static void addFromEnvironment(Properties properties, Map<String, String> map) {
+    static void addFromEnvironment(Properties properties, Map<String, String> map) {
         for (Map.Entry<String, String> entry : map.entrySet()) {
             if (entry.getKey().startsWith(ENV_PREFIX)) {
                 String propName = entry.getKey().substring(ENV_PREFIX.length());
@@ -121,7 +117,7 @@ public class PropertiesLoader {
      * @param doOverride
      * @return
      */
-    public static Properties addFromResource(Properties properties, String resourcePath, Boolean doOverride) throws Exception {
+    static Properties addFromResource(Properties properties, String resourcePath, Boolean doOverride) throws Exception {
         InputStream is = PropertiesLoader.class.getClassLoader().getResourceAsStream(resourcePath);
         if (is == null) {
             throw new Exception("Could not load resource '"+resourcePath+"' to load in PropertiesLoader!");
