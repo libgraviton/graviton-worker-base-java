@@ -7,14 +7,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 
 public class BasicAuth implements HeaderAuth {
 
     private static final Logger LOG = LoggerFactory.getLogger(BasicAuth.class);
 
-    private String username;
-    private String password;
+    private final String username;
+    private final String password;
 
     public BasicAuth(String username, String password) {
         this.username = username;
@@ -28,7 +29,7 @@ public class BasicAuth implements HeaderAuth {
     }
 
     public String basic() {
-        return basic(Charset.forName("ISO-8859-1"));
+        return basic(StandardCharsets.ISO_8859_1);
     }
 
     public String basic(Charset charset) {
