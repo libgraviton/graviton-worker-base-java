@@ -4,9 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * this is a singleton implementation/wrapper for properties handling
@@ -29,6 +27,16 @@ public class WorkerProperties {
         @Override
         public String getProperty(String name) {
             return WorkerProperties.getProperty(name);
+        }
+
+        @Override
+        public Enumeration<?> propertyNames() {
+            return Collections.enumeration(stringPropertyNames());
+        }
+
+        @Override
+        public Set<String> stringPropertyNames() {
+            return WorkerProperties.stringPropertyNames();
         }
     }
 
@@ -72,5 +80,13 @@ public class WorkerProperties {
                 name,
                 loadedProperties.getProperty(name)
         );
+    }
+
+    public static Set<String> stringPropertyNames() {
+        Set<String> names = new HashSet<>();
+        getProperty("");
+        names.addAll(loadedProperties.stringPropertyNames());
+        names.addAll(propertyOverrides.keySet());
+        return names;
     }
 }
