@@ -30,6 +30,11 @@ public class WorkerProperties {
         }
 
         @Override
+        public Object setProperty(String key, String value) {
+            return WorkerProperties.setProperty(key, value);
+        }
+
+        @Override
         public Enumeration<?> propertyNames() {
             return Collections.enumeration(stringPropertyNames());
         }
@@ -80,6 +85,11 @@ public class WorkerProperties {
                 name,
                 loadedProperties.getProperty(name)
         );
+    }
+
+    public static Object setProperty(String name, String value) {
+        getProperty("");
+        return loadedProperties.setProperty(name, value);
     }
 
     public static Set<String> stringPropertyNames() {
