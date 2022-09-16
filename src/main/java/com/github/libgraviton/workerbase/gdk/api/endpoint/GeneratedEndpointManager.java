@@ -2,7 +2,7 @@ package com.github.libgraviton.workerbase.gdk.api.endpoint;
 
 import com.github.libgraviton.workerbase.gdk.api.endpoint.exception.UnableToLoadEndpointAssociationsException;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.exception.UnableToPersistEndpointAssociationsException;
-import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +21,12 @@ public class GeneratedEndpointManager extends EndpointManager {
         LOAD, CREATE
     }
 
-    private static final String assocFilePath = PropertiesLoader.load("graviton.assoc.file.location");
-
     /**
      * The file holding the serialized service to POJO class association.
      */
     protected File serializationFile;
+
+    private final String assocFilePath;
 
     /**
      * Constructor. Defines the serialization file.
@@ -38,6 +38,7 @@ public class GeneratedEndpointManager extends EndpointManager {
      */
     public GeneratedEndpointManager(File serializationFile, Mode mode) throws UnableToLoadEndpointAssociationsException {
         this.serializationFile = serializationFile;
+        assocFilePath = WorkerProperties.getProperty("graviton.assoc.file.location");
         if (Mode.LOAD.equals(mode)) {
             load();
         } else {

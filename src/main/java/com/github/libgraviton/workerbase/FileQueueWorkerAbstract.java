@@ -29,8 +29,6 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
 
     private static final Logger LOG = LoggerFactory.getLogger(FileQueueWorkerAbstract.class);
 
-    protected GravitonFileEndpoint fileEndpoint;
-
     // just to pass around!
     private File currentFile;
 
@@ -85,12 +83,6 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
         handleFileRequest(body, fileToPass);
     }
 
-    @Override
-    public void onStartUp() throws WorkerException {
-        super.onStartUp();
-        fileEndpoint = initFileEndpoint();
-    }
-
     /**
      * Get required action of interest for worker.
      *
@@ -136,7 +128,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
     protected void removeFileActionCommand(File gravitonFile, List<String> actions) throws GravitonCommunicationException {
         FileMetadata metadata = gravitonFile.getMetadata();
 
-        // get the matching ones..
+        // get the matching ones
         List<FileMetadataAction> matchingActions = metadata
                 .getAction()
                 .stream()
@@ -154,9 +146,5 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
 
             LOG.info("Removed action elements '{}' property from file ID '{}'", actions.toArray(), gravitonFile.getId());
         }        
-    }
-
-    protected GravitonFileEndpoint initFileEndpoint() {
-        return new GravitonFileEndpoint(gravitonApi);
     }
 }

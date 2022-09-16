@@ -5,7 +5,7 @@ import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
 import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
 import com.github.libgraviton.workerbase.gdk.serialization.mapper.GravitonObjectMapper;
-import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.rabbitmq.client.Channel;
 import org.apache.commons.io.FileUtils;
@@ -30,7 +30,7 @@ public abstract class WorkerBaseTestCase {
     @Before
     public void baseMock() throws Exception {
 
-        Properties properties = PropertiesLoader.load();
+        Properties properties = WorkerProperties.load();
         objectMapper = GravitonObjectMapper.getInstance(properties);
 
         response = mock(Response.class);

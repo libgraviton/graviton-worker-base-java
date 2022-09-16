@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase.gdk.api.endpoint;
 
-import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 
 import java.io.Serializable;
 
@@ -18,11 +18,6 @@ public class Endpoint implements Serializable {
      * The path of the endpoint.
      */
     private String path;
-
-    /**
-     * Loads the base url once from the properties the first time an Endpoint class will be used.
-     */
-    private static final transient String baseUrl = PropertiesLoader.load("graviton.base.url");
 
     /**
      * Constructor. Sets the endpoint itemUrl.
@@ -49,11 +44,11 @@ public class Endpoint implements Serializable {
     }
 
     public String getUrl() {
-        return path != null ? baseUrl + path : path;
+        return path != null ? getBaseUrl() + path : path;
     }
 
     public String getItemUrl() {
-        return itemPath != null ? baseUrl + itemPath : itemPath;
+        return itemPath != null ? getBaseUrl() + itemPath : itemPath;
     }
 
     public String getItemPath() {
@@ -65,7 +60,7 @@ public class Endpoint implements Serializable {
     }
 
     public static String getBaseUrl() {
-        return baseUrl;
+        return WorkerProperties.getProperty("graviton.base.url");
     }
 
     @Override

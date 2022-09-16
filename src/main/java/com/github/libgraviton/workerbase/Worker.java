@@ -8,8 +8,8 @@ import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueu
 import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
-import com.github.libgraviton.workerbase.helper.PropertiesLoader;
 import com.github.libgraviton.workerbase.util.PrometheusServer;
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ public class Worker {
                 System.getProperty("user.timezone")
             );
 
-            properties = PropertiesLoader.load(worker);
+            properties = WorkerProperties.load();
         } catch (Throwable t) {
             LOG.error("Error loading properties", t);
             throw new WorkerException(t);

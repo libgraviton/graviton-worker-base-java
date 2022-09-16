@@ -17,7 +17,7 @@ import com.github.libgraviton.workerbase.gdk.exception.SerializationException;
 import com.github.libgraviton.workerbase.gdk.serialization.JsonPatcher;
 import com.github.libgraviton.workerbase.gdk.serialization.mapper.GravitonObjectMapper;
 import com.github.libgraviton.workerbase.gdk.serialization.mapper.RqlObjectMapper;
-import com.github.libgraviton.workerbase.gdk.util.PropertiesLoader;
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -34,7 +34,7 @@ public class GravitonApi {
     /**
      * Defines the base setUrl of the Graviton server
      */
-    private String baseUrl;
+    private final String baseUrl;
 
     /**
      * The object mapper used to serialize / deserialize to / from JSON
@@ -44,7 +44,7 @@ public class GravitonApi {
     /**
      * The endpoint manager which is used
      */
-    private EndpointManager endpointManager;
+    private final EndpointManager endpointManager;
 
     private Properties properties;
 
@@ -53,8 +53,14 @@ public class GravitonApi {
     private HeaderAuth auth;
 
     public GravitonApi() {
-        setup();
+        this(null);
+    }
+
+    public GravitonApi(Properties properties) {
+        this.properties = properties;
         this.baseUrl = properties.getProperty("graviton.base.url");
+
+        setup();
 
         try {
             this.endpointManager = initEndpointManager();
@@ -75,10 +81,12 @@ public class GravitonApi {
     }
 
     protected void setup() {
-        try {
-            this.properties = PropertiesLoader.load();
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to load properties files.", e);
+        if (properties == null) {
+            try {
+                properties = WorkerProperties.load();
+            } catch (IOException e) {
+                throw new IllegalStateException("Unable to load properties files.", e);
+            }
         }
         this.auth = new NoAuth();
         this.objectMapper = GravitonObjectMapper.getInstance(properties);
