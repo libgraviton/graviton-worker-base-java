@@ -25,6 +25,8 @@ import okhttp3.HttpUrl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * <p>Abstract WorkerAbstract class.</p>
@@ -49,11 +51,15 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
     protected GravitonAuthApi gravitonApi;
 
+    protected boolean areWeAsync = false;
+
     protected List<EventStatusStatus.Status> acknowledgeStates = List.of(
             getAcknowledgeState(),
             EventStatusStatus.Status.FAILED,
             EventStatusStatus.Status.IGNORED
     );
+
+    private ExecutorService executorService;
     
     /**
      * initializes this worker, will be called by the library
@@ -70,6 +76,12 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         gravitonApi = initGravitonApi();
         statusHandler = new EventStatusHandler(gravitonApi);
         fileEndpoint = new GravitonFileEndpoint(gravitonApi);
+        areWeAsync = (this instanceof AsyncQueueWorkerInterface);
+
+        if (areWeAsync) {
+            // @TODO make configurable
+            executorService = Executors.newFixedThreadPool(10);
+        }
 
         // create our metrics..
         for (String theState : List.of(QueueEvent.STATE_RECEIVED, QueueEvent.STATE_IGNORED, QueueEvent.STATE_HANDLED, QueueEvent.STATE_ERRORED)) {
@@ -103,12 +115,45 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         this.acknowledger = acknowledger;
 
         String statusUrl = convertToGravitonUrl(queueEvent.getStatus().get$ref());
-        try {
+
+        if (shouldUseTransientHeaders() && isUseTransientHeaders()) {
             // any transient headers?
-            if (shouldUseTransientHeaders() && isUseTransientHeaders()) {
-                gravitonApi.setTransientHeaders(queueEvent.getTransientHeaders());
+            gravitonApi.setTransientHeaders(queueEvent.getTransientHeaders());
+        }
+
+        // exception callback! -> will be used here and in the runnable!
+        WorkerRunnable.AfterExceptionCallback exceptionCallback = (throwable) -> {
+            // mark as errored
+            eventStates.incrementAndGet(QueueEvent.STATE_ERRORED);
+
+            LOG.error("Error in worker {}: {}", workerId, throwable.getMessage(), throwable);
+
+            if (shouldAutoUpdateStatus()) {
+                try {
+                    statusHandler.updateToErrorState(statusUrl, workerId, throwable.toString());
+                } catch (GravitonCommunicationException e1) {
+                    LOG.error("Unable to update worker status at '{}'.", statusUrl, e1);
+                }
             }
 
+            // acknowledge message here as we are done processing
+            if (shouldAutoAcknowledgeOnException()) {
+                acknowledgeToMessageQueue();
+            }
+        };
+
+        // on status change this!
+        WorkerRunnable.AfterStatusChangeCallback afterStatusChangeCallback = (status) -> {
+            if (shouldAutoUpdateStatus()) {
+                update(statusUrl, workerId, status);
+            }
+
+            if (status.equals(EventStatusStatus.Status.DONE)) {
+                eventStates.incrementAndGet(QueueEvent.STATE_HANDLED);
+            }
+        };
+
+        try {
             if (!shouldHandleRequest(queueEvent)) {
                 eventStates.incrementAndGet(QueueEvent.STATE_IGNORED);
 
@@ -119,43 +164,32 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
                 return;
             }
 
-            if (shouldAutoUpdateStatus()) {
-                update(statusUrl, workerId, EventStatusStatus.Status.WORKING);
+            WorkerRunnableInterface workload;
+            if (areWeAsync) {
+                workload = ((AsyncQueueWorkerInterface) this).handleRequestAsync(queueEvent);
+            } else {
+                workload = this::handleRequest;
             }
 
-            // call the worker
-            handleRequest(queueEvent);
 
-            if (shouldAutoUpdateStatus()) {
-                update(statusUrl, workerId, EventStatusStatus.Status.DONE);
+
+            // wrap with status handling stuff
+            Runnable workerRunnable = new WorkerRunnable(
+                    queueEvent,
+                    workload,
+                    afterStatusChangeCallback,
+                    () -> gravitonApi.clearTransientHeaders(),
+                    exceptionCallback
+            );
+
+            if (areWeAsync) {
+                executorService.submit(workerRunnable);
+            } else {
+                // directly execute
+                workerRunnable.run();
             }
-
-            // mark as handled
-            eventStates.incrementAndGet(QueueEvent.STATE_HANDLED);
-        } catch (Throwable e) {
-
-            // mark as errored
-            eventStates.incrementAndGet(QueueEvent.STATE_ERRORED);
-
-            LOG.error("Error in worker: " + workerId, e);
-
-            if (shouldAutoUpdateStatus()) {
-                try {
-                    statusHandler.updateToErrorState(statusUrl, workerId, e.toString());
-                } catch (GravitonCommunicationException e1) {
-                    // don't log again in case if previous exception was already a GravitonCommunicationException.
-                    if (!(e instanceof GravitonCommunicationException)) {
-                        LOG.error("Unable to update worker status at '" + statusUrl + "'.");
-                    }
-                }
-            }
-
-            // acknowledge message here as we are done processing
-            if (shouldAutoAcknowledgeOnException()) {
-                acknowledgeToMessageQueue();
-            }
-        } finally {
-            gravitonApi.clearTransientHeaders();
+        } catch (Throwable t) {
+            exceptionCallback.onException(t);
         }
     }
 
