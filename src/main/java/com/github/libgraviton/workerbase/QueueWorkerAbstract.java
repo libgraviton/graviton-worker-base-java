@@ -23,7 +23,6 @@ import io.micrometer.core.instrument.Tags;
 import okhttp3.HttpUrl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -49,6 +48,12 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
     protected MessageAcknowledger acknowledger;
 
     protected GravitonAuthApi gravitonApi;
+
+    protected List<EventStatusStatus.Status> acknowledgeStates = List.of(
+            getAcknowledgeState(),
+            EventStatusStatus.Status.FAILED,
+            EventStatusStatus.Status.IGNORED
+    );
     
     /**
      * initializes this worker, will be called by the library
@@ -147,7 +152,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
             // acknowledge message here as we are done processing
             if (shouldAutoAcknowledgeOnException()) {
-                reportToMessageQueue();
+                acknowledgeToMessageQueue();
             }
         } finally {
             gravitonApi.clearTransientHeaders();
@@ -160,7 +165,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
      * @param url url
      * @return corrected url
      */
-    private String convertToGravitonUrl(String url) {
+    protected String convertToGravitonUrl(String url) {
         HttpUrl baseUrl = HttpUrl.parse(gravitonApi.getBaseUrl());
 
         // convert
@@ -186,17 +191,9 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         } else {
             statusHandler.update(eventStatus, workerId, status);
         }
-        if (isTerminatedState(status)) {
-            reportToMessageQueue();
+        if (acknowledgeStates.contains(status)) {
+            acknowledgeToMessageQueue();
         }
-    }
-
-    protected boolean isTerminatedState(EventStatusStatus.Status status) {
-        return Arrays.asList(
-                EventStatusStatus.Status.DONE,
-                EventStatusStatus.Status.FAILED,
-                EventStatusStatus.Status.IGNORED)
-                .contains(status);
     }
 
     protected boolean shouldLinkAction(String workerId, List<EventStatusStatus> status) {
@@ -213,11 +210,11 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         update(statusHandler.getEventStatusFromUrl(eventStatusUrl), workerId, status);
     }
 
-    private void reportToMessageQueue() {
+    private void acknowledgeToMessageQueue() {
         try {
             acknowledger.acknowledge(messageId);
         } catch (CannotAcknowledgeMessage e) {
-            LOG.error("Unable to ack messageId '" + messageId + "' on message queue.");
+            LOG.error("Unable to ack messageId '{}' on message queue.", messageId, e);
         }
     }
 
@@ -249,6 +246,14 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
     public Boolean shouldAutoRegister()
     {
         return true;
+    }
+
+    /**
+     * return here at which EventStatus state the queue message should be acknowledged
+     * @return
+     */
+    public EventStatusStatus.Status getAcknowledgeState() {
+        return EventStatusStatus.Status.DONE;
     }
 
     /**

@@ -201,20 +201,8 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         workerConsumer.consume("34343", message);
     }
 
-    @Test
-    public void testIsTerminatedState() throws Exception {
-        TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
-
-        assertTrue(testWorker.isTerminatedState(EventStatusStatus.Status.FAILED));
-        assertTrue(testWorker.isTerminatedState(EventStatusStatus.Status.DONE));
-        assertTrue(testWorker.isTerminatedState(EventStatusStatus.Status.IGNORED));
-        assertFalse(testWorker.isTerminatedState(EventStatusStatus.Status.OPENED));
-        assertFalse(testWorker.isTerminatedState(EventStatusStatus.Status.WORKING));
-    }
-
     private <T extends QueueWorkerAbstract> T prepareTestWorker(T worker) {
         worker.gravitonApi = gravitonApi;
         return worker;
     }
-
 }

@@ -26,6 +26,8 @@ public class EventStatusHandler {
 
     protected GravitonApi gravitonApi;
 
+    protected EventStatusStatus.Status acknowledgeAt = EventStatusStatus.Status.DONE;
+
     final int retryLimit;
 
     public EventStatusHandler(GravitonApi gravitonApi) {
