@@ -83,8 +83,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         areWeAsync = (this instanceof AsyncQueueWorkerInterface);
 
         if (areWeAsync) {
-            // @TODO make configurable
-            executorService = Executors.newFixedThreadPool(10);
+            executorService = DependencyInjection.getInjector().getInstance(ExecutorService.class);
         }
 
         // create our metrics..
@@ -175,8 +174,6 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
                 workload = this::handleRequest;
             }
 
-
-
             // wrap with status handling stuff
             Runnable workerRunnable = new WorkerRunnable(
                     queueEvent,
@@ -187,7 +184,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
             );
 
             if (areWeAsync) {
-                executorService.submit(workerRunnable);
+                executorService.execute(workerRunnable);
             } else {
                 // directly execute
                 workerRunnable.run();

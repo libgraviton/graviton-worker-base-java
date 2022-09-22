@@ -5,7 +5,6 @@ import com.github.libgraviton.workerbase.messaging.consumer.AcknowledgingConsume
 import com.github.libgraviton.workerbase.messaging.consumer.Consumer;
 import com.github.libgraviton.workerbase.messaging.exception.CannotAcknowledgeMessage;
 import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
-import com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConnection;
 import com.rabbitmq.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +23,11 @@ class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
 
     static final private boolean ACK_PREV_MESSAGES = false;
 
-    static final private Logger LOG = LoggerFactory.getLogger(com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConsumer.class);
+    static final private Logger LOG = LoggerFactory.getLogger(RabbitMqConsumer.class);
 
-    private RabbitMqConnection connection;
+    private final RabbitMqConnection connection;
 
-    private Consumer consumer;
+    private final Consumer consumer;
 
     RabbitMqConsumer(RabbitMqConnection connection, Consumer consumer) {
         super(connection.getChannel());
@@ -64,12 +63,12 @@ class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
         // - RabbitMQ Documentation
         // So we need to recover channel closings only.
         if(sig.getReference() instanceof Channel) {
-            LOG.info("Recovering connection to queue '%s'...", connection.getConnectionName());
+            LOG.info("Recovering connection to queue '{}'...", connection.getConnectionName());
             connection.close();
             try {
                 connection.consume(consumer);
             } catch (CannotRegisterConsumer e) {
-                LOG.error("Connection recovery for queue '%s' failed.", connection.getConnectionName());
+                LOG.error("Connection recovery for queue '{}' failed.", connection.getConnectionName());
             }
         }
     }
@@ -78,7 +77,7 @@ class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
     public void acknowledge(String messageId) throws CannotAcknowledgeMessage {
         try {
             getChannel().basicAck(Long.parseLong(messageId), ACK_PREV_MESSAGES);
-            LOG.debug(String.format("Reported basicAck to message queue with delivery tag '%s'.", messageId));
+            LOG.debug("Reported basicAck to message queue with delivery tag '{}'.", messageId);
         } catch (IOException e) {
             throw new CannotAcknowledgeMessage(this, messageId, e);
         }

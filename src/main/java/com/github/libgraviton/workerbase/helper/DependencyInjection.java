@@ -3,7 +3,6 @@ package com.github.libgraviton.workerbase.helper;
 import com.github.libgraviton.workerbase.WorkerInterface;
 import com.github.libgraviton.workerbase.di.WorkerBaseProvider;
 import io.activej.inject.Injector;
-import io.activej.inject.module.Module;
 import io.activej.inject.module.ModuleBuilder;
 
 import java.util.List;
@@ -33,9 +32,5 @@ public class DependencyInjection {
 
     public static Injector getInjector() {
         return injector;
-    }
-
-    public static void reconfigureWithModule(Module module) {
-        injector = Injector.of(injector, module);
     }
 }

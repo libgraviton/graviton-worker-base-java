@@ -48,6 +48,11 @@ public class WorkerProperties {
         public Set<String> stringPropertyNames() {
             return WorkerProperties.stringPropertyNames();
         }
+
+        @Override
+        public Object getOrDefault(Object key, Object defaultValue) {
+            return super.getOrDefault(key, defaultValue);
+        }
     }
 
     public static Properties load() throws IOException {

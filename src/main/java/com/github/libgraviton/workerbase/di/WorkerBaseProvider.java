@@ -7,6 +7,8 @@ import io.activej.inject.annotation.Provides;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class WorkerBaseProvider {
 
@@ -23,6 +25,12 @@ public class WorkerBaseProvider {
     @Provides
     public static GravitonAuthApi getGravitonAuthApi(Properties properties) {
         return new GravitonAuthApi(properties);
+    }
+
+    @Provides
+    public static ExecutorService executorService(Properties properties) {
+        int size = Integer.parseInt(properties.getOrDefault("executor.threadPoolSize", "10").toString());
+        return Executors.newFixedThreadPool(size);
     }
 
 }
