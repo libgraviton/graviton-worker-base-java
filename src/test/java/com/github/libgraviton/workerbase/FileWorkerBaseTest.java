@@ -191,7 +191,7 @@ public class FileWorkerBaseTest extends WorkerBaseTestCase {
         file.setMetadata(metadata);
 
         mockStatic(WorkerUtil.class);
-        when(WorkerUtil.getGravitonFile(any(GravitonFileEndpoint.class), anyString())).thenReturn(file);
+        //when(WorkerUtil.getGravitonFile(any(GravitonFileEndpoint.class), anyString())).thenReturn(file);
         when(WorkerUtil.encodeRql(any())).thenCallRealMethod();
 
         doReturn(noActions).when(testFileWorker).getActionsOfInterest(queueEvent);

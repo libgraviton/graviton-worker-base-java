@@ -69,27 +69,6 @@ public class WorkerUtil {
         return encoded;
     }
 
-    /**
-     * gets file metadata from backend as a GravitonFile object
-     *
-     * @param fileEndpoint GravitonFileEndpoint instance
-     * @param fileUrl the url of the object
-     * @throws GravitonCommunicationException if file could not be fetched.
-     * @return file instance
-     */
-    public static File getGravitonFile(
-            GravitonFileEndpoint fileEndpoint,
-            String fileUrl
-    ) throws GravitonCommunicationException {
-
-        try {
-            Response response = fileEndpoint.getMetadata(fileUrl).execute();
-            return response.getBodyItem(File.class);
-        } catch (Throwable t) {
-            throw new GravitonCommunicationException("Error fetching file " + fileUrl, t);
-        }
-    }
-
     @Deprecated
     public static boolean isJarContext() {
         return isJarContext(WorkerUtil.class);

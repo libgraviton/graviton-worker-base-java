@@ -1,116 +1,85 @@
 package com.github.libgraviton.workerbase.gdk;
 
+import com.github.libgraviton.gdk.gravitondyn.file.document.File;
+import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadata;
+import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadataAction;
+import com.github.libgraviton.workerbase.FileQueueWorkerAbstract;
+import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.gdk.api.Request;
-import com.github.libgraviton.workerbase.gdk.api.endpoint.Endpoint;
-import com.github.libgraviton.workerbase.gdk.api.endpoint.EndpointManager;
-import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
 import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
-import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
-import com.github.libgraviton.workerbase.gdk.data.SimpleClass;
-import org.junit.Before;
+import com.github.libgraviton.workerbase.gdk.exception.SerializationException;
+import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.github.libgraviton.workertestbase.BaseWorkerTest;
 import org.junit.Test;
 
+import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
 
-public class GravitonFileEndpointTest {
+public class GravitonFileEndpointTest extends BaseWorkerTest {
 
-    private GravitonApi gravitonApi;
+    private FileQueueWorkerAbstract sut;
 
-    private GravitonFileEndpoint gravitonFileEndpoint;
+    @FunctionalInterface
+    private interface FileHandler {
+        void handleFileRequest(GravitonFileEndpoint fileEndpoint, QueueEvent body, File file) throws SerializationException, MalformedURLException;
+    }
 
-    private String url = "http://someUrl";
+    private FileQueueWorkerAbstract getFileTestWorker(FileHandler fileHandler) {
+        return new FileQueueWorkerAbstract() {
+            @Override
+            public List<String> getActionsOfInterest(QueueEvent queueEvent) {
+                return List.of("test");
+            }
 
-    private String itemUrl = "http://someUrl/{id}";
-
-    private SimpleClass resource;
-
-    @Before
-    public void setupService() throws Exception {
-        EndpointManager endpointManager = mock(EndpointManager.class);
-        Endpoint endpoint = mock(Endpoint.class);
-        when(endpoint.getUrl()).thenReturn(url);
-        when(endpoint.getItemUrl()).thenReturn(itemUrl);
-        when(endpointManager.getEndpoint(anyString())).thenReturn(endpoint);
-
-        gravitonApi = mock(GravitonApi.class);
-        when(gravitonApi.request()).thenCallRealMethod();
-        when(gravitonApi.get(url)).thenCallRealMethod();
-        when(gravitonApi.getEndpointManager()).thenReturn(endpointManager);
-        when(gravitonApi.extractId(any(GravitonBase.class))).thenCallRealMethod();
-        when(gravitonApi.serializeResource(any(SimpleClass.class))).thenReturn("{ \"id\":\"111\"}");
-        HeaderBag.Builder headers = new HeaderBag.Builder()
-                .set("whatever", "something")
-                .set("Accept", "almost-everything");
-
-        when(gravitonApi.getDefaultHeaders()).thenReturn(headers);
-        resource = new SimpleClass();
-        resource.setId("111");
-
-        gravitonFileEndpoint = new GravitonFileEndpoint(gravitonApi);
+            @Override
+            public void handleFileRequest(QueueEvent body, File file) throws WorkerException, GravitonCommunicationException {
+                try {
+                    fileHandler.handleFileRequest(fileEndpoint, body, file);
+                    assertTrue(true);
+                } catch (Throwable t) {
+                    throw new WorkerException("Errror", t);
+                }
+            }
+        };
     }
 
     @Test
-    public void testGetFile() throws Exception {
-        Request request = gravitonFileEndpoint.getFile(url).build();
-        assertEquals(0, request.getHeaders().get("Accept").all().size());
-        assertEquals(1, request.getHeaders().get("whatever").all().size());
-    }
+    public void testFileHandling() throws Exception {
 
-    @Test
-    public void testGetMetadata() throws Exception {
-        Request request = gravitonFileEndpoint.getMetadata(url).build();
-        assertEquals(1, request.getHeaders().get("whatever").all().size());
-        verify(gravitonApi, times(1)).get(url);
-    }
+        File eventFile = new File();
+        eventFile.setId("test-fileId");
+        FileMetadata fileMetadata = new FileMetadata();
+        FileMetadataAction action = new FileMetadataAction();
+        action.setCommand("test");
+        fileMetadata.setAction(List.of(action));
+        eventFile.setMetadata(fileMetadata);
 
-    @Test
-    public void testPost() throws Exception {
-        String data = "some real data";
+        sut = getFileTestWorker((fileEndpoint, body, file) -> {
+            // by comparing this we know that it was fetched through Wiremock and passed to the worker..
+            // and by this we're testing FileEndpoint
+            assertEquals(eventFile.getId(), file.getId());
 
-        Request request = gravitonFileEndpoint.post(data.getBytes(), resource).build();
-        List<Part> parts = request.getParts();
-        assertEquals(2, parts.size());
+            /** test PUT **/
+            String data = "SPECIALINFORMATION";
+            Request request = fileEndpoint.put(data.getBytes(StandardCharsets.UTF_8), file).build();
+            List<Part> parts = request.getParts();
+            assertEquals(2, parts.size());
 
-        Part part1 = parts.get(0);
-        assertEquals("upload", part1.getFormName());
-        assertEquals(data, new String(part1.getBody()));
+            Part part1 = parts.get(0);
+            assertEquals("upload", part1.getFormName());
+            assertEquals(data, new String(part1.getBody()));
 
-        Part part2 = parts.get(1);
-        assertEquals("metadata", part2.getFormName());
-        assertEquals("{ \"id\":\"111\"}", new String(part2.getBody()));
-    }
+            Part part2 = parts.get(1);
+            assertEquals("metadata", part2.getFormName());
+            assertTrue(new String(part2.getBody()).contains("\"id\":\"test-fileId\""));
+        });
 
-    @Test
-    public void testPut() throws Exception {
-        String data = "some real data";
+        prepareWorker(sut);
 
-        Request request = gravitonFileEndpoint.put(data.getBytes(), resource).build();
-        List<Part> parts = request.getParts();
-        assertEquals(2, parts.size());
-
-        Part part1 = parts.get(0);
-        assertEquals("upload", part1.getFormName());
-        assertEquals(data, new String(part1.getBody()));
-
-        Part part2 = parts.get(1);
-        assertEquals("metadata", part2.getFormName());
-        assertEquals("{ \"id\":\"111\"}", new String(part2.getBody()));
-    }
-
-    @Test
-    public void testPatch() throws Exception {
-        SimpleClass resource = new SimpleClass();
-        gravitonFileEndpoint.patch(resource);
-        verify(gravitonApi, times(1)).patch(resource);
-    }
-
-    @Test
-    public void testDelete() throws Exception {
-        SimpleClass resource = new SimpleClass();
-        gravitonFileEndpoint.delete(resource);
-        verify(gravitonApi, times(1)).delete(resource);
+        produceQueueEvent(sut, eventFile);
     }
 }
