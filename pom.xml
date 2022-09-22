@@ -103,6 +103,11 @@
       <version>4.4</version>
     </dependency>
     <dependency>
+      <groupId>io.activej</groupId>
+      <artifactId>activej-inject</artifactId>
+      <version>5.4.3</version>
+    </dependency>
+    <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>gdk-essential-pojos</artifactId>
       <version>1.0.0</version>
