@@ -9,6 +9,7 @@ import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusSt
 import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventStatusAction;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
+import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.github.libgraviton.workerbase.messaging.exception.CannotAcknowledgeMessage;
@@ -17,6 +18,7 @@ import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.google.common.util.concurrent.AtomicLongMap;
+import io.activej.inject.annotation.Inject;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
@@ -35,6 +37,7 @@ import java.util.concurrent.Executors;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
+@Inject
 public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWorkerInterface {
 
     private final AtomicLongMap<String> eventStates = AtomicLongMap.create();
@@ -49,6 +52,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
     protected MessageAcknowledger acknowledger;
 
+    @Inject
     protected GravitonAuthApi gravitonApi;
 
     protected boolean areWeAsync = false;
@@ -353,7 +357,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
     }
 
     public QueueManager getQueueManager() {
-        return new QueueManager(properties);
+        return DependencyInjection.getInjector().getInstance(QueueManager.class);
     }
 
     protected GravitonAuthApi initGravitonApi() {
