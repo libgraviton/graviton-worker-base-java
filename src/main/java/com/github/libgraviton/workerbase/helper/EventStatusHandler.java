@@ -99,6 +99,14 @@ public class EventStatusHandler {
         update(eventStatus, workerStatus);
     }
 
+    public void update(EventStatus eventStatus) throws GravitonCommunicationException {
+        try {
+            gravitonApi.patch(eventStatus).execute();
+        } catch (CommunicationException e) {
+            throw new GravitonCommunicationException("Failed to update the event status.", e);
+        }
+    }
+
     protected void update(EventStatus eventStatus, EventStatusStatus workerStatus) throws GravitonCommunicationException {
 
         List<EventStatusStatus> status = eventStatus.getStatus();
@@ -118,11 +126,7 @@ public class EventStatusHandler {
             }
         }
 
-        try {
-            gravitonApi.patch(eventStatus).execute();
-        } catch (CommunicationException e) {
-            throw new GravitonCommunicationException("Failed to update the event status.", e);
-        }
+        update(eventStatus);
 
         LOG.info(
                 "Updated /event/status/{} to '{}'.",
