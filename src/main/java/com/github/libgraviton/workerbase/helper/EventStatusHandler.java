@@ -68,6 +68,11 @@ public class EventStatusHandler {
         information.setType(EventStatusInformation.Type.ERROR);
         information.setContent(errorMessage);
         eventStatus.getInformation().add(information);
+        LOG.info(
+                "Adding information type 'error' with content '{}' for event status '{}'",
+                errorMessage,
+                eventStatus.getId()
+        );
         update(eventStatus, workerId, EventStatusStatus.Status.FAILED);
     }
 
