@@ -2,8 +2,10 @@ package com.github.libgraviton.workerbase.gdk;
 
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import com.github.libgraviton.workerbase.gdk.api.HttpMethod;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
+import com.github.libgraviton.workerbase.gdk.api.multipart.FilePart;
 import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
 import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
@@ -51,37 +53,56 @@ public class GravitonFileEndpoint {
         DownloadClient.downloadFile(fileUrl, destinationPath, true);
     }
 
+    public void writeFileContentToDisk(String urlOrId, java.io.File destinationPath) throws Exception {
+        writeFileContentToDisk(urlOrId, destinationPath.getAbsolutePath());
+    }
+
     private String getFileDownloadUrl(String id) {
         return gravitonApi.getEndpointManager().getEndpoint(File.class.getName()).getUrl() + id;
     }
 
     public Request.Builder post(byte[] data, GravitonBase resource) throws SerializationException {
         Part dataPart = new Part(data, "upload");
-        Part metadataPart = new Part(gravitonApi.serializeResource(resource), "metadata");
-
-        HeaderBag.Builder headers = gravitonApi.getDefaultHeaders()
-                .unset("Accept")
-                .unset("Content-Type");
-
-        return gravitonApi.request()
-                .setUrl(gravitonApi.getEndpointManager().getEndpoint(resource.getClass().getName()).getUrl())
-                .setHeaders(headers.build())
-                .post(dataPart, metadataPart);
+        return getBaseFileMultiPartRequest(resource, HttpMethod.POST).addPart(dataPart);
     }
 
     public Request.Builder put(byte[] data, GravitonBase resource) throws SerializationException {
         Part dataPart = new Part(data, "upload");
+        return getBaseFileMultiPartRequest(resource, HttpMethod.PUT).addPart(dataPart);
+    }
+
+    public Request.Builder post(java.io.File file, GravitonBase resource) throws SerializationException {
+        FilePart dataPart = new FilePart(file, "upload");
+        return getBaseFileMultiPartRequest(resource, HttpMethod.POST).addFilePart(dataPart);
+    }
+
+    public Request.Builder put(java.io.File file, GravitonBase resource) throws SerializationException {
+        FilePart dataPart = new FilePart(file, "upload");
+        return getBaseFileMultiPartRequest(resource, HttpMethod.PUT).addFilePart(dataPart);
+    }
+
+    private Request.Builder getBaseFileMultiPartRequest(GravitonBase resource, HttpMethod method) throws SerializationException {
         Part metadataPart = new Part(gravitonApi.serializeResource(resource), "metadata");
 
         HeaderBag.Builder headers = gravitonApi.getDefaultHeaders()
                 .unset("Accept")
                 .unset("Content-Type");
 
-        return gravitonApi.request()
-                .setUrl(gravitonApi.getEndpointManager().getEndpoint(resource.getClass().getName()).getItemUrl())
-                .addParam("id", gravitonApi.extractId(resource))
+        Request.Builder builder = gravitonApi.request()
                 .setHeaders(headers.build())
-                .put(dataPart, metadataPart);
+                .addPart(metadataPart)
+                .setMethod(method);
+
+        // post or put?
+        if (method.equals(HttpMethod.PUT)) {
+            // item url
+            builder.setUrl(gravitonApi.getEndpointManager().getEndpoint(resource.getClass().getName()).getItemUrl())
+                    .addParam("id", gravitonApi.extractId(resource));
+        } else {
+            builder.setUrl(gravitonApi.getEndpointManager().getEndpoint(resource.getClass().getName()).getUrl());
+        }
+
+        return builder;
     }
 
     public Request.Builder patch(GravitonBase resource) throws SerializationException {
