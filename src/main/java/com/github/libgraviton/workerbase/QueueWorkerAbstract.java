@@ -82,7 +82,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         areWeAsync = (this instanceof AsyncQueueWorkerInterface);
 
         if (areWeAsync) {
-            executorService = DependencyInjection.getInjector().getInstance(ExecutorService.class);
+            executorService = DependencyInjection.getInstance(ExecutorService.class);
         }
 
         // create our metrics..
@@ -353,7 +353,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
     }
 
     public QueueManager getQueueManager() {
-        return DependencyInjection.getInjector().getInstance(QueueManager.class);
+        return DependencyInjection.getInstance(QueueManager.class);
     }
 
     protected GravitonAuthApi initGravitonApi() {
