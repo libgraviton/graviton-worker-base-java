@@ -5,11 +5,14 @@ import com.github.libgraviton.workerbase.di.WorkerBaseProvider;
 import io.activej.inject.Injector;
 import io.activej.inject.module.ModuleBuilder;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class DependencyInjection {
 
     private static Injector injector;
+
+    private static final HashMap<Class<?>, Object> instanceOverrides = new HashMap<>();
 
     public static void init(WorkerInterface worker, List<Object> addedProviders) {
         ModuleBuilder builder = ModuleBuilder
@@ -30,7 +33,18 @@ public class DependencyInjection {
         injector = Injector.of(builder.build());
     }
 
-    public static Injector getInjector() {
-        return injector;
+    public static <T> T getInstance(Class<T> clazz) {
+        if (instanceOverrides.containsKey(clazz)) {
+            return (T) instanceOverrides.get(clazz);
+        }
+        return injector.getInstance(clazz);
+    }
+
+    public static void addInstanceOverride(Class<?> clazz, Object instance) {
+        instanceOverrides.put(clazz, instance);
+    }
+
+    public static void clearInstanceOverrides() {
+        instanceOverrides.clear();
     }
 }
