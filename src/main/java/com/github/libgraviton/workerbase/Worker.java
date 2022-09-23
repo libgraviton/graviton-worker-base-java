@@ -46,7 +46,7 @@ public class Worker {
         // init di!
         DependencyInjection.init(worker, List.of(this));
 
-        properties = DependencyInjection.getInjector().getInstance(Properties.class);
+        properties = DependencyInjection.getInstance(Properties.class);
 
         LOG.info(
                 "Starting up '{}' version '{}'. Java runtime '{}', version '{}', TZ '{}'",
@@ -61,7 +61,7 @@ public class Worker {
         this.worker = worker;
 
         // get it back from di!
-        this.worker = DependencyInjection.getInjector().getInstance(WorkerInterface.class);
+        this.worker = DependencyInjection.getInstance(WorkerInterface.class);
     }
 
     /**
@@ -103,7 +103,7 @@ public class Worker {
 
         new PrometheusServer(worker.getWorkerId(), properties);
 
-        QueueManager queueManager = DependencyInjection.getInjector().getInstance(QueueManager.class);
+        QueueManager queueManager = DependencyInjection.getInstance(QueueManager.class);
         try {
             queueManager.connect((QueueWorkerInterface) worker);
         } catch (CannotConnectToQueue | CannotRegisterConsumer e) {
