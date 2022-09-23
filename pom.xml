@@ -41,7 +41,7 @@
     <dependency.locations.enabled>false</dependency.locations.enabled>
     <dependency.details.enabled>false</dependency.details.enabled>
     <jackson-jr.version>2.13.4</jackson-jr.version>
-    <log4j.version>2.18.0</log4j.version>
+    <log4j.version>2.19.0</log4j.version>
     <jmockit.version>1.49</jmockit.version>
   </properties>
 
@@ -146,7 +146,7 @@
     <dependency>
       <groupId>io.sentry</groupId>
       <artifactId>sentry-log4j2</artifactId>
-      <version>6.4.1</version>
+      <version>6.4.2</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
