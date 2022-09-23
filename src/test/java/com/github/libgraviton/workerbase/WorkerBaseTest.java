@@ -2,7 +2,6 @@ package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
-import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatusAction;
 import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventStatusAction;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
@@ -18,7 +17,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -68,7 +67,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
 
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), Charset.forName("UTF-8"));
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), StandardCharsets.UTF_8);
         workerConsumer.consume("34343", message);
 
         assertTrue(testWorker.shouldHandleRequestCalled);
@@ -96,7 +95,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
 
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), Charset.forName("UTF-8"));
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), StandardCharsets.UTF_8);
         workerConsumer.consume("34343", message);
 
         verify(testWorker, times(1)).shouldHandleRequest(any(QueueEvent.class));
@@ -118,7 +117,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         worker.run();
 
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), Charset.forName("UTF-8"));
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), StandardCharsets.UTF_8);
         workerConsumer.consume("34343", message);
         
         assertTrue(testWorker.concerningRequestCalled);
@@ -150,7 +149,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         
         // let worker throw WorkerException
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), Charset.forName("UTF-8"));
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), StandardCharsets.UTF_8);
         workerConsumer.consume("34343", message);
 
         // register
@@ -172,7 +171,7 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         
         // let worker throw WorkerException
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), Charset.forName("UTF-8"));
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), StandardCharsets.UTF_8);
         workerConsumer.consume("34343", message);
 
         // register
@@ -197,24 +196,12 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
         
         // let worker throw CommunicationException
         URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), Charset.forName("UTF-8"));
+        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), StandardCharsets.UTF_8);
         workerConsumer.consume("34343", message);
-    }
-
-    @Test
-    public void testIsTerminatedState() throws Exception {
-        TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
-
-        assertTrue(testWorker.isTerminatedState(EventStatusStatus.Status.FAILED));
-        assertTrue(testWorker.isTerminatedState(EventStatusStatus.Status.DONE));
-        assertTrue(testWorker.isTerminatedState(EventStatusStatus.Status.IGNORED));
-        assertFalse(testWorker.isTerminatedState(EventStatusStatus.Status.OPENED));
-        assertFalse(testWorker.isTerminatedState(EventStatusStatus.Status.WORKING));
     }
 
     private <T extends QueueWorkerAbstract> T prepareTestWorker(T worker) {
         worker.gravitonApi = gravitonApi;
         return worker;
     }
-
 }

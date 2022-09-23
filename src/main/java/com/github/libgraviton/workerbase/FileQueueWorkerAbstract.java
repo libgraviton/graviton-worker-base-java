@@ -66,10 +66,6 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
         return !ListUtils.intersection(actions, referencedActions).isEmpty();
     }
 
-    private File getFileFromQueueEvent(QueueEvent queueEvent) throws GravitonCommunicationException {
-        return getGravitonFile(queueEvent.getDocument().get$ref());
-    }
-
     final public void handleRequest(QueueEvent body) throws WorkerException, GravitonCommunicationException {
         // get the file..
         File fileToPass;
@@ -91,6 +87,10 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
      */
     public abstract List<String> getActionsOfInterest(QueueEvent queueEvent);
 
+    private File getFileFromQueueEvent(QueueEvent queueEvent) throws GravitonCommunicationException {
+        return getGravitonFile(queueEvent.getDocument().get$ref());
+    }
+
     /**
      * gets file metadata from backend as a GravitonFile object
      *
@@ -99,7 +99,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
      * @return file instance
      */
     public File getGravitonFile(String fileUrl) throws GravitonCommunicationException {
-        return WorkerUtil.getGravitonFile(fileEndpoint, fileUrl);
+        return fileEndpoint.getFileMetadata(fileUrl);
     }    
     
     /**
