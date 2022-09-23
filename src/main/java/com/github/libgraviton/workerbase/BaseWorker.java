@@ -2,7 +2,8 @@ package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
-import com.github.libgraviton.workerbase.helper.WorkerUtil;
+
+import java.util.List;
 import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,10 @@ abstract public class BaseWorker implements WorkerInterface {
    */
   public void onStartUp() throws WorkerException
   {
+  }
+
+  public List<Class<?>> getDependencyInjectionProviders() {
+    return List.of();
   }
 
   /**

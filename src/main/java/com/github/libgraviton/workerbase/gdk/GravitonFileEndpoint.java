@@ -1,12 +1,16 @@
 package com.github.libgraviton.workerbase.gdk;
 
+import com.github.libgraviton.gdk.gravitondyn.file.document.File;
+import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import com.github.libgraviton.workerbase.gdk.api.HttpMethod;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
+import com.github.libgraviton.workerbase.gdk.api.multipart.FilePart;
 import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
 import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
+import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.SerializationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.github.libgraviton.workerbase.util.DownloadClient;
 
 /**
  * Extra Graviton API functionality for /file endpoint calls.
@@ -17,75 +21,88 @@ import org.slf4j.LoggerFactory;
  */
 public class GravitonFileEndpoint {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GravitonFileEndpoint.class);
-
     private final GravitonApi gravitonApi;
 
     public GravitonFileEndpoint(GravitonApi gravitonApi) {
         this.gravitonApi = gravitonApi;
     }
 
-    public Request.Builder getFile(String url) {
-        LOG.debug("Requesting file {}", url);
+    /**
+     * get a specific File by id (the metadata)
 
-        // without the 'Accept' - 'application/json' header, we get the file instead of the metadata
-        HeaderBag.Builder headers = gravitonApi.getDefaultHeaders()
-                .unset("Accept");
-
-        return gravitonApi.request()
-                .setUrl(url)
-                .setHeaders(headers.build())
-                .get();
+     * @return
+     */
+    public File getFileMetadata(String urlOrId) throws GravitonCommunicationException {
+        try {
+            return gravitonApi.get(gravitonApi.getIdFromUrlOrId(urlOrId), File.class).execute().getBodyItem(File.class);
+        } catch (CommunicationException ce) {
+            throw new GravitonCommunicationException("Error fetching file metadata", ce);
+        }
     }
 
-    public Request.Builder getFile(GravitonBase resource) {
-        return getFile(gravitonApi.extractId(resource), resource.getClass());
+    /**
+     * Writes the Graviton file *contents* to disk..
+     *
+     * @param urlOrId
+     * @param destinationPath
+     */
+    public void writeFileContentToDisk(String urlOrId, String destinationPath) throws Exception {
+        String fileId = gravitonApi.getIdFromUrlOrId(urlOrId);
+        String fileUrl = getFileDownloadUrl(fileId);
+
+        DownloadClient.downloadFile(fileUrl, destinationPath, true);
     }
 
-    public Request.Builder getFile(String id, Class clazz) {
-        return getFile(gravitonApi.getEndpointManager().getEndpoint(clazz.getName()).getItemUrl()).addParam("id", id);
+    public void writeFileContentToDisk(String urlOrId, java.io.File destinationPath) throws Exception {
+        writeFileContentToDisk(urlOrId, destinationPath.getAbsolutePath());
     }
 
-    public Request.Builder getMetadata(String url) {
-        LOG.debug("Requesting file metadata {}", url);
-        return gravitonApi.get(url);
-    }
-
-    public Request.Builder getMetadata(GravitonBase resource) {
-        return getMetadata(gravitonApi.extractId(resource), resource.getClass());
-    }
-
-    public Request.Builder getMetadata(String id, Class clazz) {
-        return getMetadata(gravitonApi.getEndpointManager().getEndpoint(clazz.getName()).getItemUrl()).addParam("id", id);
+    private String getFileDownloadUrl(String id) {
+        return gravitonApi.getEndpointManager().getEndpoint(File.class.getName()).getUrl() + id;
     }
 
     public Request.Builder post(byte[] data, GravitonBase resource) throws SerializationException {
         Part dataPart = new Part(data, "upload");
-        Part metadataPart = new Part(gravitonApi.serializeResource(resource), "metadata");
-
-        HeaderBag.Builder headers = gravitonApi.getDefaultHeaders()
-                .unset("Accept")
-                .unset("Content-Type");
-
-        return gravitonApi.request()
-                .setUrl(gravitonApi.getEndpointManager().getEndpoint(resource.getClass().getName()).getUrl())
-                .setHeaders(headers.build())
-                .post(dataPart, metadataPart);
+        return getBaseFileMultiPartRequest(resource, HttpMethod.POST).addPart(dataPart);
     }
 
     public Request.Builder put(byte[] data, GravitonBase resource) throws SerializationException {
         Part dataPart = new Part(data, "upload");
+        return getBaseFileMultiPartRequest(resource, HttpMethod.PUT).addPart(dataPart);
+    }
+
+    public Request.Builder post(java.io.File file, GravitonBase resource) throws SerializationException {
+        FilePart dataPart = new FilePart(file, "upload");
+        return getBaseFileMultiPartRequest(resource, HttpMethod.POST).addFilePart(dataPart);
+    }
+
+    public Request.Builder put(java.io.File file, GravitonBase resource) throws SerializationException {
+        FilePart dataPart = new FilePart(file, "upload");
+        return getBaseFileMultiPartRequest(resource, HttpMethod.PUT).addFilePart(dataPart);
+    }
+
+    private Request.Builder getBaseFileMultiPartRequest(GravitonBase resource, HttpMethod method) throws SerializationException {
         Part metadataPart = new Part(gravitonApi.serializeResource(resource), "metadata");
 
         HeaderBag.Builder headers = gravitonApi.getDefaultHeaders()
                 .unset("Accept")
                 .unset("Content-Type");
 
-        return gravitonApi.request()
-                .setUrl(gravitonApi.getEndpointManager().getEndpoint(resource.getClass().getName()).getItemUrl())
-                .addParam("id", gravitonApi.extractId(resource))
+        Request.Builder builder = gravitonApi.request()
                 .setHeaders(headers.build())
-                .put(dataPart, metadataPart);
+                .addPart(metadataPart)
+                .setMethod(method);
+
+        // post or put?
+        if (method.equals(HttpMethod.PUT)) {
+            // item url
+            builder.setUrl(gravitonApi.getEndpointManager().getEndpoint(resource.getClass().getName()).getItemUrl())
+                    .addParam("id", gravitonApi.extractId(resource));
+        } else {
+            builder.setUrl(gravitonApi.getEndpointManager().getEndpoint(resource.getClass().getName()).getUrl());
+        }
+
+        return builder;
     }
 
     public Request.Builder patch(GravitonBase resource) throws SerializationException {

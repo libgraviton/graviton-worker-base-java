@@ -30,6 +30,11 @@ public class WorkerProperties {
         }
 
         @Override
+        public Object get(Object key) {
+            return WorkerProperties.getProperty(String.valueOf(key));
+        }
+
+        @Override
         public Object setProperty(String key, String value) {
             return WorkerProperties.setProperty(key, value);
         }
@@ -42,6 +47,11 @@ public class WorkerProperties {
         @Override
         public Set<String> stringPropertyNames() {
             return WorkerProperties.stringPropertyNames();
+        }
+
+        @Override
+        public Object getOrDefault(Object key, Object defaultValue) {
+            return super.getOrDefault(key, defaultValue);
         }
     }
 

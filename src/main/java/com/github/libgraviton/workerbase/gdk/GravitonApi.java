@@ -80,6 +80,19 @@ public class GravitonApi {
         this.auth = auth;
     }
 
+    /**
+     * if an url is passed, the id is returned.. if it seems to be an id, only that id is returned..
+     * @param urlOrId
+     * @return
+     */
+    public String getIdFromUrlOrId(String urlOrId) {
+        if (!urlOrId.contains("/")) {
+            return urlOrId;
+        }
+
+        return urlOrId.substring(urlOrId.lastIndexOf("/") + 1);
+    }
+
     protected void setup() {
         if (properties == null) {
             try {
