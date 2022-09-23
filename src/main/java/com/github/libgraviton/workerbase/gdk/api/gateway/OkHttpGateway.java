@@ -5,6 +5,7 @@ import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.gdk.api.gateway.okhttp.OkHttpGatewayFactory;
 import com.github.libgraviton.workerbase.gdk.api.header.Header;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
+import com.github.libgraviton.workerbase.gdk.api.multipart.FilePart;
 import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulRequestException;
@@ -73,9 +74,22 @@ public class OkHttpGateway implements GravitonGateway {
 
     private RequestBody generateMultipartRequestBody(Request request) {
         MultipartBody.Builder builder = new MultipartBody.Builder();
+        // string based parts
         for (Part part : request.getParts()) {
             MultipartBody.Part bodyPart;
             RequestBody requestBody = RequestBody.create(part.getBody());
+            if (part.getFormName() != null) {
+                bodyPart = MultipartBody.Part.createFormData(part.getFormName(), null, requestBody);
+            } else {
+                bodyPart = MultipartBody.Part.create(null, requestBody);
+            }
+
+            builder.addPart(bodyPart);
+        }
+        // file parts
+        for (FilePart part : request.getFileParts()) {
+            MultipartBody.Part bodyPart;
+            RequestBody requestBody = RequestBody.create(part.getBody(), MediaType.parse(part.getContentType()));
             if (part.getFormName() != null) {
                 bodyPart = MultipartBody.Part.createFormData(part.getFormName(), null, requestBody);
             } else {

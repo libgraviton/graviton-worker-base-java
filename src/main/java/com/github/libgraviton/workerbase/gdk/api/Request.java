@@ -1,9 +1,8 @@
 package com.github.libgraviton.workerbase.gdk.api;
 
 import com.github.libgraviton.workerbase.gdk.RequestExecutor;
-import com.github.libgraviton.workerbase.gdk.api.HttpMethod;
-import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
+import com.github.libgraviton.workerbase.gdk.api.multipart.FilePart;
 import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
 import com.github.libgraviton.workerbase.gdk.api.query.Query;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
@@ -28,6 +27,8 @@ public class Request {
 
     protected List<Part> parts;
 
+    protected List<FilePart> fileParts;
+
     protected Map<String, String> params = new HashMap<>();
 
     protected Request() {
@@ -39,6 +40,7 @@ public class Request {
         headers = builder.headerBuilder.build();
         body = builder.body;
         parts = builder.parts;
+        fileParts = builder.fileParts;
         params = builder.params;
     }
 
@@ -66,12 +68,16 @@ public class Request {
         return parts;
     }
 
+    public List<FilePart> getFileParts() {
+        return fileParts;
+    }
+
     public Map<String, String> getParams() {
         return params;
     }
 
     public boolean isMultipartRequest() {
-        return parts.size() > 0;
+        return (parts.size() + fileParts.size()) > 0;
     }
 
     public static class Builder {
@@ -89,6 +95,8 @@ public class Request {
         protected byte[] body;
 
         protected List<Part> parts = new ArrayList<>();
+
+        protected List<FilePart> fileParts = new ArrayList<>();
 
         protected RequestExecutor executor;
 
@@ -199,6 +207,20 @@ public class Request {
 
         public List<Part> getParts() {
             return parts;
+        }
+
+        public Builder setFileParts(List<FilePart> parts) {
+            this.fileParts = parts;
+            return this;
+        }
+
+        public Builder addFilePart(FilePart part) {
+            this.fileParts.add(part);
+            return this;
+        }
+
+        public List<FilePart> getFileParts() {
+            return fileParts;
         }
 
         public Builder head() {
