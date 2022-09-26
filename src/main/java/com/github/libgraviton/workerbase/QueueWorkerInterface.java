@@ -24,6 +24,6 @@ public interface QueueWorkerInterface {
 
   QueueManager getQueueManager();
 
-  Boolean shouldAutoAcknowledgeOnException();
+  boolean shouldAutoAcknowledgeOnException();
 
 }
