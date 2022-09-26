@@ -40,8 +40,4 @@ public class TestQueueWorkerException extends QueueWorkerAbstract {
     {
         return this.doAutoStuff;
     }
-
-    protected GravitonAuthApi initGravitonApi() {
-        return gravitonApi;
-    }
 }
