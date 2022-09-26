@@ -2,6 +2,8 @@ package com.github.libgraviton.workerbase.util;
 
 import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import java.io.File;
+import java.io.IOException;
+
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.Request;
@@ -37,36 +39,6 @@ public class DownloadClient {
   }
 
   /**
-   * Downloads a file and returns its content as string
-   *
-   * @param url the url to get
-   * @param acceptAllSslCerts if we should accept all certificates
-   *
-   * @return response body
-   * @throws Exception
-   */
-  public static String downloadFile(String url, Boolean acceptAllSslCerts) throws Exception {
-    Request request = new Request.Builder().url(url).build();
-
-    // execute it..
-    Response response = getDownloadClient(acceptAllSslCerts).newCall(request).execute();
-
-    try (ResponseBody body = response.body()) {
-      if (response.code() < 200 || response.code() > 300) {
-        throw new Exception(
-            "Download returned an unexpected status code of " + response.code());
-      }
-      return body.string();
-    } catch (Exception e) {
-      throw new Exception("Error downloading URL '" + url + "'", e);
-    } finally {
-      if (response.body() != null) {
-        response.body().close();
-      }
-    }
-  }
-
-  /**
    * Downloads a file to disk
    *
    * @param url url to get
@@ -74,18 +46,8 @@ public class DownloadClient {
    * @param acceptAllSslCerts if we should accept all certificates
    * @throws Exception
    */
-  public static void downloadFile(String url, final String targetPath, Boolean acceptAllSslCerts) throws Exception {
-    Request request = new Request.Builder().url(url).build();
-
-    // execute it..
-    Response response = getDownloadClient(acceptAllSslCerts).newCall(request).execute();
-
-    try (ResponseBody body = response.body()) {
-      if (response.code() < 200 || response.code() > 300) {
-        throw new Exception(
-            "Download returned an unexpected status code of " + response.code());
-      }
-
+  public static void downloadFile(String url, final String targetPath, boolean acceptAllSslCerts) {
+    try (ResponseBody body = getResponseBody(url, acceptAllSslCerts)) {
       File file = new File(targetPath);
       BufferedSink sink = Okio.buffer(Okio.sink(file));
 
@@ -93,7 +55,26 @@ public class DownloadClient {
       sink.flush();
       sink.close();
     } catch (Exception e) {
-      throw new Exception("Error downloading URL '" + url + "'", e);
+      throw new RuntimeException("Error downloading URL '" + url + "'", e);
     }
+  }
+
+  @Deprecated(since = "Use writeFileContentToDisk(), File and streams to deal with files, not byte arrays!")
+  public static byte[] downloadFileBytes(String url, boolean acceptAllSslCerts) throws IOException {
+    try (ResponseBody body = getResponseBody(url, acceptAllSslCerts)) {
+      return body.bytes();
+    }
+  }
+
+  private static ResponseBody getResponseBody(String url, Boolean acceptAllSslCerts) throws IOException {
+    Request request = new Request.Builder().url(url).build();
+    Response response = getDownloadClient(acceptAllSslCerts).newCall(request).execute();
+
+    if (response.code() < 200 || response.code() > 300) {
+      throw new RuntimeException(
+              "Download of url '" + url + "' returned an unexpected status code of " + response.code());
+    }
+
+    return response.body();
   }
 }

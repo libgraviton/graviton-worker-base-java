@@ -31,18 +31,14 @@ public class TestQueueWorkerNoAuto extends QueueWorkerAbstract {
         return this.isConcerningRequest;
     }
     
-    public Boolean shouldAutoUpdateStatus()
+    public boolean shouldAutoUpdateStatus()
     {
         return false;
     }
     
-    public Boolean shouldAutoRegister()
+    public boolean shouldAutoRegister()
     {
         return false;
     }
 
-    protected GravitonAuthApi initGravitonApi() {
-        return gravitonApi;
-    }
-    
 }

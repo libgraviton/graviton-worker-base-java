@@ -6,4 +6,6 @@ public interface MessageAcknowledger {
 
     void acknowledge(String messageId) throws CannotAcknowledgeMessage;
 
+    void acknowledgeFail(String messageId) throws CannotAcknowledgeMessage;
+
 }

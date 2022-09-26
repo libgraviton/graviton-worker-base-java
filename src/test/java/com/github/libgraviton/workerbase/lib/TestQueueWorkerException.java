@@ -31,17 +31,13 @@ public class TestQueueWorkerException extends QueueWorkerAbstract {
         return true;
     }
     
-    public Boolean shouldAutoUpdateStatus()
+    public boolean shouldAutoUpdateStatus()
     {
         return this.doAutoStuff;
     }
    
-    public Boolean shouldAutoRegister()
+    public boolean shouldAutoRegister()
     {
         return this.doAutoStuff;
-    }
-
-    protected GravitonAuthApi initGravitonApi() {
-        return gravitonApi;
     }
 }

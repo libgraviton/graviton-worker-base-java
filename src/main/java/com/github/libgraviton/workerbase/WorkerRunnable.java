@@ -1,13 +1,16 @@
 package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
-import com.github.libgraviton.workerbase.model.QueueEvent;;
+import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.google.common.base.Stopwatch;
+
+import java.time.Duration;
 
 public class WorkerRunnable implements Runnable {
 
     @FunctionalInterface
     public interface AfterCompleteCallback {
-        void onComplete();
+        void onComplete(Duration workingDuration);
     }
 
     @FunctionalInterface
@@ -42,6 +45,7 @@ public class WorkerRunnable implements Runnable {
 
     @Override
     public void run() {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         try {
             afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.WORKING);
 
@@ -52,7 +56,7 @@ public class WorkerRunnable implements Runnable {
         } catch (Throwable t) {
             afterExceptionCallback.onException(t);
         } finally {
-            afterCompleteCallback.onComplete();
+            afterCompleteCallback.onComplete(stopwatch.elapsed());
         }
     }
 }

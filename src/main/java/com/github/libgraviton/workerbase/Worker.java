@@ -42,7 +42,7 @@ public class Worker {
      */
     private WorkerInterface worker;
 
-    private Worker(WorkerInterface worker) throws Exception {
+    private Worker(WorkerInterface worker) {
         // init di!
         DependencyInjection.init(worker, List.of(this));
 

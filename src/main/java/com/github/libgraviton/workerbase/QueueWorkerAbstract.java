@@ -10,7 +10,6 @@ import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventSt
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
-import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.github.libgraviton.workerbase.messaging.exception.CannotAcknowledgeMessage;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
@@ -19,15 +18,15 @@ import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.google.common.util.concurrent.AtomicLongMap;
 import io.activej.inject.annotation.Inject;
-import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.*;
 import okhttp3.HttpUrl;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * <p>Abstract WorkerAbstract class.</p>
@@ -39,11 +38,18 @@ import java.util.concurrent.ExecutorService;
 @Inject
 public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWorkerInterface {
 
-    private final AtomicLongMap<String> eventStates = AtomicLongMap.create();
+    private final AtomicLongMap<EventStatusStatus.Status> eventStates = AtomicLongMap.create();
+    private final AtomicLong eventWorkingCounter = new AtomicLong(0);
+    private final Timer eventWorkingDurationTimer = Timer
+            .builder("worker_queue_events_working_duration")
+            .description("How long does it take to work on each queue event")
+            .register(Metrics.globalRegistry);
+    private final Counter eventReceivedCounter = Counter
+        .builder("worker_queue_events_received")
+        .description("Total queue events received")
+        .register(Metrics.globalRegistry);
 
     protected EventStatusHandler statusHandler;
-
-    protected boolean useTransientHeaders = true;
 
     protected String messageId;
 
@@ -51,13 +57,24 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
     protected MessageAcknowledger acknowledger;
 
-    @Inject
     protected GravitonAuthApi gravitonApi;
 
     protected boolean areWeAsync = false;
 
-    protected List<EventStatusStatus.Status> acknowledgeStates = List.of(
+    /**
+     * which one of those states should we have until we acknowledge the queue event?
+     */
+    protected final List<EventStatusStatus.Status> acknowledgeStates = List.of(
             getAcknowledgeState(),
+            EventStatusStatus.Status.FAILED,
+            EventStatusStatus.Status.IGNORED
+    );
+
+    /**
+     * these are all the "outcome" events, in which an QueueEvent can end in
+     */
+    protected final List<EventStatusStatus.Status> outcomeStates = List.of(
+            EventStatusStatus.Status.DONE,
             EventStatusStatus.Status.FAILED,
             EventStatusStatus.Status.IGNORED
     );
@@ -76,25 +93,30 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
     public final void initialize(Properties properties) throws WorkerException, GravitonCommunicationException  {
         super.initialize(properties);
 
-        gravitonApi = initGravitonApi();
-        statusHandler = new EventStatusHandler(gravitonApi);
-        fileEndpoint = new GravitonFileEndpoint(gravitonApi);
+        gravitonApi = DependencyInjection.getInstance(GravitonAuthApi.class);
+        statusHandler = DependencyInjection.getInstance(EventStatusHandler.class);
+        fileEndpoint = DependencyInjection.getInstance(GravitonFileEndpoint.class);
         areWeAsync = (this instanceof AsyncQueueWorkerInterface);
 
         if (areWeAsync) {
             executorService = DependencyInjection.getInstance(ExecutorService.class);
         }
 
-        // create our metrics..
-        for (String theState : List.of(QueueEvent.STATE_RECEIVED, QueueEvent.STATE_IGNORED, QueueEvent.STATE_HANDLED, QueueEvent.STATE_ERRORED)) {
+        // create our metrics -> outcome
+        for (EventStatusStatus.Status theState : outcomeStates) {
             eventStates.put(theState, 0);
 
-            Tags tags = Tags.of("state", theState);
-            Gauge.builder("worker_queue_events", eventStates, map -> map.get(theState))
+            Tags tags = Tags.of("state", theState.value());
+            Gauge.builder("worker_queue_events_outcome", eventStates, map -> map.get(theState))
                     .tags(tags)
-                    .description("Total worker queue events received/handled/ignored/errors.")
+                    .description("Total worker queue events counts based on outcome.")
                     .register(Metrics.globalRegistry);
         }
+
+        // gauge of how many are currently in working state
+        Gauge.builder("worker_queue_events_working", eventWorkingCounter::get)
+                .description("How many events are currently in working state.")
+                .register(Metrics.globalRegistry);
 
         if (shouldAutoRegister()) {
             register();
@@ -110,23 +132,24 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
      */
     public final void handleDelivery(QueueEvent queueEvent, String messageId, MessageAcknowledger acknowledger) {
 
-        // add as received
-        eventStates.incrementAndGet(QueueEvent.STATE_RECEIVED);
+        // mark as received
+        eventReceivedCounter.increment();
 
         this.messageId = messageId;
         this.acknowledger = acknowledger;
+        AtomicBoolean isAcknowledged = new AtomicBoolean(false);
 
         String statusUrl = convertToGravitonUrl(queueEvent.getStatus().get$ref());
 
-        if (shouldUseTransientHeaders() && isUseTransientHeaders()) {
-            // any transient headers?
-            gravitonApi.setTransientHeaders(queueEvent.getTransientHeaders());
-        }
+        gravitonApi.setTransientHeaders(queueEvent.getTransientHeaders());
 
         // exception callback! -> will be used here and in the runnable!
         WorkerRunnable.AfterExceptionCallback exceptionCallback = (throwable) -> {
             // mark as errored
-            eventStates.incrementAndGet(QueueEvent.STATE_ERRORED);
+            eventStates.incrementAndGet(EventStatusStatus.Status.FAILED);
+
+            // mark as not running anymore
+            eventWorkingCounter.decrementAndGet();
 
             LOG.error("Error in worker {}: {}", workerId, throwable.getMessage(), throwable);
 
@@ -138,26 +161,51 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
                 }
             }
 
-            // acknowledge message here as we are done processing
-            if (shouldAutoAcknowledgeOnException()) {
-                acknowledgeToMessageQueue();
+            // failure acknowledge
+            if (!isAcknowledged.get()) {
+                // should we redeliver or not?
+                if (shouldAutoAcknowledgeOnException()) {
+                    // -> no redeliver!
+                    acknowledgeToMessageQueue();
+                    LOG.info("Acknowledged QueueEvent status '{}' as message ID '{}' to queue -> NO REDELIVER!", statusUrl, messageId);
+                } else {
+                    // -> DO redeliver!
+                    acknowledgeFailToMessageQueue();
+                    LOG.info("Acknowledged QueueEvent status '{}' as FAIL with message ID '{}' to queue -> should come back soon.", statusUrl, messageId);
+                }
+                isAcknowledged.set(true);
             }
         };
 
         // on status change this!
         WorkerRunnable.AfterStatusChangeCallback afterStatusChangeCallback = (status) -> {
-            if (shouldAutoUpdateStatus()) {
-                update(statusUrl, workerId, status);
+            // if now working, mark as working
+            if (status.equals(EventStatusStatus.Status.WORKING)) {
+                eventWorkingCounter.incrementAndGet();
             }
 
-            if (status.equals(EventStatusStatus.Status.DONE)) {
-                eventStates.incrementAndGet(QueueEvent.STATE_HANDLED);
+            // is it done now?
+            if (outcomeStates.contains(status)) {
+                eventStates.incrementAndGet(status);
+                // decrease working
+                eventWorkingCounter.decrementAndGet();
+            }
+
+            // should we acknowledge now?
+            if (acknowledgeStates.contains(status) && !isAcknowledged.get()) {
+                acknowledgeToMessageQueue();
+                LOG.info("Acknowledged QueueEvent status '{}' as message ID '{}' to queue.", statusUrl, messageId);
+                isAcknowledged.set(true);
+            }
+
+            if (shouldAutoUpdateStatus()) {
+                update(statusUrl, workerId, status);
             }
         };
 
         try {
             if (!shouldHandleRequest(queueEvent)) {
-                eventStates.incrementAndGet(QueueEvent.STATE_IGNORED);
+                eventStates.incrementAndGet(EventStatusStatus.Status.IGNORED);
 
                 if (shouldAutoUpdateStatus()) {
                     update(statusUrl, workerId, EventStatusStatus.Status.IGNORED);
@@ -178,7 +226,18 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
                     queueEvent,
                     workload,
                     afterStatusChangeCallback,
-                    () -> gravitonApi.clearTransientHeaders(),
+                    (workingDuration) -> {
+                        LOG.info(
+                                "QueueEvent processing is completed, working duration of '{}' ms. Message acknowledge state is '{}'.",
+                                workingDuration.toMillis(),
+                                isAcknowledged.get()
+                        );
+
+                        // record duration
+                        eventWorkingDurationTimer.record(workingDuration);
+                        // clear headers
+                        gravitonApi.clearTransientHeaders();
+                    },
                     exceptionCallback
             );
 
@@ -225,9 +284,6 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         } else {
             statusHandler.update(eventStatus, workerId, status);
         }
-        if (acknowledgeStates.contains(status)) {
-            acknowledgeToMessageQueue();
-        }
     }
 
     protected boolean shouldLinkAction(String workerId, List<EventStatusStatus> status) {
@@ -252,12 +308,20 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         }
     }
 
+    private void acknowledgeFailToMessageQueue() {
+        try {
+            acknowledger.acknowledgeFail(messageId);
+        } catch (CannotAcknowledgeMessage e) {
+            LOG.error("Unable to nack messageId '{}' on message queue.", messageId, e);
+        }
+    }
+
     /**
      * can be overriden by worker implementation. should the lib automatically update the EventStatus in the backend?
      *
      * @return true if yes, false if not
      */
-    public Boolean shouldAutoUpdateStatus()
+    public boolean shouldAutoUpdateStatus()
     {
         return true;
     }
@@ -267,7 +331,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
      *
      * @return true if yes, false if not
      */
-    public Boolean shouldAutoAcknowledgeOnException()
+    public boolean shouldAutoAcknowledgeOnException()
     {
         return false;
     }
@@ -277,7 +341,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
      *
      * @return true if yes, false if not
      */
-    public Boolean shouldAutoRegister()
+    public boolean shouldAutoRegister()
     {
         return true;
     }
@@ -288,21 +352,6 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
      */
     public EventStatusStatus.Status getAcknowledgeState() {
         return EventStatusStatus.Status.DONE;
-    }
-
-    /**
-     * the worker needs to OPT OUT here - only if this is true, the "transient headers" feature is used
-     * where the backend headers are 1:1 forwarded (= transient) to subsequent requests inside the delivery
-     * handling.
-     *
-     * this is mostly needed for workers that need to be aware in the tenant and username in the context of the
-     * request handling - as such, they basically impersonate the same user to the backend as the actual user that
-     * sent the Queue event
-     *
-     * @return
-     */
-    public Boolean shouldUseTransientHeaders() {
-        return true;
     }
 
     /**
@@ -354,28 +403,5 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
     public QueueManager getQueueManager() {
         return DependencyInjection.getInstance(QueueManager.class);
-    }
-
-    protected GravitonAuthApi initGravitonApi() {
-        return new GravitonAuthApi(properties);
-    }
-
-    public void setUseTransientHeaders(boolean useTransientHeaders) {
-        this.useTransientHeaders = useTransientHeaders;
-    }
-
-    public boolean isUseTransientHeaders() {
-        return useTransientHeaders;
-    }
-
-    /**
-     * detects if an object is run from inside of a jar file.
-     *
-     * @param obj object to test
-     * @return true if worker is run from a jar file else false
-     */
-    @Deprecated
-    public static boolean isWorkerStartedFromJARFile(Object obj) {
-        return WorkerUtil.isJarContext(obj);
     }
 }
