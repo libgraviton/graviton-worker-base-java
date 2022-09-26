@@ -1,11 +1,14 @@
 package com.github.libgraviton.workerbase;
 
+import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatusAction;
 import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventStatusAction;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
+import com.github.libgraviton.workerbase.helper.DependencyInjection;
+import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.lib.TestQueueWorker;
 import com.github.libgraviton.workerbase.lib.TestQueueWorkerException;
 import com.github.libgraviton.workerbase.lib.TestQueueWorkerNoAuto;
@@ -48,7 +51,6 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
                 .getEndpoint(EventStatusAction.class.getName())
                 .getUrl())
                 .thenReturn("http://localhost:8000/event/action/");
-
 
         TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
         // to initialize worker
@@ -201,7 +203,9 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     }
 
     private <T extends QueueWorkerAbstract> T prepareTestWorker(T worker) {
-        worker.gravitonApi = gravitonApi;
+        DependencyInjection.init(worker, List.of());
+        DependencyInjection.addInstanceOverride(GravitonAuthApi.class, gravitonApi);
+        DependencyInjection.addInstanceOverride(EventStatusHandler.class, new EventStatusHandler(gravitonApi));
         return worker;
     }
 }
