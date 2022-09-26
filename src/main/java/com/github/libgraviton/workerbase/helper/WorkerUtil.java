@@ -69,16 +69,6 @@ public class WorkerUtil {
         return encoded;
     }
 
-    @Deprecated
-    public static boolean isJarContext() {
-        return isJarContext(WorkerUtil.class);
-    }
-
-    @Deprecated
-    public static boolean isJarContext(Object obj) {
-        return obj.getClass().getResource("").getProtocol().equals("jar");
-    }
-
     public static OkHttpGateway getGatewayInstance() {
         return new OkHttpGateway();
     }
