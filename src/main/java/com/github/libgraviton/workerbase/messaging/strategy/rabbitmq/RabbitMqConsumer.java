@@ -46,12 +46,12 @@ class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
     ) throws IOException {
         long deliveryTag = envelope.getDeliveryTag();
         String message = new String(body, StandardCharsets.UTF_8);
-        LOG.info(String.format(
-                "Message '%d' received on queue '%s': '%s'",
+        LOG.info(
+                "Message '{}' received on queue '{}': '{}'",
                 deliveryTag,
                 connection.getConnectionName(),
                 message
-        ));
+        );
         consumer.consume(String.valueOf(deliveryTag), message);
     }
 
