@@ -12,6 +12,8 @@ import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.SerializationException;
 import com.github.libgraviton.workerbase.util.DownloadClient;
 
+import java.io.IOException;
+
 /**
  * Extra Graviton API functionality for /file endpoint calls.
  *
@@ -25,6 +27,16 @@ public class GravitonFileEndpoint {
 
     public GravitonFileEndpoint(GravitonApi gravitonApi) {
         this.gravitonApi = gravitonApi;
+    }
+
+    /**
+     * gets a temp file..
+     *
+     * @return
+     * @throws IOException
+     */
+    public java.io.File getTempFile() throws IOException {
+        return java.io.File.createTempFile("grv", null);
     }
 
     /**
@@ -51,6 +63,13 @@ public class GravitonFileEndpoint {
         String fileUrl = getFileDownloadUrl(fileId);
 
         DownloadClient.downloadFile(fileUrl, destinationPath, true);
+    }
+
+    @Deprecated(since = "Use writeFileContentToDisk(), File and streams to deal with files, not byte arrays!")
+    public byte[] getFileContentAsBytes(String urlOrId) throws IOException {
+        String fileId = gravitonApi.getIdFromUrlOrId(urlOrId);
+        String fileUrl = getFileDownloadUrl(fileId);
+        return DownloadClient.downloadFileBytes(fileUrl, true);
     }
 
     public void writeFileContentToDisk(String urlOrId, java.io.File destinationPath) throws Exception {
