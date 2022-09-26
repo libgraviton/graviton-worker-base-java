@@ -70,7 +70,6 @@ class JmsConsumer implements MessageListener, MessageAcknowledger {
         }
     }
 
-    @Override
     public void acknowledge(String messageId) throws CannotAcknowledgeMessage {
         Message jmsMessage = messages.get(messageId);
         if (null == jmsMessage) {
@@ -87,6 +86,10 @@ class JmsConsumer implements MessageListener, MessageAcknowledger {
         } finally {
             messages.remove(messageId);
         }
+    }
+
+    public void acknowledgeFail(String messageId) {
+        throw new RuntimeException("This acknowledge mode is not enabled in this module");
     }
 
     String extractBody(BytesMessage message) throws JMSException {

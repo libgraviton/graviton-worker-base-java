@@ -2,6 +2,8 @@ package com.github.libgraviton.workerbase.di;
 
 import com.github.libgraviton.workerbase.QueueManager;
 import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
+import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
+import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import io.activej.inject.annotation.Provides;
 
@@ -25,6 +27,16 @@ public class WorkerBaseProvider {
     @Provides
     public static GravitonAuthApi getGravitonAuthApi(Properties properties) {
         return new GravitonAuthApi(properties);
+    }
+
+    @Provides
+    public static EventStatusHandler getEventStatusHandler(GravitonAuthApi gravitonAuthApi) {
+        return new EventStatusHandler(gravitonAuthApi);
+    }
+
+    @Provides
+    public static GravitonFileEndpoint getGravitonFileEndpoint(GravitonAuthApi gravitonAuthApi) {
+        return new GravitonFileEndpoint(gravitonAuthApi);
     }
 
     @Provides

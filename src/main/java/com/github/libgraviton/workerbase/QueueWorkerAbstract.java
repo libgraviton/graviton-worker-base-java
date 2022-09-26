@@ -10,7 +10,6 @@ import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventSt
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
-import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.github.libgraviton.workerbase.messaging.exception.CannotAcknowledgeMessage;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
@@ -52,15 +51,12 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
     protected EventStatusHandler statusHandler;
 
-    protected boolean useTransientHeaders = true;
-
     protected String messageId;
 
     protected GravitonFileEndpoint fileEndpoint;
 
     protected MessageAcknowledger acknowledger;
 
-    @Inject
     protected GravitonAuthApi gravitonApi;
 
     protected boolean areWeAsync = false;
@@ -97,9 +93,9 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
     public final void initialize(Properties properties) throws WorkerException, GravitonCommunicationException  {
         super.initialize(properties);
 
-        gravitonApi = initGravitonApi();
-        statusHandler = new EventStatusHandler(gravitonApi);
-        fileEndpoint = new GravitonFileEndpoint(gravitonApi);
+        gravitonApi = DependencyInjection.getInstance(GravitonAuthApi.class);
+        statusHandler = DependencyInjection.getInstance(EventStatusHandler.class);
+        fileEndpoint = DependencyInjection.getInstance(GravitonFileEndpoint.class);
         areWeAsync = (this instanceof AsyncQueueWorkerInterface);
 
         if (areWeAsync) {
@@ -145,10 +141,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
         String statusUrl = convertToGravitonUrl(queueEvent.getStatus().get$ref());
 
-        if (shouldUseTransientHeaders() && isUseTransientHeaders()) {
-            // any transient headers?
-            gravitonApi.setTransientHeaders(queueEvent.getTransientHeaders());
-        }
+        gravitonApi.setTransientHeaders(queueEvent.getTransientHeaders());
 
         // exception callback! -> will be used here and in the runnable!
         WorkerRunnable.AfterExceptionCallback exceptionCallback = (throwable) -> {
@@ -168,10 +161,18 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
                 }
             }
 
-            // acknowledge message here as we are done processing
-            if (shouldAutoAcknowledgeOnException() && !isAcknowledged.get()) {
-                acknowledgeToMessageQueue();
-                LOG.info("AutoAck on Exception is 'true', acknowledged QueueEvent status '{}' as message ID '{}' to queue.", statusUrl, messageId);
+            // failure acknowledge
+            if (!isAcknowledged.get()) {
+                // should we redeliver or not?
+                if (shouldAutoAcknowledgeOnException()) {
+                    // -> no redeliver!
+                    acknowledgeToMessageQueue();
+                    LOG.info("Acknowledged QueueEvent status '{}' as message ID '{}' to queue -> NO REDELIVER!", statusUrl, messageId);
+                } else {
+                    // -> DO redeliver!
+                    acknowledgeFailToMessageQueue();
+                    LOG.info("Acknowledged QueueEvent status '{}' as FAIL with message ID '{}' to queue -> should come back soon.", statusUrl, messageId);
+                }
                 isAcknowledged.set(true);
             }
         };
@@ -307,12 +308,20 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         }
     }
 
+    private void acknowledgeFailToMessageQueue() {
+        try {
+            acknowledger.acknowledgeFail(messageId);
+        } catch (CannotAcknowledgeMessage e) {
+            LOG.error("Unable to nack messageId '{}' on message queue.", messageId, e);
+        }
+    }
+
     /**
      * can be overriden by worker implementation. should the lib automatically update the EventStatus in the backend?
      *
      * @return true if yes, false if not
      */
-    public Boolean shouldAutoUpdateStatus()
+    public boolean shouldAutoUpdateStatus()
     {
         return true;
     }
@@ -322,7 +331,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
      *
      * @return true if yes, false if not
      */
-    public Boolean shouldAutoAcknowledgeOnException()
+    public boolean shouldAutoAcknowledgeOnException()
     {
         return false;
     }
@@ -332,7 +341,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
      *
      * @return true if yes, false if not
      */
-    public Boolean shouldAutoRegister()
+    public boolean shouldAutoRegister()
     {
         return true;
     }
@@ -343,21 +352,6 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
      */
     public EventStatusStatus.Status getAcknowledgeState() {
         return EventStatusStatus.Status.DONE;
-    }
-
-    /**
-     * the worker needs to OPT OUT here - only if this is true, the "transient headers" feature is used
-     * where the backend headers are 1:1 forwarded (= transient) to subsequent requests inside the delivery
-     * handling.
-     *
-     * this is mostly needed for workers that need to be aware in the tenant and username in the context of the
-     * request handling - as such, they basically impersonate the same user to the backend as the actual user that
-     * sent the Queue event
-     *
-     * @return
-     */
-    public Boolean shouldUseTransientHeaders() {
-        return true;
     }
 
     /**
@@ -409,28 +403,5 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
     public QueueManager getQueueManager() {
         return DependencyInjection.getInstance(QueueManager.class);
-    }
-
-    protected GravitonAuthApi initGravitonApi() {
-        return new GravitonAuthApi(properties);
-    }
-
-    public void setUseTransientHeaders(boolean useTransientHeaders) {
-        this.useTransientHeaders = useTransientHeaders;
-    }
-
-    public boolean isUseTransientHeaders() {
-        return useTransientHeaders;
-    }
-
-    /**
-     * detects if an object is run from inside of a jar file.
-     *
-     * @param obj object to test
-     * @return true if worker is run from a jar file else false
-     */
-    @Deprecated
-    public static boolean isWorkerStartedFromJARFile(Object obj) {
-        return WorkerUtil.isJarContext(obj);
     }
 }

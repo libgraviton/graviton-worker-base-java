@@ -23,6 +23,8 @@ class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
 
     static final private boolean ACK_PREV_MESSAGES = false;
 
+    static final private boolean NACK_REDELIVER = true;
+
     static final private Logger LOG = LoggerFactory.getLogger(RabbitMqConsumer.class);
 
     private final RabbitMqConnection connection;
@@ -78,6 +80,16 @@ class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
         try {
             getChannel().basicAck(Long.parseLong(messageId), ACK_PREV_MESSAGES);
             LOG.debug("Reported basicAck to message queue with delivery tag '{}'.", messageId);
+        } catch (IOException e) {
+            throw new CannotAcknowledgeMessage(this, messageId, e);
+        }
+    }
+
+    @Override
+    public void acknowledgeFail(String messageId) throws CannotAcknowledgeMessage {
+        try {
+            getChannel().basicNack(Long.parseLong(messageId), ACK_PREV_MESSAGES, NACK_REDELIVER);
+            LOG.debug("Reported basicNack to message queue with delivery tag '{}' and redeliver = {}.", messageId, NACK_REDELIVER);
         } catch (IOException e) {
             throw new CannotAcknowledgeMessage(this, messageId, e);
         }
