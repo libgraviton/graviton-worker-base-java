@@ -4,11 +4,10 @@ import com.sun.net.httpserver.HttpServer;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
 import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.jvm.*;
+import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 
@@ -62,9 +61,17 @@ public class PrometheusServer {
       new ProcessThreadMetrics().bindTo(registry);
       new ClassLoaderMetrics().bindTo(registry);
       new JvmMemoryMetrics().bindTo(registry);
-      new JvmGcMetrics().bindTo(registry);
-      new ProcessorMetrics().bindTo(registry);
       new JvmThreadMetrics().bindTo(registry);
+      try (JvmHeapPressureMetrics metric = new JvmHeapPressureMetrics()) {
+        metric.bindTo(registry);
+      }
+      try (JvmGcMetrics metric = new JvmGcMetrics()) {
+        metric.bindTo(registry);
+      }
+      new JvmInfoMetrics().bindTo(registry);
+      new ProcessorMetrics().bindTo(registry);
+      new FileDescriptorMetrics().bindTo(registry);
+      new UptimeMetrics().bindTo(registry);
     }
 
     // add to global
