@@ -5,6 +5,7 @@
 package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
+import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
@@ -49,9 +50,10 @@ public class Worker {
         properties = DependencyInjection.getInstance(Properties.class);
 
         LOG.info(
-                "Starting up '{}' version '{}'. Java runtime '{}', version '{}', TZ '{}'",
+                "Starting up '{} {}' (worker-base '{}'). Runtime '{}' version '{}', TZ '{}'",
                 properties.getProperty("application.name"),
                 properties.getProperty("application.version"),
+                WorkerUtil.getWorkerBaseVersion(),
                 System.getProperty("java.runtime.name"),
                 System.getProperty("java.runtime.version"),
                 System.getProperty("user.timezone")
