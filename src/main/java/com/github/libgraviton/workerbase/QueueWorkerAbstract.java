@@ -204,27 +204,19 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         };
 
         try {
-            if (!shouldHandleRequest(queueEvent)) {
-                eventStates.incrementAndGet(EventStatusStatus.Status.IGNORED);
-
-                if (shouldAutoUpdateStatus()) {
-                    update(statusUrl, workerId, EventStatusStatus.Status.IGNORED);
-                }
-
-                return;
-            }
-
-            WorkerRunnableInterface workload;
-            if (areWeAsync) {
-                workload = ((AsyncQueueWorkerInterface) this).handleRequestAsync(queueEvent);
-            } else {
-                workload = this::handleRequest;
-            }
-
             // wrap with status handling stuff
             Runnable workerRunnable = new WorkerRunnable(
                     queueEvent,
-                    workload,
+                    () -> {
+                        WorkerRunnableInterface workload;
+                        if (areWeAsync) {
+                            workload = ((AsyncQueueWorkerInterface) this).handleRequestAsync(queueEvent);
+                        } else {
+                            workload = this::handleRequest;
+                        }
+
+                        return workload;
+                    },
                     afterStatusChangeCallback,
                     (workingDuration) -> {
                         LOG.info(
@@ -238,7 +230,8 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
                         // clear headers
                         gravitonApi.clearTransientHeaders();
                     },
-                    exceptionCallback
+                    exceptionCallback,
+                    this::shouldHandleRequest
             );
 
             if (areWeAsync) {

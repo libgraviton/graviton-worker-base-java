@@ -9,6 +9,11 @@ import java.time.Duration;
 public class WorkerRunnable implements Runnable {
 
     @FunctionalInterface
+    public interface GetWorkloadCallback {
+        WorkerRunnableInterface getWorkload() throws Throwable;
+    }
+
+    @FunctionalInterface
     public interface AfterCompleteCallback {
         void onComplete(Duration workingDuration);
     }
@@ -23,34 +28,49 @@ public class WorkerRunnable implements Runnable {
         void onStatusChange(EventStatusStatus.Status status) throws Throwable;
     }
 
+    @FunctionalInterface
+    public interface RelevantEventCallback {
+        boolean isRevelant(QueueEvent body) throws Throwable;
+    }
+
     private final QueueEvent queueEvent;
-    private final WorkerRunnableInterface workload;
+    private final GetWorkloadCallback getWorkloadCallback;
     public final AfterStatusChangeCallback afterStatusChangeCallback;
     private final AfterCompleteCallback afterCompleteCallback;
     private final AfterExceptionCallback afterExceptionCallback;
+    private final RelevantEventCallback relevantEventCallback;
 
     public WorkerRunnable(
             QueueEvent queueEvent,
-            WorkerRunnableInterface workload,
+            GetWorkloadCallback getWorkloadCallback,
             AfterStatusChangeCallback afterStatusChangeCallback,
             AfterCompleteCallback afterCompleteCallback,
-            AfterExceptionCallback afterExceptionCallback
+            AfterExceptionCallback afterExceptionCallback,
+            RelevantEventCallback relevantEventCallback
     ) {
         this.queueEvent = queueEvent;
-        this.workload = workload;
+        this.getWorkloadCallback = getWorkloadCallback;
         this.afterStatusChangeCallback = afterStatusChangeCallback;
         this.afterCompleteCallback = afterCompleteCallback;
         this.afterExceptionCallback = afterExceptionCallback;
+        this.relevantEventCallback = relevantEventCallback;
     }
 
     @Override
     public void run() {
         Stopwatch stopwatch = Stopwatch.createStarted();
+
         try {
+            // is it relevant?
+            if (!relevantEventCallback.isRevelant(queueEvent)) {
+                afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.IGNORED);
+                return;
+            }
+
             afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.WORKING);
 
             // call the worker
-            workload.doWork(queueEvent);
+            getWorkloadCallback.getWorkload().doWork(queueEvent);
 
             afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.DONE);
         } catch (Throwable t) {
