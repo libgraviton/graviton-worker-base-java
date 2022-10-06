@@ -3,12 +3,9 @@
  */
 package com.github.libgraviton.workerbase.helper;
 
-import com.github.libgraviton.gdk.gravitondyn.file.document.File;
-import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
-import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.gdk.api.gateway.OkHttpGateway;
 import com.github.libgraviton.workerbase.gdk.api.gateway.okhttp.OkHttpGatewayFactory;
-import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -18,6 +15,8 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.OkHttpClient;
+import org.apache.commons.io.IOUtils;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -29,6 +28,14 @@ import java.nio.charset.StandardCharsets;
  * @since 0.7.0
  */
 public class WorkerUtil {
+
+    public static String getWorkerBaseVersion() {
+        try {
+            return IOUtils.resourceToString("worker-base-version", StandardCharsets.UTF_8, WorkerUtil.class.getClassLoader());
+        } catch (Throwable t) {
+            return "(UNKNOWN)";
+        }
+    }
 
     // create a trust manager that does not validate certificate chains
     final private static TrustManager[] trustAllCerts = new TrustManager[]{
