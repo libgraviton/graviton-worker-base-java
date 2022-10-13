@@ -146,7 +146,7 @@
     <dependency>
       <groupId>io.sentry</groupId>
       <artifactId>sentry-log4j2</artifactId>
-      <version>6.4.2</version>
+      <version>6.5.0</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -208,7 +208,7 @@
     <dependency>
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-registry-prometheus</artifactId>
-      <version>1.9.4</version>
+      <version>1.9.5</version>
     </dependency>
     <dependency>
       <groupId>io.github.mweirauch</groupId>
