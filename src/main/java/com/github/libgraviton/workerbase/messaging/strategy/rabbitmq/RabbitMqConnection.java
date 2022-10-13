@@ -121,7 +121,7 @@ public class RabbitMqConnection extends QueueConnection {
      *
      * @param consumer The consumer to register.
      *
-     * @throws CannotRegisterConsumer If the consumer cannot be registerd.
+     * @throws CannotRegisterConsumer If the consumer cannot be registered.
      */
     @Override
     protected void registerConsumer(Consumer consumer) throws CannotRegisterConsumer {
@@ -131,6 +131,9 @@ public class RabbitMqConnection extends QueueConnection {
             ((AcknowledgingConsumer) consumer).setAcknowledger(rabbitMqConsumer);
         }
         try {
+            // see https://www.rabbitmq.com/consumer-prefetch.html - normally should only 1, "0" is infinite!
+            channel.basicQos(rabbitMqConsumer.getPrefetchCount());
+
             channel.basicConsume(queueName, autoAck, rabbitMqConsumer);
         } catch (IOException e) {
             throw new CannotRegisterConsumer(consumer, e);

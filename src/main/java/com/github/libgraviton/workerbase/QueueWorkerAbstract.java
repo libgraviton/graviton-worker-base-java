@@ -148,9 +148,6 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
             // mark as errored
             eventStates.incrementAndGet(EventStatusStatus.Status.FAILED);
 
-            // mark as not running anymore
-            eventWorkingCounter.decrementAndGet();
-
             LOG.error("Error in worker {}: {}", workerId, throwable.getMessage(), throwable);
 
             if (shouldAutoUpdateStatus()) {
@@ -187,8 +184,6 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
             // is it done now?
             if (outcomeStates.contains(status)) {
                 eventStates.incrementAndGet(status);
-                // decrease working
-                eventWorkingCounter.decrementAndGet();
             }
 
             // should we acknowledge now?
@@ -219,6 +214,13 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
                     },
                     afterStatusChangeCallback,
                     (workingDuration) -> {
+
+                        // decrement working
+                        long workingCounter = eventWorkingCounter.decrementAndGet();
+                        if (workingCounter < 0) {
+                            eventWorkingCounter.set(0);
+                        }
+
                         LOG.info(
                                 "QueueEvent processing is completed, working duration of '{}' ms. Message acknowledge state is '{}'.",
                                 workingDuration.toMillis(),

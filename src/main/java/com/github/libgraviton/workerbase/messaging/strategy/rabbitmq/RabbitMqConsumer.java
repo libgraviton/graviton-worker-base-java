@@ -42,6 +42,10 @@ class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
         consumer.setAcknowledger(this);
     }
 
+    public int getPrefetchCount() {
+        return 1;
+    }
+
     @Override
     public void handleDelivery(
             String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body
