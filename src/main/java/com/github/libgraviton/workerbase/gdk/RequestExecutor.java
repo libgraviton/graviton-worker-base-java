@@ -90,13 +90,19 @@ public class RequestExecutor {
             }
         }
 
-        LOG.info(String.format("'%s' to '%s'...", request.getMethod(), request.getUrl()));
         if(LOG.isDebugEnabled()) {
             logBody(request);
         }
 
         Response response = gateway.execute(request);
         response.setObjectMapper(getObjectMapper());
+
+        LOG.info(
+                "Request '{}' to '{}' ended with code {}.",
+                request.getMethod(),
+                request.getUrl(),
+                response.getCode()
+        );
 
         if (!response.isSuccessful()) {
             throw new UnsuccessfulResponseException(response);
@@ -126,7 +132,7 @@ public class RequestExecutor {
 
     private void logStandardRequest(Request request) {
         String body = request.getBody();
-        LOG.debug("with request body '" + body + "'");
+        LOG.debug("with request body '{}'", body);
     }
 
     private void logMultipartRequest(Request request) {
@@ -141,7 +147,7 @@ public class RequestExecutor {
                     "}";
             builder.append(loggablePart).append("\n");
         }
-        LOG.debug("with multipart request body [\n" + builder.toString() + "]");
+        LOG.debug("with multipart request body [\n{}]", builder);
     }
 
     public void setGateway(GravitonGateway gateway) {
