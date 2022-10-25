@@ -90,7 +90,7 @@ public class RequestExecutor {
             }
         }
 
-        LOG.info(String.format("Starting '%s' to '%s'...", request.getMethod(), request.getUrl()));
+        LOG.info(String.format("'%s' to '%s'...", request.getMethod(), request.getUrl()));
         if(LOG.isDebugEnabled()) {
             logBody(request);
         }
@@ -98,15 +98,7 @@ public class RequestExecutor {
         Response response = gateway.execute(request);
         response.setObjectMapper(getObjectMapper());
 
-        if(response.isSuccessful()) {
-            LOG.info(String.format(
-                    "Successful '%s' to '%s'. Response was '%d' - '%s'.",
-                    request.getMethod(),
-                    request.getUrl(),
-                    response.getCode(),
-                    response.getMessage()
-            ));
-        } else {
+        if (!response.isSuccessful()) {
             throw new UnsuccessfulResponseException(response);
         }
         return response;
