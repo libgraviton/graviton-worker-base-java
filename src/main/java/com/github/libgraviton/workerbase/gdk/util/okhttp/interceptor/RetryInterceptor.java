@@ -14,9 +14,9 @@ public class RetryInterceptor implements Interceptor {
 
   private static final Logger LOG = LoggerFactory.getLogger(com.github.libgraviton.workerbase.gdk.util.okhttp.interceptor.RetryInterceptor.class);
 
-  private ArrayList<Integer> retryHttpCodes = new ArrayList<>();
-  private Integer retryCount;
-  private Integer waitInBetween;
+  private final ArrayList<Integer> retryHttpCodes = new ArrayList<>();
+  private final Integer retryCount;
+  private final Integer waitInBetween;
 
   private Integer retried = 0;
 
@@ -91,8 +91,9 @@ public class RetryInterceptor implements Interceptor {
       return true;
     } catch (IOException e) {
       LOG.warn(
-          "Encountered exception '{}' while trying to connect to URL '{}'",
+          "Encountered exception '{}' with message '{}' while trying to connect to URL '{}'",
           e.getClass().getCanonicalName(),
+          e.getMessage(),
           thisUrl
       );
     } finally {

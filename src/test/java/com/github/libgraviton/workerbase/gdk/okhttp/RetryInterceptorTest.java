@@ -37,7 +37,7 @@ public class RetryInterceptorTest {
         try {
             client.newCall(request).execute();
         } catch (UnknownHostException e) {
-            assertEquals(new Integer(5), retryInterceptor.getRetried());
+            assertEquals(Integer.valueOf(5), retryInterceptor.getRetried());
             throw e;
         }
     }
@@ -57,7 +57,7 @@ public class RetryInterceptorTest {
         try {
             client.newCall(request).execute();
         } catch (ConnectException e) {
-            assertEquals(new Integer(5), retryInterceptor.getRetried());
+            assertEquals(Integer.valueOf(5), retryInterceptor.getRetried());
             throw e;
         }
     }
@@ -124,7 +124,7 @@ public class RetryInterceptorTest {
 
         Response response = client.newCall(request).execute();
 
-        assertEquals(new Integer(2), retryInterceptor.getRetried());
+        assertEquals(Integer.valueOf(2), retryInterceptor.getRetried());
         assertEquals(200, response.code());
         assertEquals("YEEEEES!", response.body().string());
     }

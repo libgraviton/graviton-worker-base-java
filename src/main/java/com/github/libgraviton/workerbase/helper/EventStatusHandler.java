@@ -1,5 +1,6 @@
 package com.github.libgraviton.workerbase.helper;
 
+import com.github.libgraviton.workerbase.exception.NonExistingEventStatusException;
 import com.github.libgraviton.workerbase.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
@@ -8,6 +9,7 @@ import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusIn
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatusAction;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +31,7 @@ public class EventStatusHandler {
     final int retryLimit;
 
     public EventStatusHandler(GravitonApi gravitonApi) {
-        this(gravitonApi, 15);
+        this(gravitonApi, 30);
     }
 
     public EventStatusHandler(GravitonApi gravitonApi, int retryLimit) {
@@ -163,6 +165,12 @@ public class EventStatusHandler {
                 }
                 return getEventStatusFromUrl(url, retryCount+1);
             }
+
+            // if the error was a 404 all the time, we throw a special exception for no redelivery
+            if (e instanceof UnsuccessfulResponseException && ((UnsuccessfulResponseException) e).getResponse().getCode() == 404) {
+                throw new NonExistingEventStatusException("Giving up trying to fetch EventStatus (getting 404 status after " + retryLimit + " tries) with url '" + url + "'");
+            }
+
             throw new GravitonCommunicationException("Failed to GET event status from '" + url + "'.", e);
         }
     }

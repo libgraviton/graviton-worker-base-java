@@ -1,5 +1,6 @@
 package com.github.libgraviton.workerbase;
 
+import com.github.libgraviton.workerbase.exception.NonExistingEventStatusException;
 import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
 import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
@@ -148,20 +149,35 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
             // mark as errored
             eventStates.incrementAndGet(EventStatusStatus.Status.FAILED);
 
+            // logic should differ when event status does not exist!
+            boolean eventStatusDoesNotExist = (throwable instanceof NonExistingEventStatusException);
+
             LOG.error("Error in worker {}: {}", workerId, throwable.getMessage(), throwable);
 
             if (shouldAutoUpdateStatus()) {
-                try {
-                    statusHandler.updateToErrorState(statusUrl, workerId, throwable.toString());
-                } catch (GravitonCommunicationException e1) {
-                    LOG.error("Unable to update worker status at '{}'.", statusUrl, e1);
+                if (eventStatusDoesNotExist) {
+                    LOG.warn("Will not try update status of EventStatus as it doesn't seem to exist ('{}')", throwable.getMessage());
+                } else {
+                    try {
+                        statusHandler.updateToErrorState(statusUrl, workerId, throwable.toString());
+                    } catch (GravitonCommunicationException e1) {
+                        LOG.error("Unable to update worker status at '{}'.", statusUrl, e1);
+                    }
                 }
             }
 
             // failure acknowledge
             if (!isAcknowledged.get()) {
-                // should we redeliver or not?
-                if (shouldAutoAcknowledgeOnException()) {
+                // should we give up now?
+                // NO if the worker wants redelivery
+                boolean shouldWeGiveUp = shouldAutoAcknowledgeOnException();
+                // but YES if the eventstatus does not exist.
+                if (!shouldWeGiveUp && eventStatusDoesNotExist) {
+                    LOG.warn("Worker wants redelivery but we could not get the EventStatus because of 404 errors, so we need to give up! ('{}')", throwable.getMessage());
+                    shouldWeGiveUp = true;
+                }
+
+                if (shouldWeGiveUp) {
                     // -> no redeliver!
                     acknowledgeToMessageQueue();
                     LOG.info("Acknowledged QueueEvent status '{}' as message ID '{}' to queue -> NO REDELIVER!", statusUrl, messageId);
@@ -170,6 +186,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
                     acknowledgeFailToMessageQueue();
                     LOG.info("Acknowledged QueueEvent status '{}' as FAIL with message ID '{}' to queue -> should come back soon.", statusUrl, messageId);
                 }
+
                 isAcknowledged.set(true);
             }
         };
