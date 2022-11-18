@@ -1,5 +1,6 @@
 package com.github.libgraviton.workerbase.util;
 
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.sun.net.httpserver.HttpServer;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
@@ -13,7 +14,6 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,21 +23,20 @@ public class PrometheusServer {
 
   private static boolean started = false;
 
-  public PrometheusServer(String appName, Properties properties) {
+  public PrometheusServer(String appName) {
     if (!started) {
-      init(appName, properties.getProperty("prom.jvm", "false").equals("true"));
+      init(appName);
     }
   }
 
-  private void init(String appName, boolean loadJvmMetrics) {
-
+  private void init(String appName) {
     final PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
     // app name
     registry.config().commonTags("application", appName);
 
     try {
-      HttpServer server = HttpServer.create(new InetSocketAddress(9999), 0);
+      HttpServer server = HttpServer.create(new InetSocketAddress(Integer.parseInt(WorkerProperties.getProperty("graviton.prometheus.port"))), 0);
       server.createContext("/metrics", httpExchange -> {
         String response = registry.scrape();
         httpExchange.sendResponseHeaders(200, response.getBytes().length);
@@ -48,7 +47,7 @@ public class PrometheusServer {
 
       new Thread(server::start).start();
 
-      LOG.info("Started prometheus HTTPServer for metrics on http://0.0.0.0:9999/metrics");
+      LOG.info("Started prometheus HTTPServer for metrics on http://0.0.0.0:{}/metrics", WorkerProperties.getProperty("graviton.prometheus.port"));
     } catch (Throwable t) {
       LOG.error("Could not start prometheus metrics HTTPServer", t);
     }
@@ -56,23 +55,21 @@ public class PrometheusServer {
     started = true;
 
     // load jvm metrics?
-    if (loadJvmMetrics) {
-      new ProcessMemoryMetrics().bindTo(registry);
-      new ProcessThreadMetrics().bindTo(registry);
-      new ClassLoaderMetrics().bindTo(registry);
-      new JvmMemoryMetrics().bindTo(registry);
-      new JvmThreadMetrics().bindTo(registry);
-      try (JvmHeapPressureMetrics metric = new JvmHeapPressureMetrics()) {
-        metric.bindTo(registry);
-      }
-      try (JvmGcMetrics metric = new JvmGcMetrics()) {
-        metric.bindTo(registry);
-      }
-      new JvmInfoMetrics().bindTo(registry);
-      new ProcessorMetrics().bindTo(registry);
-      new FileDescriptorMetrics().bindTo(registry);
-      new UptimeMetrics().bindTo(registry);
+    new ProcessMemoryMetrics().bindTo(registry);
+    new ProcessThreadMetrics().bindTo(registry);
+    new ClassLoaderMetrics().bindTo(registry);
+    new JvmMemoryMetrics().bindTo(registry);
+    new JvmThreadMetrics().bindTo(registry);
+    try (JvmHeapPressureMetrics metric = new JvmHeapPressureMetrics()) {
+      metric.bindTo(registry);
     }
+    try (JvmGcMetrics metric = new JvmGcMetrics()) {
+      metric.bindTo(registry);
+    }
+    new JvmInfoMetrics().bindTo(registry);
+    new ProcessorMetrics().bindTo(registry);
+    new FileDescriptorMetrics().bindTo(registry);
+    new UptimeMetrics().bindTo(registry);
 
     // add to global
     Metrics.addRegistry(registry);
