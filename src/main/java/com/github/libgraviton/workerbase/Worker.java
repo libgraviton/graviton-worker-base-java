@@ -49,9 +49,14 @@ public class Worker {
 
         properties = DependencyInjection.getInstance(Properties.class);
 
+        String applicationName = properties.getProperty("application.name");
+        if (properties.getProperty("graviton.workerName") != null) {
+            applicationName = properties.getProperty("graviton.workerName");
+        }
+
         LOG.info(
-                "Starting up '{} {}' (worker-base '{}'). Runtime '{}' version '{}', TZ '{}'",
-                properties.getProperty("application.name"),
+                "Starting '{} {}' (worker-base '{}'). Runtime '{}' version '{}', TZ '{}'",
+                applicationName,
                 properties.getProperty("application.version"),
                 WorkerUtil.getWorkerBaseVersion(),
                 System.getProperty("java.runtime.name"),
@@ -87,7 +92,7 @@ public class Worker {
     public Worker(StandaloneWorker worker) throws Exception {
         this((WorkerInterface) worker);
         // call this here as this.run is not called(?) by standalone
-        new PrometheusServer(this.worker.getWorkerId(), properties);
+        new PrometheusServer(this.worker.getWorkerId());
         ((StandaloneWorker) this.worker).run();
     }
 
@@ -103,7 +108,7 @@ public class Worker {
 
         assert (worker instanceof QueueWorkerAbstract);
 
-        new PrometheusServer(worker.getWorkerId(), properties);
+        new PrometheusServer(worker.getWorkerId());
 
         QueueManager queueManager = DependencyInjection.getInstance(QueueManager.class);
         try {
