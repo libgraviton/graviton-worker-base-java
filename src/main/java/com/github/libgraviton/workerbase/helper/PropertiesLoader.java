@@ -3,9 +3,9 @@ package com.github.libgraviton.workerbase.helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -20,13 +20,20 @@ class PropertiesLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesLoader.class);
 
+    /**
+     * this is in this repo!
+     */
+    private static final String WORKERBASE_PROPERTIES_PATH = "workerbase.properties";
+
+    /**
+     * this comes from the parent POM; it's dependency of resources!
+     */
     private static final String DEFAULT_PROPERTIES_PATH = "default.properties";
 
+    /**
+     * and this is finally in the worker.
+     */
     private static final String OVERWRITE_PROPERTIES_PATH = "app.properties";
-
-    private static final String OVERWRITE_PROPERTIES_JAR_PATH = "app_jar.properties";
-
-    private static final String SYSTEM_PROPERTY = "propFile";
 
     private static final String ENV_PREFIX = "worker_";
 
@@ -56,31 +63,15 @@ class PropertiesLoader {
     static Properties load(Map<String, String> env) throws IOException {
         Properties properties = new Properties();
 
-        try (InputStream defaultProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(DEFAULT_PROPERTIES_PATH)) {
-            LOG.info("Loading default properties from file '{}'", DEFAULT_PROPERTIES_PATH);
-            properties.load(defaultProperties);
-        }
+        // do in this sequence..
+        List<String> propertiesFileOrder = List.of(WORKERBASE_PROPERTIES_PATH, DEFAULT_PROPERTIES_PATH, OVERWRITE_PROPERTIES_PATH);
 
-        try (InputStream overwriteProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(OVERWRITE_PROPERTIES_PATH)) {
-            if (overwriteProperties != null) {
-                LOG.info("Loading overwrite properties from file '{}'", OVERWRITE_PROPERTIES_PATH);
-                properties.load(overwriteProperties);
-            }
-        }
-
-        String systemPropertiesPath = System.getProperty(SYSTEM_PROPERTY);
-        if (systemPropertiesPath != null) {
-            try (InputStream overwriteProperties = new FileInputStream(systemPropertiesPath)) {
-                LOG.info("Loading system properties from file '{}'", SYSTEM_PROPERTY);
-                properties.load(overwriteProperties);
-
-            }
-        }
-
-        try (InputStream overwriteJarProperties = PropertiesLoader.class.getClassLoader().getResourceAsStream(OVERWRITE_PROPERTIES_JAR_PATH)) {
-            if (overwriteJarProperties != null) {
-                LOG.info("Loading JAR runtime default properties from file '{}'", OVERWRITE_PROPERTIES_JAR_PATH);
-                properties.load(overwriteJarProperties);
+        for (String propertiesFile : propertiesFileOrder) {
+            try (InputStream propertiesStream = PropertiesLoader.class.getClassLoader().getResourceAsStream(propertiesFile)) {
+                if (propertiesStream != null && propertiesStream.available() > 0) {
+                    LOG.info("Loading default properties from file '{}'", propertiesFile);
+                    properties.load(propertiesStream);
+                }
             }
         }
 
