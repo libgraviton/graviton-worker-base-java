@@ -92,6 +92,12 @@
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
       <version>4.10.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jetbrains</groupId>
+          <artifactId>annotations</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -177,17 +183,20 @@
       <artifactId>jackson-jr-objects</artifactId>
       <version>${jackson-jr.version}</version>
     </dependency>
+    <!--
     <dependency>
       <groupId>com.fasterxml.jackson.module</groupId>
       <artifactId>jackson-module-jsonSchema</artifactId>
       <version>${jackson-jr.version}</version>
     </dependency>
+    -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>${jackson-jr.version}</version>
     </dependency>
     <!-- i really don't know why/where we need this, but we need it ;-/ -->
+    <!--
     <dependency>
       <groupId>com.fasterxml.jackson.module</groupId>
       <artifactId>jackson-module-jaxb-annotations</artifactId>
@@ -208,6 +217,7 @@
         </exclusion>
       </exclusions>
     </dependency>
+    -->
 
     <!-- metrics -->
     <dependency>
@@ -219,6 +229,12 @@
       <groupId>io.github.mweirauch</groupId>
       <artifactId>micrometer-jvm-extras</artifactId>
       <version>0.2.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>io.micrometer</groupId>
+          <artifactId>micrometer-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- test -->
