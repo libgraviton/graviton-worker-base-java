@@ -60,7 +60,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
     protected GravitonAuthApi gravitonApi;
 
-    protected boolean areWeAsync = false;
+    protected final AtomicBoolean areWeAsync = new AtomicBoolean(false);
 
     /**
      * which one of those states should we have until we acknowledge the queue event?
@@ -97,9 +97,9 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         gravitonApi = DependencyInjection.getInstance(GravitonAuthApi.class);
         statusHandler = DependencyInjection.getInstance(EventStatusHandler.class);
         fileEndpoint = DependencyInjection.getInstance(GravitonFileEndpoint.class);
-        areWeAsync = (this instanceof AsyncQueueWorkerInterface);
+        areWeAsync.set(this instanceof AsyncQueueWorkerInterface);
 
-        if (areWeAsync) {
+        if (areWeAsync.get()) {
             executorService = DependencyInjection.getInstance(ExecutorService.class);
         }
 
@@ -141,8 +141,6 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         AtomicBoolean isAcknowledged = new AtomicBoolean(false);
 
         String statusUrl = convertToGravitonUrl(queueEvent.getStatus().get$ref());
-
-        gravitonApi.setTransientHeaders(queueEvent.getTransientHeaders());
 
         // exception callback! -> will be used here and in the runnable!
         WorkerRunnable.AfterExceptionCallback exceptionCallback = (throwable) -> {
@@ -221,7 +219,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
                     queueEvent,
                     () -> {
                         WorkerRunnableInterface workload;
-                        if (areWeAsync) {
+                        if (areWeAsync.get()) {
                             workload = ((AsyncQueueWorkerInterface) this).handleRequestAsync(queueEvent);
                         } else {
                             workload = this::handleRequest;
@@ -246,14 +244,12 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
                         // record duration
                         eventWorkingDurationTimer.record(workingDuration);
-                        // clear headers
-                        gravitonApi.clearTransientHeaders();
                     },
                     exceptionCallback,
                     this::shouldHandleRequest
             );
 
-            if (areWeAsync) {
+            if (areWeAsync.get()) {
                 executorService.execute(workerRunnable);
             } else {
                 // directly execute
