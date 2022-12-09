@@ -6,6 +6,7 @@ import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.gdk.api.gateway.GravitonGateway;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
+import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,9 +25,9 @@ public class RequestExecutorTest {
 
     @Before
     public void setup() {
-        executor = new RequestExecutor();
         gateway = mock(GravitonGateway.class);
-        executor.setGateway(gateway);
+        DependencyInjection.addInstanceOverride(GravitonGateway.class, gateway);
+        executor = DependencyInjection.getInstance(RequestExecutor.class);
     }
 
     @Test

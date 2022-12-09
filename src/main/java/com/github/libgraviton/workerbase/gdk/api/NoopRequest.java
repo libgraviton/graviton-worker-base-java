@@ -26,9 +26,14 @@ public class NoopRequest extends Request {
 
     public static class Builder extends Request.Builder {
 
-        private String reason;
+        private final String reason;
+
+        public Builder() {
+            this("Unknown reason");
+        }
 
         public Builder(String reason) {
+            super();
             this.reason = reason;
         }
 

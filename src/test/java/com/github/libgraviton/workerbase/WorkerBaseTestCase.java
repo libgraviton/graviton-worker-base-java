@@ -1,40 +1,59 @@
 package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
+import com.github.libgraviton.workerbase.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.gdk.api.Response;
-import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
-import com.github.libgraviton.workerbase.gdk.serialization.mapper.GravitonObjectMapper;
+import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
-import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.rabbitmq.client.Channel;
-import org.apache.commons.io.FileUtils;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
-import java.io.File;
-import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Properties;
 
-import static org.mockito.Mockito.*;
+abstract class WorkerBaseTestCase {
 
-public abstract class WorkerBaseTestCase {
-
-    protected Worker worker;
+    protected WorkerLauncher worker;
     protected WorkerConsumer workerConsumer;
     protected Channel queueChannel;
-    protected GravitonAuthApi gravitonApi;
+    protected GravitonApi gravitonApi;
     protected Response response;
-    protected ObjectMapper objectMapper;
+    protected static ObjectMapper objectMapper;
 
-    @SuppressWarnings("unchecked")
-    @Before
-    public void baseMock() throws Exception {
+    @BeforeEach
+    void initAllBefore() {
+        objectMapper = DependencyInjection.getInstance(ObjectMapper.class);
+    }
 
-        Properties properties = WorkerProperties.load();
-        objectMapper = GravitonObjectMapper.getInstance(properties);
+
+    private void baseMock() {
+        DependencyInjection.init(List.of());
+
+        /**
+        wiremock.stubFor(post(urlEqualTo("/event/worker"))
+                .willReturn(
+                        aResponse().withStatus(201)
+                )
+        );
+
+        wiremock.stubFor(put(urlMatching("/event/worker/(.*)"))
+                .willReturn(
+                        aResponse().withStatus(201)
+                )
+        );
+
+        wiremock.stubFor(put(urlMatching("/event/status/(.*)"))
+                .willReturn(
+                        aResponse().withBodyFile("eventStatusResponse.json").withStatus(200)
+                )
+        );
+
+         **/
+
+        /**
 
         response = mock(Response.class);
-        gravitonApi = mock(GravitonAuthApi.class, RETURNS_DEEP_STUBS);
+        gravitonApi = mock(DependencyInjection.getInstance(GravitonApi.class), RETURNS_DEEP_STUBS);
 
         // PUT mock
         when(gravitonApi.put(any(GravitonBase.class)).execute()).thenReturn(response);
@@ -53,18 +72,29 @@ public abstract class WorkerBaseTestCase {
 
         // url mock
         when(gravitonApi.getBaseUrl()).thenReturn("http://localhost:8080/");
+         **/
     }
     
-    protected Worker getWrappedWorker(QueueWorkerAbstract testWorker) throws Exception {
+    protected WorkerLauncher getWrappedWorker(QueueWorkerAbstract testWorker) throws Exception {
+        // set the class!
+        WorkerProperties.setProperty("graviton.workerClass", testWorker.getClass().getName());
+        WorkerInterface worker = DependencyInjection.getInstance(WorkerInterface.class);
+        Properties properties = DependencyInjection.getInstance(Properties.class);
+
+        /*
         worker = spy(new Worker(testWorker));
         queueChannel = mock(Channel.class);
         workerConsumer = spy(new WorkerConsumer(testWorker));
         workerConsumer.setAcknowledger(mock(MessageAcknowledger.class));
 
         QueueManager queueManager = mock(QueueManager.class);
-        //doReturn(queueManager).when(worker).getQueueManager();
         doNothing().when(queueManager).connect(any(QueueWorkerAbstract.class));
 
-        return worker;
+         */
+
+        return new WorkerLauncher(
+            worker,
+            properties
+        );
     }
 }

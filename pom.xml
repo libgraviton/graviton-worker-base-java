@@ -239,9 +239,9 @@
 
     <!-- test -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.2</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>5.8.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -260,6 +260,12 @@
       <groupId>com.github.libgraviton</groupId>
       <artifactId>graviton-worker-test-base</artifactId>
       <version>1.2.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock-jre8</artifactId>
+      <version>2.35.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

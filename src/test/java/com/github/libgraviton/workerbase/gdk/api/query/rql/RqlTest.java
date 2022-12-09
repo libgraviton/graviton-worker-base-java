@@ -2,13 +2,12 @@ package com.github.libgraviton.workerbase.gdk.api.query.rql;
 
 import com.github.libgraviton.workerbase.gdk.data.ComplexClass;
 import com.github.libgraviton.workerbase.gdk.serialization.mapper.RqlObjectMapper;
-import com.github.libgraviton.workerbase.helper.WorkerProperties;
+import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Properties;
 import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
@@ -16,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 public class RqlTest {
 
     @Test
-    public void testGenerateWithAllStatements() throws Exception {
+    public void testGenerateWithAllStatements() {
         ComplexClass aClass1 = new ComplexClass();
         aClass1.setName("name1");
         ComplexClass aClass2 = new ComplexClass();
@@ -30,13 +29,13 @@ public class RqlTest {
         complexClass.setaClass(aClass1);
         complexClass.setClasses(Arrays.asList(aClass1, aClass2));
 
-        Properties properties = WorkerProperties.load();
+        RqlObjectMapper rqlObjectMapper = DependencyInjection.getInstance(RqlObjectMapper.class);
 
         Rql rql = new Rql.Builder()
                 .setLimit(1)
                 .addSelect("zip")
                 .addSelect("city")
-                .setResource(complexClass, new RqlObjectMapper(properties))
+                .setResource(complexClass, rqlObjectMapper)
                 .build();
 
         String expectedRql = "?and(eq(name,string:aName),eq(aClass.name,string:name1),eq(classes..name,string:name1),eq(classes..name,string:name2),eq(classes..date,2001-11-20T09:08:07Z))&limit(1)&select(zip,city)";

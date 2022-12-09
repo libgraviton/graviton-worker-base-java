@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
-import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
+import com.github.libgraviton.workerbase.helper.QueueEventScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.google.common.base.Stopwatch;
 
@@ -71,11 +71,11 @@ public class WorkerRunnable implements Runnable {
 
             afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.WORKING);
 
-            GravitonAuthApi gravitonApi = DependencyInjection.getInstance(GravitonAuthApi.class);
-            gravitonApi.setTransientHeaders(queueEvent.getTransientHeaders());
+            QueueEventScope queueEventScope = DependencyInjection.getInstance(QueueEventScope.class);
+            queueEventScope.setQueueEvent(queueEvent);
 
             // call the worker
-            getWorkloadCallback.getWorkload().doWork(queueEvent, gravitonApi);
+            getWorkloadCallback.getWorkload().doWork(queueEvent, queueEventScope);
 
             afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.DONE);
         } catch (Throwable t) {

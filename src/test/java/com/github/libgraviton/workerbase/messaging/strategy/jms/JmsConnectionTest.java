@@ -8,6 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.rules.ExpectedException;
 
 import javax.jms.*;
@@ -16,9 +17,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class JmsConnectionTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private JmsConnection connection;
 
@@ -78,10 +76,11 @@ public class JmsConnectionTest {
 
     @Test
     public void testOpenConnectionFailed() throws Exception {
-        thrown.expect(CannotConnectToQueue.class);
-
         doThrow(new JMSException("gugus")).when(jmsFactory).createConnection();
-        connection.open();
+
+        Assertions.assertThrows(JMSException.class, () -> {
+            connection.open();
+        });
     }
 
     @Test
@@ -122,10 +121,11 @@ public class JmsConnectionTest {
 
     @Test
     public void testRegisterConsumerFailed() throws Exception {
-        thrown.expect(CannotRegisterConsumer.class);
-
         doThrow(new JMSException("gugus")).when(jmsSession).createConsumer(jmsQueue);
-        connection.consume(mock(Consumer.class));
+
+        Assertions.assertThrows(CannotRegisterConsumer.class, () -> {
+            connection.consume(mock(Consumer.class));
+        });
     }
 
     @Test
@@ -140,10 +140,11 @@ public class JmsConnectionTest {
 
     @Test
     public void testPublishTextMessageFailed() throws Exception {
-        thrown.expect(CannotPublishMessage.class);
-
         doThrow(new JMSException("gugus")).when(jmsSession).createProducer(jmsQueue);
-        connection.publish("gugus");
+
+        Assertions.assertThrows(JMSException.class, () -> {
+            connection.publish("gugus");
+        });
     }
 
     @Test
@@ -160,10 +161,12 @@ public class JmsConnectionTest {
     @Test
     public void testPublishBytesMessageFailed() throws Exception {
         byte[] bytesMessage = new byte[]{1,2,3,4};
-        thrown.expect(CannotPublishMessage.class);
 
         doThrow(new JMSException(new String(bytesMessage))).when(jmsSession).createProducer(jmsQueue);
-        connection.publish(bytesMessage);
+
+        Assertions.assertThrows(JMSException.class, () -> {
+            connection.publish(bytesMessage);
+        });
     }
 
     @Test

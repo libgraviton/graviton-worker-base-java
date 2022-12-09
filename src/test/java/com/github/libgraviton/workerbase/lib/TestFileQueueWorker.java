@@ -2,12 +2,11 @@ package com.github.libgraviton.workerbase.lib;
 
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.workerbase.FileQueueWorkerAbstract;
-import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
+import com.github.libgraviton.workerbase.helper.QueueEventScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class TestFileQueueWorker extends FileQueueWorkerAbstract {
@@ -24,7 +23,7 @@ public class TestFileQueueWorker extends FileQueueWorkerAbstract {
      * @param queueEvent message body as object
 
      */
-    public void handleFileRequest(QueueEvent queueEvent, File file) {
+    public void handleFileRequest(QueueEvent queueEvent, File file, QueueEventScope queueEventScope) {
         fileObj = file;
         actionPresent = isActionCommandPresent(this.fileObj, getActionsOfInterest(queueEvent).get(0));
     }
@@ -47,10 +46,11 @@ public class TestFileQueueWorker extends FileQueueWorkerAbstract {
 
     @Override
     public List<String> getActionsOfInterest(QueueEvent queueEvent) {
-        return Arrays.asList("doYourStuff");
+        return List.of("doYourStuff");
     }
 
-    protected GravitonAuthApi initGravitonApi() {
-        return gravitonApi;
+    @Override
+    public void onStartUp() throws WorkerException {
+
     }
 }

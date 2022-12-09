@@ -11,21 +11,12 @@ import java.util.concurrent.TimeUnit;
 public class OkHttpGatewayFactory {
 
   /**
-   * returns the normal okhttpclient that can have our retry interceptor
-   *
-   * @return instance
-   */
-  public static OkHttpClient getInstance(Boolean hasRetry) {
-    return getBaseBuilder(true).build();
-  }
-
-  /**
    * gets the normal instance without retry interceptor
    *
    * @return instance
    */
-  public static OkHttpClient getInstance() {
-    return getBaseBuilder(false).build();
+  public static OkHttpClient getInstance(boolean hasRetry) {
+    return getBaseBuilder(hasRetry).build();
   }
 
   /**

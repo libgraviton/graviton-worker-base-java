@@ -1,9 +1,5 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
-import com.github.libgraviton.workerbase.exception.WorkerException;
-
-import java.util.List;
 import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +7,7 @@ import org.slf4j.LoggerFactory;
 /**
  * stuff that is the same for all worker types
  */
-abstract public class BaseWorker implements WorkerInterface {
+abstract class BaseWorker implements WorkerInterface {
 
   protected static final Logger LOG = LoggerFactory.getLogger(BaseWorker.class);
 
@@ -27,29 +23,7 @@ abstract public class BaseWorker implements WorkerInterface {
     return workerId;
   }
 
-  /**
-   * will be called after we're initialized, can contain some initial logic in the worker.
-   *
-   * @throws WorkerException when a problem occurs that prevents the Worker from working properly
-   */
-  public void onStartUp() throws WorkerException
-  {
-  }
-
-  public List<Class<?>> getDependencyInjectionProviders() {
-    return List.of();
-  }
-
-  /**
-   * initializes this worker, will be called by the library
-   *
-   * @param properties properties
-   * @throws WorkerException when a problem occurs that prevents the Worker from working properly
-   * @throws GravitonCommunicationException whenever the worker is unable to communicate with Graviton.
-   *
-   */
-  public void initialize(Properties properties) throws WorkerException, GravitonCommunicationException {
-
+  void init(Properties properties) {
     this.properties = properties;
     workerId = properties.getProperty("graviton.workerId");
 
@@ -59,5 +33,4 @@ abstract public class BaseWorker implements WorkerInterface {
       LOG.error("Could not set the Default Uncaught Exception Handler", e);
     }
   }
-
 }

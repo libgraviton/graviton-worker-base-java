@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase.lib;
 
 import com.github.libgraviton.workerbase.QueueWorkerAbstract;
-import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
 import com.github.libgraviton.workerbase.exception.WorkerException;
+import com.github.libgraviton.workerbase.helper.QueueEventScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
 public class TestQueueWorkerException extends QueueWorkerAbstract {
@@ -18,7 +18,7 @@ public class TestQueueWorkerException extends QueueWorkerAbstract {
      * 
      * @throws WorkerException
      */
-    public void handleRequest(QueueEvent queueEvent) throws WorkerException {
+    public void handleRequest(QueueEvent queueEvent, QueueEventScope queueEventScope) throws WorkerException {
         this.handleRequestCalled = true;
         if (this.throwWorkerException) {
             throw new WorkerException("Something bad happened!");
@@ -39,5 +39,10 @@ public class TestQueueWorkerException extends QueueWorkerAbstract {
     public boolean shouldAutoRegister()
     {
         return this.doAutoStuff;
+    }
+
+    @Override
+    public void onStartUp() throws WorkerException {
+
     }
 }

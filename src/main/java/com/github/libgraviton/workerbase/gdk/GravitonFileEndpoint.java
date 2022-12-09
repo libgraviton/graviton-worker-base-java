@@ -62,14 +62,14 @@ public class GravitonFileEndpoint {
         String fileId = gravitonApi.getIdFromUrlOrId(urlOrId);
         String fileUrl = getFileDownloadUrl(fileId);
 
-        DownloadClient.downloadFile(fileUrl, destinationPath, true);
+        DownloadClient.downloadFile(fileUrl, destinationPath);
     }
 
     @Deprecated(since = "Use writeFileContentToDisk(), File and streams to deal with files, not byte arrays!")
     public byte[] getFileContentAsBytes(String urlOrId) throws IOException {
         String fileId = gravitonApi.getIdFromUrlOrId(urlOrId);
         String fileUrl = getFileDownloadUrl(fileId);
-        return DownloadClient.downloadFileBytes(fileUrl, true);
+        return DownloadClient.downloadFileBytes(fileUrl);
     }
 
     public void writeFileContentToDisk(String urlOrId, java.io.File destinationPath) throws Exception {

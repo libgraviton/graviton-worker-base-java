@@ -1,15 +1,16 @@
 package com.github.libgraviton.workerbase.gdk;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.gdk.api.gateway.GravitonGateway;
-import com.github.libgraviton.workerbase.gdk.api.gateway.OkHttpGateway;
 import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.auth.Authenticator;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.exception.AuthenticatorException;
+import io.activej.inject.annotation.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
+@GravitonWorkerDiScan
 public class RequestExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestExecutor.class);
@@ -27,21 +29,18 @@ public class RequestExecutor {
     /**
      * The object mapper used to serialize / deserialize to / from JSON
      */
-    protected ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     /**
      * The http client for making http calls.
      */
-    protected GravitonGateway gateway;
+    private final GravitonGateway gateway;
 
     protected Authenticator authenticator;
 
-    public RequestExecutor() {
-        this(new ObjectMapper());
-    }
-
-    public RequestExecutor(ObjectMapper objectMapper) {
-        this.gateway = new OkHttpGateway();
+    @Inject
+    public RequestExecutor(ObjectMapper objectMapper, GravitonGateway gateway) {
+        this.gateway = gateway;
         this.objectMapper = objectMapper;
     }
 
@@ -51,25 +50,6 @@ public class RequestExecutor {
 
     public void setAuthenticator(Authenticator authenticator) {
         this.authenticator = authenticator;
-    }
-
-    public void doTrustEverybody() {
-        try {
-            gateway.doTrustEverybody();
-        } catch (Exception e) {
-            LOG.error("Could not trust everybody", e);
-        }
-
-        LOG.info("We are going to trust all certificates...");
-    }
-
-    /**
-     * forces HTTP1 on the request execution
-     */
-    public void forceHttp1() {
-        gateway.forceHttp1();
-
-        LOG.info("Forcing HTTP/1.*");
     }
 
     /**
@@ -150,16 +130,8 @@ public class RequestExecutor {
         LOG.debug("with multipart request body [\n{}]", builder);
     }
 
-    public void setGateway(GravitonGateway gateway) {
-        this.gateway = gateway;
-    }
-
     public GravitonGateway getGateway() {
         return gateway;
-    }
-
-    public void setObjectMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
     }
 
     public ObjectMapper getObjectMapper() {

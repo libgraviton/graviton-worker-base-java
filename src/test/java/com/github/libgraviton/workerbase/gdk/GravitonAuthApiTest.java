@@ -2,7 +2,7 @@ package com.github.libgraviton.workerbase.gdk;
 
 import com.github.libgraviton.workerbase.gdk.api.header.Header;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
-import com.github.libgraviton.workerbase.helper.WorkerProperties;
+import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -10,8 +10,8 @@ import static org.junit.Assert.assertEquals;
 public class GravitonAuthApiTest {
 
     @Test
-    public void testGetDefaultHeader() throws Exception {
-        GravitonAuthApi gravitonApi = new GravitonAuthApi(WorkerProperties.load());
+    public void testGetDefaultHeader() {
+        GravitonApi gravitonApi = DependencyInjection.getInstance(GravitonApi.class);
         HeaderBag headers = gravitonApi.getDefaultHeaders().build();
         assertEquals(3, headers.all().size());
 

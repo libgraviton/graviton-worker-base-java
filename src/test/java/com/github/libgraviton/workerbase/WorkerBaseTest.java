@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
+import com.github.libgraviton.workerbase.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatusAction;
@@ -14,7 +14,7 @@ import com.github.libgraviton.workerbase.lib.TestQueueWorkerException;
 import com.github.libgraviton.workerbase.lib.TestQueueWorkerNoAuto;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.File;
@@ -28,10 +28,8 @@ import static org.mockito.Mockito.*;
 
 public class WorkerBaseTest extends WorkerBaseTestCase {
 
-    @Before
-    public void setUp() throws Exception {    
-        baseMock();
-    }
+    @Rule
+    public WorkerTestRule workerTestRule = new WorkerTestRule();
 
     @Test
     public void testRegistrationPreparation() throws Exception {
@@ -203,8 +201,9 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     }
 
     private <T extends QueueWorkerAbstract> T prepareTestWorker(T worker) {
-        DependencyInjection.init(worker, List.of());
-        DependencyInjection.addInstanceOverride(GravitonAuthApi.class, gravitonApi);
+        DependencyInjection.init(List.of());
+        DependencyInjection.addInstanceOverride(WorkerInterface.class, worker);
+        DependencyInjection.addInstanceOverride(GravitonApi.class, gravitonApi);
         DependencyInjection.addInstanceOverride(EventStatusHandler.class, new EventStatusHandler(gravitonApi));
         return worker;
     }

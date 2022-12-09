@@ -1,7 +1,9 @@
 package com.github.libgraviton.workerbase;
 
+import com.fasterxml.jackson.jr.ob.impl.POJODefinition;
+import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.exception.NonExistingEventStatusException;
-import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
+import com.github.libgraviton.workerbase.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
@@ -36,7 +38,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-@Inject
+@GravitonWorkerDiScan
 public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWorkerInterface {
 
     private final AtomicLongMap<EventStatusStatus.Status> eventStates = AtomicLongMap.create();
@@ -50,6 +52,8 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         .description("Total queue events received")
         .register(Metrics.globalRegistry);
 
+    protected Properties properties;
+
     protected EventStatusHandler statusHandler;
 
     protected String messageId;
@@ -58,7 +62,8 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
     protected MessageAcknowledger acknowledger;
 
-    protected GravitonAuthApi gravitonApi;
+    @Inject
+    protected GravitonApi gravitonApi;
 
     protected final AtomicBoolean areWeAsync = new AtomicBoolean(false);
 
@@ -81,7 +86,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
     );
 
     private ExecutorService executorService;
-    
+
     /**
      * initializes this worker, will be called by the library
      *
@@ -91,10 +96,9 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
      *
      */
     @Override
-    public final void initialize(Properties properties) throws WorkerException, GravitonCommunicationException  {
-        super.initialize(properties);
-
-        gravitonApi = DependencyInjection.getInstance(GravitonAuthApi.class);
+    public final void initialize(Properties properties) throws WorkerException  {
+        this.properties = properties;
+        gravitonApi = DependencyInjection.getInstance(GravitonApi.class);
         statusHandler = DependencyInjection.getInstance(EventStatusHandler.class);
         fileEndpoint = DependencyInjection.getInstance(GravitonFileEndpoint.class);
         areWeAsync.set(this instanceof AsyncQueueWorkerInterface);
@@ -120,7 +124,11 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
                 .register(Metrics.globalRegistry);
 
         if (shouldAutoRegister()) {
-            register();
+            try {
+                register();
+            } catch (Throwable t) {
+                throw new WorkerException("Unable to register worker", t);
+            }
         }
     }
 
@@ -407,9 +415,5 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         EventStatusStatusAction action = new EventStatusStatusAction();
         action.set$ref(eventStatusActionEndpointUrl + workerId + "-default");
         return action;
-    }
-
-    public QueueManager getQueueManager() {
-        return DependencyInjection.getInstance(QueueManager.class);
     }
 }

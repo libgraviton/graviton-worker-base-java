@@ -12,6 +12,7 @@ import com.github.libgraviton.workerbase.gdk.data.NoopClass;
 import com.github.libgraviton.workerbase.gdk.data.SimpleClass;
 import com.github.libgraviton.workerbase.gdk.exception.SerializationException;
 import com.github.libgraviton.workerbase.gdk.serialization.JsonPatcher;
+import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,7 +38,7 @@ public class GravitonApiTest {
         when(endpoint.getUrl()).thenReturn(endpointUrl);
         when(endpointManager.getEndpoint(anyString())).thenReturn(endpoint);
 
-        gravitonApi = spy(new GravitonApi(baseUrl, endpointManager));
+        gravitonApi = spy(DependencyInjection.getInstance(GravitonApi.class));
     }
 
     @Test

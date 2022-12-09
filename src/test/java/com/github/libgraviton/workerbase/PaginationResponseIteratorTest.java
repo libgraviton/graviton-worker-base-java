@@ -21,7 +21,6 @@ public class PaginationResponseIteratorTest extends WorkerBaseTestCase {
     @SuppressWarnings("unchecked")
     @Before
     public void setUp() throws Exception {    
-        baseMock();
 
         String fileResponseContent = FileUtils.readFileToString(
                 new File("src/test/resources/json/fileResourceCollection.json"), Charset.forName("UTF-8"));

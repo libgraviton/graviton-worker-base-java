@@ -7,18 +7,14 @@ import com.github.libgraviton.workerbase.messaging.exception.CannotPublishMessag
 import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
 import com.github.libgraviton.workerbase.messaging.mocks.MockedQueueConnection;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class QueueConnectionTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private QueueConnection connection;
 
@@ -39,10 +35,10 @@ public class QueueConnectionTest {
 
     @Test
     public void tesOpenConnectionFailed() throws Exception {
-        thrown.expect(CannotConnectToQueue.class);
-
         doThrow(new CannotConnectToQueue("gugus", new Exception())).when(connection).openConnection();
-        connection.open();
+        Assertions.assertThrows(CannotConnectToQueue.class, () -> {
+            connection.open();
+        });
     }
 
     @Test
@@ -104,10 +100,11 @@ public class QueueConnectionTest {
 
     @Test
     public void testPublishTextMessageFailed() throws Exception {
-        thrown.expect(CannotPublishMessage.class);
-
         doThrow(new CannotPublishMessage("gugus", new Exception())).when(connection).publishMessage("gugus");
-        connection.publish("gugus");
+
+        Assertions.assertThrows(CannotPublishMessage.class, () -> {
+            connection.publish("gugus");
+        });
     }
 
 
@@ -133,10 +130,12 @@ public class QueueConnectionTest {
     @Test
     public void testPublishBytesMessageFailed() throws Exception {
         byte[] bytesMessage = new byte[]{1,2,3,4};
-        thrown.expect(CannotPublishMessage.class);
 
         doThrow(new CannotPublishMessage(new String(bytesMessage), new Exception())).when(connection).publishMessage(bytesMessage);
-        connection.publish(bytesMessage);
+
+        Assertions.assertThrows(CannotPublishMessage.class, () -> {
+            connection.publish(bytesMessage);
+        });
     }
 
     @Test
@@ -148,20 +147,19 @@ public class QueueConnectionTest {
 
     @Test
     public void testRegisterConsumerFailed() throws Exception {
-        thrown.expect(CannotRegisterConsumer.class);
-
         Consumer consumer = mock(Consumer.class);
         doThrow(new CannotRegisterConsumer(consumer, "gugus")).when(connection).registerConsumer(consumer);
-        connection.consume(consumer);
+
+        Assertions.assertThrows(CannotRegisterConsumer.class, () -> {
+            connection.consume(consumer);
+        });
     }
 
     @Test
-    public void testRegisterSecondConsumer() throws Exception {
-        thrown.expect(CannotRegisterConsumer.class);
-        thrown.expectMessage("Another consumer is already registered.");
-
-        connection.consume(mock(Consumer.class));
-        connection.consume(mock(Consumer.class));
+    public void testRegisterSecondConsumer() {
+        Assertions.assertThrows(CannotRegisterConsumer.class, () -> {
+            connection.consume(mock(Consumer.class));
+            connection.consume(mock(Consumer.class));
+        });
     }
-
 }

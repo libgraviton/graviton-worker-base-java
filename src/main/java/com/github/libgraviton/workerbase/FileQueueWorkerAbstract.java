@@ -1,21 +1,17 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadata;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadataAction;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
-import com.github.libgraviton.workerbase.helper.WorkerUtil;
+import com.github.libgraviton.workerbase.helper.QueueEventScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
-import com.google.common.base.Joiner;
-import io.micrometer.core.instrument.util.StringUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -66,7 +62,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
         return !ListUtils.intersection(actions, referencedActions).isEmpty();
     }
 
-    final public void handleRequest(QueueEvent body) throws WorkerException, GravitonCommunicationException {
+    final public void handleRequest(QueueEvent body, QueueEventScope queueEventScope) throws WorkerException, GravitonCommunicationException {
         // get the file..
         File fileToPass;
         if (currentFile != null) {
@@ -76,7 +72,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
             fileToPass = getFileFromQueueEvent(body);
         }
 
-        handleFileRequest(body, fileToPass);
+        handleFileRequest(body, fileToPass, queueEventScope);
     }
 
     /**

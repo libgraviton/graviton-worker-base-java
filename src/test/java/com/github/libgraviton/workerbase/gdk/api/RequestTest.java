@@ -30,7 +30,7 @@ public class RequestTest {
         RequestExecutor executor = mock(RequestExecutor.class);
         when(executor.execute(any(Request.class))).thenReturn(response);
         URL url = new URL("http://aRandomUrl");
-        builder = new Request.Builder(executor).setUrl(url);
+        builder = new Request.Builder().setUrl(url);
     }
 
     @Test

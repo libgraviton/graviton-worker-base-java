@@ -2,12 +2,11 @@ package com.github.libgraviton.workerbase.gdk.serialization.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.libgraviton.workerbase.gdk.data.SimpleClass;
-import com.github.libgraviton.workerbase.helper.WorkerProperties;
+import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import org.junit.Test;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Properties;
 import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
@@ -16,9 +15,8 @@ import static org.junit.Assert.assertFalse;
 public class RqlObjectMapperTest {
 
     @Test
-    public void testDateFormat() throws Exception {
-        Properties properties = WorkerProperties.load();
-        RqlObjectMapper mapper = new RqlObjectMapper(properties);
+    public void testDateFormat() {
+        RqlObjectMapper mapper = DependencyInjection.getInstance(RqlObjectMapper.class);
 
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         calendar.set(2001, 10, 20, 9, 8, 7);
@@ -28,9 +26,8 @@ public class RqlObjectMapperTest {
     }
 
     @Test
-    public void testIgnoreNullValues() throws Exception {
-        Properties properties = WorkerProperties.load();
-        RqlObjectMapper mapper = new RqlObjectMapper(properties);
+    public void testIgnoreNullValues() {
+        RqlObjectMapper mapper = DependencyInjection.getInstance(RqlObjectMapper.class);
 
         SimpleClass simpleClass = new SimpleClass();
         simpleClass.setId("123");

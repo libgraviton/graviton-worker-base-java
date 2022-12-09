@@ -2,7 +2,7 @@ package com.github.libgraviton.workerbase.gdk.serialization.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.libgraviton.workerbase.helper.WorkerProperties;
+import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import org.junit.Test;
 
 import java.util.Calendar;
@@ -14,8 +14,8 @@ import static org.junit.Assert.assertEquals;
 public class GravitonObjectMapperTest {
 
     @Test
-    public void testDateFormat() throws Exception {
-        ObjectMapper mapper = GravitonObjectMapper.getInstance(WorkerProperties.load());
+    public void testDateFormat() {
+        ObjectMapper mapper = DependencyInjection.getInstance(ObjectMapper.class);
 
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         calendar.set(2001, 10, 20, 9, 8, 7);

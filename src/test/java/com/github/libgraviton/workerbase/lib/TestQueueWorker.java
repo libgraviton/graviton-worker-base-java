@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase.lib;
 
-import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
 import com.github.libgraviton.workerbase.QueueWorkerAbstract;
 import com.github.libgraviton.workerbase.exception.WorkerException;
+import com.github.libgraviton.workerbase.helper.QueueEventScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
 public class TestQueueWorker extends QueueWorkerAbstract {
@@ -18,7 +18,7 @@ public class TestQueueWorker extends QueueWorkerAbstract {
      * 
      * @throws WorkerException
      */
-    public void handleRequest(QueueEvent qevent) throws WorkerException {
+    public void handleRequest(QueueEvent qevent, QueueEventScope queueEventScope) throws WorkerException {
         handledQueueEvent = qevent;
     }
 
@@ -40,7 +40,8 @@ public class TestQueueWorker extends QueueWorkerAbstract {
         return handledQueueEvent;
     }
 
-    protected GravitonAuthApi initGravitonApi() {
-        return gravitonApi;
+    @Override
+    public void onStartUp() throws WorkerException {
+
     }
 }

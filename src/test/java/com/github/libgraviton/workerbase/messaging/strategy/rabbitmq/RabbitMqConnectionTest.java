@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
@@ -19,9 +20,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class RabbitMqConnectionTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private RabbitMqConnection connection;
 
@@ -146,10 +144,11 @@ public class RabbitMqConnectionTest {
 
     @Test
     public void testOpenConnectionFailed() throws Exception {
-        thrown.expect(CannotConnectToQueue.class);
-
         doThrow(new IOException()).when(rabbitFactory).newConnection();
-        connection.open();
+
+        Assertions.assertThrows(CannotConnectToQueue.class, () -> {
+            connection.open();
+        });
     }
 
     @Test
@@ -168,11 +167,12 @@ public class RabbitMqConnectionTest {
 
     @Test
     public void testRegisterConsumerFailed() throws Exception {
-        thrown.expect(CannotRegisterConsumer.class);
-
         doThrow(new IOException()).when(rabbitChannel).basicConsume(eq("queue"), eq(true), any(RabbitMqConsumer.class));
-        Consumer consumer = mock(Consumer.class);
-        connection.consume(consumer);
+
+        Assertions.assertThrows(CannotRegisterConsumer.class, () -> {
+            Consumer consumer = mock(Consumer.class);
+            connection.consume(consumer);
+        });
     }
 
     @Test
@@ -188,15 +188,16 @@ public class RabbitMqConnectionTest {
 
     @Test
     public void testPublishTextMessageFailed() throws Exception {
-        thrown.expect(CannotPublishMessage.class);
-
         doThrow(new IOException()).when(rabbitChannel).basicPublish(
                 "exchange",
                 "routingKey",
                 MessageProperties.PERSISTENT_TEXT_PLAIN,
                 "gugus".getBytes(StandardCharsets.UTF_8)
         );
-        connection.publish("gugus");
+
+        Assertions.assertThrows(CannotPublishMessage.class, () -> {
+            connection.publish("gugus");
+        });
     }
 
     @Test
@@ -214,7 +215,6 @@ public class RabbitMqConnectionTest {
     @Test
     public void testPublishBytesMessageFailed() throws Exception {
         byte[] bytesMessage = new byte[]{1,2,3,4};
-        thrown.expect(CannotPublishMessage.class);
 
         doThrow(new IOException()).when(rabbitChannel).basicPublish(
                 "exchange",
@@ -222,7 +222,10 @@ public class RabbitMqConnectionTest {
                 MessageProperties.PERSISTENT_TEXT_PLAIN,
                 bytesMessage
         );
-        connection.publish(bytesMessage);
+
+        Assertions.assertThrows(CannotPublishMessage.class, () -> {
+            connection.publish(bytesMessage);
+        });
     }
 
     @Test

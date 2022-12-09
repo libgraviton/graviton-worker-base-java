@@ -7,6 +7,8 @@ import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
 import com.github.libgraviton.workerbase.gdk.api.query.Query;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulRequestException;
+import com.github.libgraviton.workerbase.helper.DependencyInjection;
+import io.activej.inject.annotation.Inject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -98,14 +100,10 @@ public class Request {
 
         protected List<FilePart> fileParts = new ArrayList<>();
 
-        protected RequestExecutor executor;
+        protected final RequestExecutor executor;
 
         public Builder() {
-            this.executor = new RequestExecutor();
-        }
-
-        public Builder(RequestExecutor executor) {
-            this.executor = executor;
+            this.executor = DependencyInjection.getInstance(RequestExecutor.class);
         }
 
         public Builder setUrl(URL url) {
