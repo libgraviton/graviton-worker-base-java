@@ -7,6 +7,7 @@ import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadataAction;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.QueueEventScope;
+import com.github.libgraviton.workerbase.helper.WorkerScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
@@ -27,6 +28,10 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
 
     // just to pass around!
     private File currentFile;
+
+    public FileQueueWorkerAbstract(WorkerScope workerScope) {
+        super(workerScope);
+    }
 
     public boolean shouldHandleRequest(QueueEvent queueEvent) throws WorkerException, GravitonCommunicationException {
         List<String> actions = getActionsOfInterest(queueEvent);

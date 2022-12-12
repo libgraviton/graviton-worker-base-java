@@ -74,12 +74,18 @@ abstract class WorkerBaseTestCase {
         when(gravitonApi.getBaseUrl()).thenReturn("http://localhost:8080/");
          **/
     }
-    
-    protected WorkerLauncher getWrappedWorker(QueueWorkerAbstract testWorker) throws Exception {
+
+    protected WorkerLauncher getWrappedWorker(Class<? extends WorkerInterface> clazz) throws Exception {
         // set the class!
-        WorkerProperties.setProperty("graviton.workerClass", testWorker.getClass().getName());
-        WorkerInterface worker = DependencyInjection.getInstance(WorkerInterface.class);
+        /*
+        WorkerProperties.setProperty("graviton.workerClassName", className);
+        DependencyInjection.reset();
         Properties properties = DependencyInjection.getInstance(Properties.class);
+        WorkerInterface worker = DependencyInjection.getInstance(WorkerInterface.class);
+        */
+
+        Properties properties = DependencyInjection.getInstance(Properties.class);
+        WorkerInterface worker = DependencyInjection.getInstance(clazz);
 
         /*
         worker = spy(new Worker(testWorker));
@@ -93,8 +99,8 @@ abstract class WorkerBaseTestCase {
          */
 
         return new WorkerLauncher(
-            worker,
-            properties
+                worker,
+                properties
         );
     }
 }

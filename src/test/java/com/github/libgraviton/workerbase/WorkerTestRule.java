@@ -1,6 +1,7 @@
 package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import org.junit.rules.TestRule;
@@ -20,7 +21,7 @@ public class WorkerTestRule implements TestRule {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerTestRule.class);
 
-    WireMockServer wireMockServer;
+    public WireMockServer wireMockServer;
 
     @Override
     public Statement apply(Statement statement, Description description) {
@@ -31,6 +32,7 @@ public class WorkerTestRule implements TestRule {
                 List<Throwable> errors = new ArrayList<>();
 
                 try {
+                    WorkerProperties.load();
                     DependencyInjection.init(List.of());
                     startWiremock();
                     LOG.info("Running test {}...", description.getDisplayName());

@@ -1,6 +1,5 @@
 package com.github.libgraviton.workerbase;
 
-import com.fasterxml.jackson.jr.ob.impl.POJODefinition;
 import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.exception.NonExistingEventStatusException;
 import com.github.libgraviton.workerbase.gdk.GravitonApi;
@@ -13,6 +12,7 @@ import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventSt
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
+import com.github.libgraviton.workerbase.helper.WorkerScope;
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.github.libgraviton.workerbase.messaging.exception.CannotAcknowledgeMessage;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
@@ -52,12 +52,12 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         .description("Total queue events received")
         .register(Metrics.globalRegistry);
 
-    protected Properties properties;
-
+    @Inject
     protected EventStatusHandler statusHandler;
 
     protected String messageId;
 
+    @Inject
     protected GravitonFileEndpoint fileEndpoint;
 
     protected MessageAcknowledger acknowledger;
@@ -87,6 +87,10 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
     private ExecutorService executorService;
 
+    public QueueWorkerAbstract(WorkerScope workerScope) {
+        super(workerScope);
+    }
+
     /**
      * initializes this worker, will be called by the library
      *
@@ -97,10 +101,10 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
      */
     @Override
     public final void initialize(Properties properties) throws WorkerException  {
-        this.properties = properties;
-        gravitonApi = DependencyInjection.getInstance(GravitonApi.class);
-        statusHandler = DependencyInjection.getInstance(EventStatusHandler.class);
-        fileEndpoint = DependencyInjection.getInstance(GravitonFileEndpoint.class);
+        super.initialize(properties);
+        //gravitonApi = DependencyInjection.getInstance(GravitonApi.class);
+        //statusHandler = DependencyInjection.getInstance(EventStatusHandler.class);
+        //fileEndpoint = DependencyInjection.getInstance(GravitonFileEndpoint.class);
         areWeAsync.set(this instanceof AsyncQueueWorkerInterface);
 
         if (areWeAsync.get()) {

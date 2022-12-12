@@ -8,7 +8,9 @@ import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
+import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.helper.QueueEventScope;
+import com.github.libgraviton.workerbase.helper.WorkerScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.github.libgraviton.workertestbase.BaseWorkerTest;
 import com.github.tomakehurst.wiremock.matching.MultipartValuePatternBuilder;
@@ -35,7 +37,8 @@ public class FileWorkerBaseTest extends BaseWorkerTest {
     }
 
     private FileQueueWorkerAbstract getFileTestWorker(FileHandler fileHandler) {
-        return new FileQueueWorkerAbstract() {
+        WorkerScope workerScope = DependencyInjection.getInstance(WorkerScope.class);
+        return new FileQueueWorkerAbstract(workerScope) {
             @Override
             public void onStartUp() throws WorkerException {
 

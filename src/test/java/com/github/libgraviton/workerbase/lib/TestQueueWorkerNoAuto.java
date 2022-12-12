@@ -1,16 +1,25 @@
 package com.github.libgraviton.workerbase.lib;
 
 import com.github.libgraviton.workerbase.QueueWorkerAbstract;
+import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.QueueEventScope;
+import com.github.libgraviton.workerbase.helper.WorkerScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import io.activej.inject.annotation.Inject;
 
+@GravitonWorkerDiScan
 public class TestQueueWorkerNoAuto extends QueueWorkerAbstract {
 
     public boolean concerningRequestCalled = false;
     public boolean handleRequestCalled = false;
     public boolean isConcerningRequest = true;
-    
+
+    @Inject
+    public TestQueueWorkerNoAuto(WorkerScope workerScope) {
+        super(workerScope);
+    }
+
     /**
      * worker logic is implemented here
      *

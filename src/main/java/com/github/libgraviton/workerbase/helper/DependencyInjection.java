@@ -1,15 +1,25 @@
 package com.github.libgraviton.workerbase.helper;
 
+import com.github.libgraviton.workerbase.DummyWorker;
+import com.github.libgraviton.workerbase.annotation.GravitonWorker;
 import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.di.WorkerBaseProvider;
 import com.google.common.reflect.ClassPath;
 import io.activej.inject.Injector;
+import io.activej.inject.Key;
+import io.activej.inject.binding.Binding;
+import io.activej.inject.binding.BindingGenerator;
 import io.activej.inject.module.ModuleBuilder;
+import io.activej.inject.util.Constructors;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DependencyInjection {
 
@@ -43,6 +53,47 @@ public class DependencyInjection {
                 }
 
                 Class<?> clazz = classInfo.load();
+
+                // worker annotation?
+                GravitonWorker workerAnnotation = clazz.getAnnotation(GravitonWorker.class);
+                if (workerAnnotation != null) {
+                    // create a binding for a worker!
+                    Constructor<?> cons = clazz.getConstructor(WorkerScope.class);
+
+                    Method theMethod = null;
+                    for (Method oneMethod : clazz.getMethods()) {
+                        theMethod = oneMethod;
+                    }
+
+                    (Constructors.Constructor1) theMethod;
+
+                    /*
+                    Constructors.Constructor1<Object, Object> cons2 = new Constructors.Constructor1<>() {
+                        @Override
+                        public @NotNull Object create(Object arg1) {
+                            return WorkerScope.class;
+                        }
+                    };
+
+                     */
+
+                    Constructors.Constructor1<WorkerScope, DummyWorker> hans = DummyWorker::new;
+
+                    //builder.bind(clazz).to(cons, Key.of(WorkerScope.class));
+
+                    //builder.bind(clazz).to.to(cons2, Key.of(WorkerScope.class));
+                    
+                    /*
+                    builder.install(
+                            ModuleBuilder.create().bindInstanceInjector(clazz).build()
+                    );
+                    
+                     */
+                    continue;
+
+                    //Key.of(clazz), Binding.to(clazz::new, Pastry.class)
+
+                }
 
                 // does it have the annotation?
                 GravitonWorkerDiScan annotation = clazz.getAnnotation(GravitonWorkerDiScan.class);

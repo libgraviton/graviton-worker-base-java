@@ -5,6 +5,7 @@ import com.github.libgraviton.workerbase.FileQueueWorkerAbstract;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.QueueEventScope;
+import com.github.libgraviton.workerbase.helper.WorkerScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
 import java.util.List;
@@ -16,6 +17,10 @@ public class TestFileQueueWorker extends FileQueueWorkerAbstract {
 
     public File fileObj;
     public boolean actionPresent;
+
+    public TestFileQueueWorker(WorkerScope workerScope) {
+        super(workerScope);
+    }
 
     /**
      * worker logic is implemented here

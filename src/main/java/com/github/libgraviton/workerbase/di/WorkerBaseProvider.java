@@ -13,7 +13,9 @@ import com.github.libgraviton.workerbase.gdk.api.gateway.GravitonGateway;
 import com.github.libgraviton.workerbase.gdk.api.gateway.OkHttpGateway;
 import com.github.libgraviton.workerbase.gdk.api.gateway.okhttp.OkHttpGatewayFactory;
 import com.github.libgraviton.workerbase.gdk.serialization.mapper.RqlObjectMapper;
+import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
+import com.github.libgraviton.workerbase.helper.WorkerScope;
 import com.google.common.reflect.ClassPath;
 import io.activej.inject.Key;
 import io.activej.inject.annotation.Provides;
@@ -51,6 +53,8 @@ public class WorkerBaseProvider extends AbstractModule {
         });
     }
 
+
+    /*
     @Provides
     @Transient
     public static WorkerInterface getWorkerInterface(Properties properties) {
@@ -71,7 +75,7 @@ public class WorkerBaseProvider extends AbstractModule {
         } catch (Throwable t) {
             throw new RuntimeException("Unable to create instance of worker class '"+workerClassName+"'", t);
         }
-    }
+    }*/
 
     @Provides
     public static Properties getProperties() throws IOException {
@@ -81,6 +85,11 @@ public class WorkerBaseProvider extends AbstractModule {
     @Provides
     public static QueueManager getQueueManager(Properties properties) {
         return new QueueManager(properties);
+    }
+
+    @Provides
+    public static EventStatusHandler eventStatusHandler(GravitonApi gravitonApi) {
+        return new EventStatusHandler(gravitonApi);
     }
 
     @Provides

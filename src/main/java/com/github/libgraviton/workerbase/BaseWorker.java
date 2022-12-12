@@ -1,6 +1,10 @@
 package com.github.libgraviton.workerbase;
 
 import java.util.Properties;
+
+import com.github.libgraviton.workerbase.exception.WorkerException;
+import com.github.libgraviton.workerbase.helper.WorkerScope;
+import io.activej.inject.annotation.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +17,8 @@ abstract class BaseWorker implements WorkerInterface {
 
   protected Properties properties;
 
+  protected final WorkerScope workerScope;
+
   protected String workerId;
 
   public Properties getProperties() {
@@ -23,7 +29,11 @@ abstract class BaseWorker implements WorkerInterface {
     return workerId;
   }
 
-  void init(Properties properties) {
+  public BaseWorker(WorkerScope workerScope) {
+    this.workerScope = workerScope;
+  }
+
+  public void initialize(Properties properties) throws WorkerException {
     this.properties = properties;
     workerId = properties.getProperty("graviton.workerId");
 
