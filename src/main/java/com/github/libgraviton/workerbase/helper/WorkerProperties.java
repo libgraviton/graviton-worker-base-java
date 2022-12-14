@@ -16,6 +16,13 @@ import java.util.*;
  */
 public class WorkerProperties {
 
+    public static final String GRAVITON_BASE_URL = "graviton.base.url";
+
+    public static final String GRAVITON_SUBSCRIPTION = "graviton.subscription";
+    public static final String WORKER_ID = "graviton.workerId";
+    public static final String AUTH_PREFIX_USERNAME = "graviton.authentication.prefix.username";
+    public static final String AUTH_HEADER_NAME = "graviton.authentication.header.name";
+
     private static final Logger LOG = LoggerFactory.getLogger(WorkerProperties.class);
 
     private static Properties loadedProperties = new Properties();

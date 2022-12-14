@@ -62,10 +62,10 @@ public class GravitonApi {
 
     @Inject
     public GravitonApi(GeneratedEndpointManager endpointManager, ObjectMapper objectMapper, RqlObjectMapper rqlObjectMapper, RequestExecutor requestExecutor) {
-        this.baseUrl = WorkerProperties.getProperty("graviton.base.url");
-        this.authHeaderValue = WorkerProperties.getProperty("graviton.authentication.prefix.username")
-                .concat(WorkerProperties.getProperty("graviton.workerId"));
-        this.authHeaderName = WorkerProperties.getProperty("graviton.authentication.header.name");
+        this.baseUrl = WorkerProperties.getProperty(WorkerProperties.GRAVITON_BASE_URL);
+        this.authHeaderValue = WorkerProperties.getProperty(WorkerProperties.AUTH_PREFIX_USERNAME)
+                .concat(WorkerProperties.getProperty(WorkerProperties.WORKER_ID));
+        this.authHeaderName = WorkerProperties.getProperty(WorkerProperties.AUTH_HEADER_NAME);
         this.endpointManager = endpointManager;
         this.objectMapper = objectMapper;
         this.rqlObjectMapper = rqlObjectMapper;

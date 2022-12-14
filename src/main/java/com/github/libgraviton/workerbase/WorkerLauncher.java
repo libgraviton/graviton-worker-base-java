@@ -7,8 +7,6 @@ package com.github.libgraviton.workerbase;
 import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.helper.WorkerUtil;
-import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
-import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.util.PrometheusServer;
 import io.activej.inject.annotation.Inject;
@@ -30,14 +28,14 @@ final class WorkerLauncher {
     private static final Logger LOG = LoggerFactory.getLogger(WorkerLauncher.class);
 
     private final WorkerInterface worker;
+    private final PrometheusServer prometheusServer;
+    private final QueueWorkerRunner queueWorkerRunner;
 
     @Inject
     public WorkerLauncher(
             WorkerInterface worker,
             Properties properties
-    ) throws WorkerException {
-        // init di!
-        //DependencyInjection.init(List.of());
+    ) {
 
         this.worker = worker;
 
@@ -55,6 +53,18 @@ final class WorkerLauncher {
                 System.getProperty("java.runtime.version"),
                 System.getProperty("user.timezone")
         );
+
+        prometheusServer = new PrometheusServer(worker.getWorkerId());
+
+        if (worker instanceof QueueWorkerAbstract) {
+            queueWorkerRunner = new QueueWorkerRunner((QueueWorkerAbstract) worker);
+        } else {
+            queueWorkerRunner = null;
+        }
+    }
+
+    public WorkerInterface getWorker() {
+        return worker;
     }
 
     /**
@@ -64,18 +74,18 @@ final class WorkerLauncher {
      */
     public void run() throws WorkerException {
         if (worker == null) {
-            throw new WorkerException("No worker set to be run...");
+            throw new RuntimeException("No worker set to be run...");
         }
 
-        new PrometheusServer(worker.getWorkerId());
+        // on startup call
+        worker.onStartUp();
 
         if (worker instanceof StandaloneWorker) {
             ((StandaloneWorker) this.worker).run();
-        }
-
-        if (worker instanceof QueueWorkerAbstract) {
-            QueueWorkerRunner queueWorkerRunner = DependencyInjection.getInstance(QueueWorkerRunner.class);
-            queueWorkerRunner.run((QueueWorkerAbstract) worker);
+        } else if (worker instanceof QueueWorkerAbstract && queueWorkerRunner != null) {
+            queueWorkerRunner.run();
+        } else {
+            throw new RuntimeException("Could not find any runnable worker!");
         }
     }
 }

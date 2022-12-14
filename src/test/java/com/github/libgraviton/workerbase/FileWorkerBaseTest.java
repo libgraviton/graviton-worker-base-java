@@ -52,7 +52,7 @@ public class FileWorkerBaseTest extends BaseWorkerTest {
             @Override
             public void handleFileRequest(QueueEvent body, File file, QueueEventScope queueEventScope) throws WorkerException {
                 try {
-                    fileHandler.handleFileRequest(fileEndpoint, body, file);
+                    fileHandler.handleFileRequest(workerScope.getFileEndpoint(), body, file);
                     innerWorkerWasCalled = true;
                 } catch (Throwable t) {
                     throw new WorkerException("Errror", t);

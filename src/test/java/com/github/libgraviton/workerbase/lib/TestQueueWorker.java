@@ -2,21 +2,22 @@ package com.github.libgraviton.workerbase.lib;
 
 import com.github.libgraviton.workerbase.QueueWorkerAbstract;
 import com.github.libgraviton.workerbase.annotation.GravitonWorker;
-import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.QueueEventScope;
 import com.github.libgraviton.workerbase.helper.WorkerScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import io.activej.inject.annotation.Inject;
-import io.activej.inject.annotation.Provides;
 
 @GravitonWorker
 public class TestQueueWorker extends QueueWorkerAbstract {
 
     public boolean shouldHandleRequestCalled = false;
 
+    public boolean hasStartedUp = false;
+
     protected QueueEvent handledQueueEvent;
 
+    @Inject
     public TestQueueWorker(WorkerScope workerScope) {
         super(workerScope);
     }
@@ -49,8 +50,7 @@ public class TestQueueWorker extends QueueWorkerAbstract {
         return handledQueueEvent;
     }
 
-    @Override
     public void onStartUp() throws WorkerException {
-
+        hasStartedUp = true;
     }
 }

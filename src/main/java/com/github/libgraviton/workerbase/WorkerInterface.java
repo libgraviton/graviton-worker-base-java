@@ -8,7 +8,5 @@ public interface WorkerInterface {
 
   String getWorkerId();
 
-  void initialize(Properties properties) throws WorkerException;
-
   void onStartUp() throws WorkerException;
 }

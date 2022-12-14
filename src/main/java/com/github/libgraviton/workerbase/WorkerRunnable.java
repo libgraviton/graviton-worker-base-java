@@ -43,12 +43,12 @@ public class WorkerRunnable implements Runnable {
     private final RelevantEventCallback relevantEventCallback;
 
     public WorkerRunnable(
-            QueueEvent queueEvent,
-            GetWorkloadCallback getWorkloadCallback,
-            AfterStatusChangeCallback afterStatusChangeCallback,
-            AfterCompleteCallback afterCompleteCallback,
-            AfterExceptionCallback afterExceptionCallback,
-            RelevantEventCallback relevantEventCallback
+            final QueueEvent queueEvent,
+            final GetWorkloadCallback getWorkloadCallback,
+            final AfterStatusChangeCallback afterStatusChangeCallback,
+            final AfterCompleteCallback afterCompleteCallback,
+            final AfterExceptionCallback afterExceptionCallback,
+            final RelevantEventCallback relevantEventCallback
     ) {
         this.queueEvent = queueEvent;
         this.getWorkloadCallback = getWorkloadCallback;

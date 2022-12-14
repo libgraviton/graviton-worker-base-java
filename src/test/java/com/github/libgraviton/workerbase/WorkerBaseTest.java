@@ -35,7 +35,12 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     public void testRegistrationPreparation() throws Exception {
         //TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
         // to initialize worker
-        WorkerLauncher worker = getWrappedWorker(TestQueueWorker.class);
+        WorkerLauncher workerLauncher = getWrappedWorker(TestQueueWorker.class);
+        workerLauncher.run();
+
+        verify()
+
+        TestQueueWorker worker = (TestQueueWorker) workerLauncher.getWorker();
 
         int hans =3;
         //List<EventWorkerSubscription> subscriptions = testWorker.getSubscriptions();

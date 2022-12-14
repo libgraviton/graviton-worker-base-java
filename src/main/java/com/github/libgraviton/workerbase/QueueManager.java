@@ -1,6 +1,8 @@
 package com.github.libgraviton.workerbase;
 
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workerbase.messaging.QueueConnection;
+import com.github.libgraviton.workerbase.messaging.consumer.Consumeable;
 import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
 import com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConnection;
@@ -20,8 +22,8 @@ public class QueueManager {
 
     public QueueManager(Properties properties) {
         connection = new RabbitMqConnection.Builder()
-                .queueName(properties.getProperty("graviton.workerId"))
-                .routingKey(properties.getProperty("graviton.workerId"))
+                .queueName(properties.getProperty(WorkerProperties.WORKER_ID))
+                .routingKey(properties.getProperty(WorkerProperties.WORKER_ID))
                 .applyProperties(properties, "queue.")
                 .build();
     }
@@ -34,7 +36,7 @@ public class QueueManager {
      * @throws CannotConnectToQueue if connection to queue cannot be established
      * @throws CannotRegisterConsumer if connection was successfully established, but consumer registration failed
      */
-    public void connect(QueueWorkerInterface worker) throws CannotConnectToQueue, CannotRegisterConsumer {
-        connection.consume(new WorkerConsumer(worker));
+    public void connect(final Consumeable consumeable) throws CannotConnectToQueue, CannotRegisterConsumer {
+        connection.consume(new WorkerConsumer(consumeable));
     }
 }

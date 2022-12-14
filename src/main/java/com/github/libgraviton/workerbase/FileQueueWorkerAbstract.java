@@ -100,7 +100,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
      * @return file instance
      */
     public File getGravitonFile(String fileUrl) throws GravitonCommunicationException {
-        return fileEndpoint.getFileMetadata(fileUrl);
+        return workerScope.getFileEndpoint().getFileMetadata(fileUrl);
     }    
     
     /**
@@ -140,7 +140,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
             gravitonFile.getMetadata().getAction().removeAll(matchingActions);
 
             try {
-                fileEndpoint.patch(gravitonFile).execute();
+                workerScope.getFileEndpoint().patch(gravitonFile).execute();
             } catch (CommunicationException e) {
                 throw new GravitonCommunicationException("Unable to remove file action elements from '" + gravitonFile.getId() + "'.", e);
             }

@@ -133,7 +133,6 @@ public class RabbitMqConnection extends QueueConnection {
         try {
             // see https://www.rabbitmq.com/consumer-prefetch.html - normally should only 1, "0" is infinite!
             channel.basicQos(rabbitMqConsumer.getPrefetchCount());
-
             channel.basicConsume(queueName, autoAck, rabbitMqConsumer);
         } catch (IOException e) {
             throw new CannotRegisterConsumer(consumer, e);

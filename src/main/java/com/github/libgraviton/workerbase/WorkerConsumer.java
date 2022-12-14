@@ -4,13 +4,10 @@
 
 package com.github.libgraviton.workerbase;
 
-import com.fasterxml.jackson.jr.ob.JSON;
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.github.libgraviton.workerbase.messaging.consumer.AcknowledgingConsumer;
+import com.github.libgraviton.workerbase.messaging.consumer.Consumeable;
 import com.github.libgraviton.workerbase.messaging.exception.CannotConsumeMessage;
-import com.github.libgraviton.workerbase.model.QueueEvent;
-
-import java.io.IOException;
 
 /**
  * <p>WorkerConsumer class.</p>
@@ -21,7 +18,7 @@ import java.io.IOException;
  */
 public class WorkerConsumer implements AcknowledgingConsumer {
 
-    private final QueueWorkerInterface worker;
+    private final Consumeable consumeable;
 
     private MessageAcknowledger acknowledger;
 
@@ -30,19 +27,14 @@ public class WorkerConsumer implements AcknowledgingConsumer {
      *
      * @param worker worker
      */
-    public WorkerConsumer(QueueWorkerInterface worker) {
-        this.worker = worker;
+    public WorkerConsumer(final Consumeable consumeable) {
+        this.consumeable = consumeable;
     }
 
     @Override
     public void consume(String messageId, String message) throws CannotConsumeMessage {
-        QueueEvent queueEvent;
-        try {
-            queueEvent = JSON.std.beanFrom(QueueEvent.class, message);
-        } catch (IOException e) {
-            throw new CannotConsumeMessage(messageId, message, e);
-        }
-        worker.handleDelivery(queueEvent, messageId, acknowledger);
+        consumeable.onMessage(messageId, message, acknowledger);
+
     }
 
     @Override
