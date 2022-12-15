@@ -15,13 +15,12 @@ import java.util.Properties;
  * this is the "main" scope that holds all needed utilities..
  */
 @GravitonWorkerDiScan
-public
-class WorkerScope {
+public class WorkerScope {
 
-    private final GravitonApi gravitonApi;
-    private final Properties properties;
-    private final EventStatusHandler statusHandler;
-    private final GravitonFileEndpoint fileEndpoint;
+    protected final GravitonApi gravitonApi;
+    protected final Properties properties;
+    protected final EventStatusHandler statusHandler;
+    protected final GravitonFileEndpoint fileEndpoint;
 
     @Inject
     public WorkerScope(Properties properties, GravitonApi gravitonApi, EventStatusHandler statusHandler, GravitonFileEndpoint fileEndpoint) {

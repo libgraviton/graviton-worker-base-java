@@ -18,6 +18,8 @@ import com.github.libgraviton.workerbase.gdk.serialization.JsonPatcher;
 import com.github.libgraviton.workerbase.gdk.serialization.mapper.RqlObjectMapper;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import io.activej.inject.annotation.Inject;
+import io.activej.inject.annotation.Provides;
+import io.activej.inject.annotation.Transient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,13 +36,18 @@ import java.util.Map;
 @GravitonWorkerDiScan
 public class GravitonApi {
 
+    @Provides
+    @Transient
+    public static GravitonApi getInstance(GeneratedEndpointManager endpointManager, ObjectMapper objectMapper, RqlObjectMapper rqlObjectMapper) {
+        return new GravitonApi(endpointManager, objectMapper, rqlObjectMapper);
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(GravitonApi.class);
 
     /**
      * Defines the base setUrl of the Graviton server
      */
     private final String baseUrl;
-
     private final String authHeaderName;
     private final String authHeaderValue;
     private final Map<String, String> transientHeaders = new HashMap<>();
@@ -56,12 +63,10 @@ public class GravitonApi {
      */
     private final EndpointManager endpointManager;
 
-    private final RequestExecutor executor;
-
     private HeaderAuth auth;
 
     @Inject
-    public GravitonApi(GeneratedEndpointManager endpointManager, ObjectMapper objectMapper, RqlObjectMapper rqlObjectMapper, RequestExecutor requestExecutor) {
+    public GravitonApi(GeneratedEndpointManager endpointManager, ObjectMapper objectMapper, RqlObjectMapper rqlObjectMapper) {
         this.baseUrl = WorkerProperties.getProperty(WorkerProperties.GRAVITON_BASE_URL);
         this.authHeaderValue = WorkerProperties.getProperty(WorkerProperties.AUTH_PREFIX_USERNAME)
                 .concat(WorkerProperties.getProperty(WorkerProperties.WORKER_ID));
@@ -69,7 +74,6 @@ public class GravitonApi {
         this.endpointManager = endpointManager;
         this.objectMapper = objectMapper;
         this.rqlObjectMapper = rqlObjectMapper;
-        this.executor = requestExecutor;
         this.auth = new NoAuth();
     }
 
@@ -78,7 +82,7 @@ public class GravitonApi {
     }
 
     /**
-     * if an url is passed, the id is returned.. if it seems to be an id, only that id is returned..
+     * if an url is passed, the id is returned. if it seems to be an id, only that id is returned..
      * @param urlOrId
      * @return
      */
@@ -243,7 +247,6 @@ public class GravitonApi {
         return objectMapper;
     }
 
-    // TODO make it configurable
     protected HeaderBag.Builder getDefaultHeaders() {
         HeaderBag.Builder builder = new HeaderBag.Builder()
                 .set("Content-Type", "application/json")
@@ -271,11 +274,7 @@ public class GravitonApi {
      * @param transientHeaders
      */
     public void setTransientHeaders(Map<String, String> transientHeaders) {
-        transientHeaders.clear();
-        transientHeaders.putAll(transientHeaders);
-    }
-
-    public void clearTransientHeaders() {
-        transientHeaders.clear();
+        this.transientHeaders.clear();
+        this.transientHeaders.putAll(transientHeaders);
     }
 }

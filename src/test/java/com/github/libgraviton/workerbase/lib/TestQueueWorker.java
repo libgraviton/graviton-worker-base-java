@@ -1,5 +1,6 @@
 package com.github.libgraviton.workerbase.lib;
 
+import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.workerbase.QueueWorkerAbstract;
 import com.github.libgraviton.workerbase.annotation.GravitonWorker;
 import com.github.libgraviton.workerbase.exception.WorkerException;
@@ -15,7 +16,11 @@ public class TestQueueWorker extends QueueWorkerAbstract {
 
     public boolean hasStartedUp = false;
 
+    public File fetchedFile;
+
     protected QueueEvent handledQueueEvent;
+
+    public int callCount = 0;
 
     @Inject
     public TestQueueWorker(WorkerScope workerScope) {
@@ -28,8 +33,15 @@ public class TestQueueWorker extends QueueWorkerAbstract {
      * @param qevent queue event from request
      *
      */
-    public void handleRequest(QueueEvent qevent, QueueEventScope queueEventScope) {
+    public void handleRequest(QueueEvent qevent, QueueEventScope queueEventScope) throws WorkerException {
         handledQueueEvent = qevent;
+
+        try {
+            fetchedFile = queueEventScope.getFileEndpoint().getFileMetadata("test-workerfile");
+        } catch (Throwable t) {
+        }
+
+        callCount++;
     }
 
     /**

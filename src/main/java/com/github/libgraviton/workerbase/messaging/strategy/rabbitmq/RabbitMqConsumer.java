@@ -50,15 +50,15 @@ class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
     public void handleDelivery(
             String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body
     ) throws IOException {
-        long deliveryTag = envelope.getDeliveryTag();
-        String message = new String(body, StandardCharsets.UTF_8);
+        final String deliveryTag = String.valueOf(envelope.getDeliveryTag());
+        final String message = new String(body, StandardCharsets.UTF_8);
         LOG.info(
                 "Message '{}' received on queue '{}': '{}'",
                 deliveryTag,
                 connection.getConnectionName(),
                 message
         );
-        consumer.consume(String.valueOf(deliveryTag), message);
+        consumer.consume(deliveryTag, message);
     }
 
     @Override

@@ -41,53 +41,51 @@ abstract public class QueueConnection {
      */
     public void open() throws CannotConnectToQueue {
         int connectionAttempts = this.connectionAttempts;
-        LOG.info(String.format("Connecting to queue '%s'...", getConnectionName()));
+        LOG.info("Connecting to queue '{}'...", getConnectionName());
         while (connectionAttempts != 0 ) {
             try {
                 openConnection();
                 break;
             } catch (CannotConnectToQueue e) {
-                LOG.error(String.format("Unable to open to queue '%s': '%s'", getConnectionName(), e.getMessage()));
+                LOG.error("Unable to open to queue '{}': '{}'", getConnectionName(), e.getMessage());
                 // Last try failed
                 if (1 == connectionAttempts) {
                     throw e;
                 }
             }
-            LOG.warn(String.format(
-                    "Connection to queue '%s' failed. Retrying in '%s' seconds.",
+            LOG.warn("Connection to queue '{}' failed. Retrying in '{}' seconds.",
                     getConnectionName(),
                     connectionAttemptsWait
-            ));
+            );
             try {
                 if (connectionAttemptsWait > 0) {
                     Thread.sleep((long) (connectionAttemptsWait * 1000));
                 }
             } catch (InterruptedException e) {
-                LOG.warn(String.format("Thread sleep interrupted: %s", e.getMessage()));
+                LOG.warn("Thread sleep interrupted: {}", e.getMessage());
             }
             // If we should not try endlessly decrease connectionAttempts, else do nothing to avoid int range overflow
             if (connectionAttempts > 0) {
                 connectionAttempts--;
             }
         }
-        LOG.info(String.format("Connection to queue '%s' successfully established.", getConnectionName()));
+        LOG.info("Connection to queue '{}' successfully established.", getConnectionName());
     }
 
     /**
      * Closes the connection
      */
     public void close() {
-        LOG.info(String.format("Closing connection to queue '%s'...", getConnectionName()));
+        LOG.info("Closing connection to queue '{}'...", getConnectionName());
         consumer = null;
         try {
             closeConnection();
-            LOG.info(String.format("Connection to queue '%s' successfully closed.", getConnectionName()));
+            LOG.info("Connection to queue '{}' successfully closed.", getConnectionName());
         } catch (CannotCloseConnection e) {
-            LOG.warn(String.format(
-                    "Cannot successfully close queue '%s': '%s'",
+            LOG.warn("Cannot successfully close queue '{}': '{}'",
                     getConnectionName(),
                     e.getCause().getMessage()
-            ));
+            );
         }
     }
 
@@ -101,7 +99,7 @@ abstract public class QueueConnection {
      * @throws CannotRegisterConsumer If the consumer cannot be registered for some reason.
      */
     public void consume(Consumer consumer) throws CannotRegisterConsumer {
-        LOG.info(String.format("Registering consumer on queue '%s'...", getConnectionName()));
+        LOG.info("Registering consumer on queue '{}'...", getConnectionName());
         // This allows easier consumer recovery on queue exceptions
         if (null != this.consumer) {
             throw new CannotRegisterConsumer(
@@ -117,10 +115,9 @@ abstract public class QueueConnection {
         }
         registerConsumer(consumer);
         this.consumer = consumer;
-        LOG.info(String.format(
-                "Consumer successfully registered on queue '%s'. Waiting for messages...",
+        LOG.info("Consumer successfully registered on queue '{}'. Waiting for messages...",
                 getConnectionName()
-        ));
+        );
     }
 
     /**
@@ -132,7 +129,7 @@ abstract public class QueueConnection {
      * @throws CannotPublishMessage If the message cannot be published for some reason.
      */
     public void publish(String message) throws CannotPublishMessage {
-        LOG.debug(String.format("Publishing text message on queue '%s': '%s", getConnectionName(), message));
+        LOG.debug("Publishing text message on queue '{}': '{}", getConnectionName(), message);
         boolean wasClosed = false;
         try {
             wasClosed = openIfClosed();
@@ -144,7 +141,7 @@ abstract public class QueueConnection {
                 close();
             }
         }
-        LOG.info(String.format("Message successfully published on queue '%s'.", getConnectionName()));
+        LOG.info("Message successfully published on queue '{}'.", getConnectionName());
     }
 
     /**
@@ -156,7 +153,7 @@ abstract public class QueueConnection {
      * @throws CannotPublishMessage If the message cannot be published for some reason.
      */
     public void publish(byte[] message) throws CannotPublishMessage {
-        LOG.debug(String.format("Publishing bytes message on queue '%s': '%s", getConnectionName(), new String(message)));
+        LOG.debug("Publishing bytes message on queue '{}': '{}", getConnectionName(), new String(message));
         boolean wasClosed = false;
         try {
             wasClosed = openIfClosed();
@@ -168,7 +165,7 @@ abstract public class QueueConnection {
                 close();
             }
         }
-        LOG.info(String.format("Message successfully published on queue '%s'.", getConnectionName()));
+        LOG.info("Message successfully published on queue '{}'.", getConnectionName());
     }
 
     /**
@@ -183,11 +180,9 @@ abstract public class QueueConnection {
             open();
             return true;
         }
-        LOG.info(String.format(
-                "Connection to queue '%s' has already been opened. Skipping...",
+        LOG.info("Connection to queue '{}' has already been opened. Skipping...",
                 getConnectionName()
-        ));
-
+        );
         return false;
     }
 

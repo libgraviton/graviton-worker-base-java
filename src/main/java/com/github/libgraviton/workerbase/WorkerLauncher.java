@@ -1,11 +1,6 @@
-/**
- * connects to the queue and subscribes the WorkerConsumer on the queue
- */
-
 package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
-import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.util.PrometheusServer;
@@ -67,6 +62,10 @@ final class WorkerLauncher {
         return worker;
     }
 
+    public QueueWorkerRunner getQueueWorkerRunner() {
+        return queueWorkerRunner;
+    }
+
     /**
      * setup worker
      *
@@ -86,6 +85,13 @@ final class WorkerLauncher {
             queueWorkerRunner.run();
         } else {
             throw new RuntimeException("Could not find any runnable worker!");
+        }
+    }
+
+    public void stop() {
+        prometheusServer.stop();
+        if (queueWorkerRunner != null) {
+            queueWorkerRunner.close();
         }
     }
 }

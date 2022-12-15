@@ -18,16 +18,10 @@ import java.io.IOException;
  * Extra Graviton API functionality for /file endpoint calls.
  *
  * @author List of contributors {@literal <https://github.com/libgraviton/gdk-java/graphs/contributors>}
- * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
+ * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  */
-public class GravitonFileEndpoint {
-
-    private final GravitonApi gravitonApi;
-
-    public GravitonFileEndpoint(GravitonApi gravitonApi) {
-        this.gravitonApi = gravitonApi;
-    }
+public record GravitonFileEndpoint(GravitonApi gravitonApi) {
 
     /**
      * gets a temp file..
@@ -41,7 +35,7 @@ public class GravitonFileEndpoint {
 
     /**
      * get a specific File by id (the metadata)
-
+     *
      * @return
      */
     public File getFileMetadata(String urlOrId) throws GravitonCommunicationException {

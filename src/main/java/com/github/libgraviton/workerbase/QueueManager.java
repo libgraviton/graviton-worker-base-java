@@ -4,6 +4,7 @@ import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workerbase.messaging.QueueConnection;
 import com.github.libgraviton.workerbase.messaging.consumer.Consumeable;
 import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
+import com.github.libgraviton.workerbase.messaging.exception.CannotPublishMessage;
 import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
 import com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConnection;
 
@@ -31,12 +32,18 @@ public class QueueManager {
     /**
      * Async connection to queue.
      *
-     * @param worker the worker
-     *
      * @throws CannotConnectToQueue if connection to queue cannot be established
      * @throws CannotRegisterConsumer if connection was successfully established, but consumer registration failed
      */
     public void connect(final Consumeable consumeable) throws CannotConnectToQueue, CannotRegisterConsumer {
         connection.consume(new WorkerConsumer(consumeable));
+    }
+
+    public void publish(String message) throws CannotPublishMessage {
+        connection.publish(message);
+    }
+
+    public void close() {
+        connection.close();
     }
 }

@@ -6,22 +6,12 @@ import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.di.WorkerBaseProvider;
 import com.google.common.reflect.ClassPath;
 import io.activej.inject.Injector;
-import io.activej.inject.Key;
-import io.activej.inject.binding.Binding;
-import io.activej.inject.binding.BindingGenerator;
 import io.activej.inject.module.ModuleBuilder;
-import io.activej.inject.util.Constructors;
-import io.activej.inject.util.ReflectionUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class DependencyInjection {
 
@@ -77,7 +67,6 @@ public class DependencyInjection {
                     continue;
                 }
 
-                LOG.info("Scanning {}", classInfo.getName());
                 try {
                     builder.scan(clazz);
                 } catch (Throwable t) {

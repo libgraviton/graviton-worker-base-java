@@ -23,6 +23,8 @@ public class WorkerProperties {
     public static final String AUTH_PREFIX_USERNAME = "graviton.authentication.prefix.username";
     public static final String AUTH_HEADER_NAME = "graviton.authentication.header.name";
 
+    public static final String PROMETHEUS_PORT = "graviton.prometheus.port";
+
     private static final Logger LOG = LoggerFactory.getLogger(WorkerProperties.class);
 
     private static Properties loadedProperties = new Properties();

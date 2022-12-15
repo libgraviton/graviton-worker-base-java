@@ -4,11 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.libgraviton.workerbase.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
-import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.rabbitmq.client.Channel;
 import org.junit.jupiter.api.BeforeEach;
 
-import java.util.List;
 import java.util.Properties;
 
 abstract class WorkerBaseTestCase {
@@ -27,7 +25,6 @@ abstract class WorkerBaseTestCase {
 
 
     private void baseMock() {
-        DependencyInjection.init(List.of());
 
         /**
         wiremock.stubFor(post(urlEqualTo("/event/worker"))
@@ -99,8 +96,9 @@ abstract class WorkerBaseTestCase {
          */
 
         return new WorkerLauncher(
-                worker,
-                properties
+            worker,
+            properties
         );
     }
+
 }

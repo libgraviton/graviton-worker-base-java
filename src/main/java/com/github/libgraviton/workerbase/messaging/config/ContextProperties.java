@@ -9,7 +9,7 @@ import java.util.Properties;
  */
 public class ContextProperties extends Properties {
 
-    private String context;
+    private final String context;
 
     /**
      * Constructor.

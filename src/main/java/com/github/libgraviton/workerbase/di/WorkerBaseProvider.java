@@ -3,8 +3,6 @@ package com.github.libgraviton.workerbase.di;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.libgraviton.workerbase.QueueManager;
-import com.github.libgraviton.workerbase.WorkerInterface;
-import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.GeneratedEndpointManager;
@@ -15,8 +13,6 @@ import com.github.libgraviton.workerbase.gdk.api.gateway.okhttp.OkHttpGatewayFac
 import com.github.libgraviton.workerbase.gdk.serialization.mapper.RqlObjectMapper;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
-import com.github.libgraviton.workerbase.helper.WorkerScope;
-import com.google.common.reflect.ClassPath;
 import io.activej.inject.Key;
 import io.activej.inject.annotation.Provides;
 import io.activej.inject.annotation.Transient;
@@ -28,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Properties;
@@ -53,30 +48,6 @@ public class WorkerBaseProvider extends AbstractModule {
         });
     }
 
-
-    /*
-    @Provides
-    @Transient
-    public static WorkerInterface getWorkerInterface(Properties properties) {
-        String workerClassName = properties.getProperty("graviton.workerClassName");
-        if (workerClassName.isEmpty()) {
-            throw new RuntimeException("You need to provide the property graviton.workerClassName");
-        }
-
-        try {
-            Class<?> clazz = Class.forName(workerClassName);
-            Constructor<?> constructor = clazz.getConstructor();
-            WorkerInterface worker = (WorkerInterface) constructor.newInstance();
-
-            worker.initialize(properties);
-            worker.onStartUp();
-
-            return worker;
-        } catch (Throwable t) {
-            throw new RuntimeException("Unable to create instance of worker class '"+workerClassName+"'", t);
-        }
-    }*/
-
     @Provides
     public static Properties getProperties() throws IOException {
         return WorkerProperties.load();
@@ -88,6 +59,7 @@ public class WorkerBaseProvider extends AbstractModule {
     }
 
     @Provides
+    @Transient
     public static EventStatusHandler eventStatusHandler(GravitonApi gravitonApi) {
         return new EventStatusHandler(gravitonApi);
     }
@@ -120,6 +92,7 @@ public class WorkerBaseProvider extends AbstractModule {
     }
 
     @Provides
+    @Transient
     public static GravitonFileEndpoint getGravitonFileEndpoint(GravitonApi gravitonAuthApi) {
         return new GravitonFileEndpoint(gravitonAuthApi);
     }

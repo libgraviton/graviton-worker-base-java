@@ -162,7 +162,7 @@ public class RabbitMqConnection extends QueueConnection {
     protected void publishMessage(byte[] message) throws CannotPublishMessage {
         try {
             channel.basicPublish(
-                    exchangeName,
+                    exchangeName == null ? "" : exchangeName,
                     routingKey,
                     MessageProperties.PERSISTENT_TEXT_PLAIN,
                     message

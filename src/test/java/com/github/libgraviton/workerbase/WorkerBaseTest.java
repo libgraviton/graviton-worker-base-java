@@ -1,5 +1,6 @@
 package com.github.libgraviton.workerbase;
 
+import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.workerbase.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
@@ -9,22 +10,29 @@ import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workerbase.lib.TestQueueWorker;
 import com.github.libgraviton.workerbase.lib.TestQueueWorkerException;
 import com.github.libgraviton.workerbase.lib.TestQueueWorkerNoAuto;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
+import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 public class WorkerBaseTest extends WorkerBaseTestCase {
 
@@ -32,21 +40,85 @@ public class WorkerBaseTest extends WorkerBaseTestCase {
     public WorkerTestRule workerTestRule = new WorkerTestRule();
 
     @Test
-    public void testRegistrationPreparation() throws Exception {
-        //TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
-        // to initialize worker
+    public void testBasicsAndAutoRegister() throws Exception {
         WorkerLauncher workerLauncher = getWrappedWorker(TestQueueWorker.class);
+
+        // set these transient headers
+        Map<String, String> transientHeaders = Map.of("my-custom-header", "has-this-value", "header2", "value2");
+
+        // register stub for files -> this ensures that transient headers will be applied! -> tests QueueEventScope!
+        StubMapping transientHeaderStub = workerTestRule.getWireMockServer()
+                .stubFor(
+                    get(urlMatching("/file/test-workerfile"))
+                // the transient headers
+                .withHeader("my-custom-header", equalTo("has-this-value"))
+                .withHeader("header2", equalTo("value2"))
+                .willReturn(
+                        aResponse().withBodyFile("fileResource.json").withStatus(200)
+                )
+        );
+
+        // this is the way how we wait for queue handling to be finished!
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        workerLauncher.getQueueWorkerRunner().addOnCompleteCallback((duration) -> {
+            countDownLatch.countDown();
+        });
+
         workerLauncher.run();
 
-        verify()
+        QueueEvent queueEvent = WorkerTestRule.getQueueEvent(transientHeaders);
+
+        WorkerTestRule.sendToWorker(queueEvent);
+
+        // wait until finished!
+        countDownLatch.await();
+
+        // availability check
+        verify(moreThan(1), optionsRequestedFor(urlEqualTo("/")));
+
+        // test auto register on graviton
+        verify(1,
+                putRequestedFor(
+                    urlEqualTo("/event/worker/" + WorkerProperties.getProperty(WorkerProperties.WORKER_ID))
+                )
+                .withRequestBody(containing(WorkerProperties.getProperty(WorkerProperties.WORKER_ID)))
+                .withRequestBody(containing(WorkerProperties.getProperty(WorkerProperties.WORKER_ID)))
+        );
+
+        // 1 status working
+        verify(1,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
+                .withRequestBody(containing("\"working\""))
+        );
+        // 1 status done
+        verify(1,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
+                        .withRequestBody(containing("\"done\""))
+        );
 
         TestQueueWorker worker = (TestQueueWorker) workerLauncher.getWorker();
 
-        int hans =3;
-        //List<EventWorkerSubscription> subscriptions = testWorker.getSubscriptions();
-        //assertEquals(1, subscriptions.size());
+        // test whether the "transient headers" from the queueEvent were used correctly
+        boolean fileWithTransientHeadersWasMatched = false;
+        for (ServeEvent serveEvent : workerTestRule.getWireMockServer().getAllServeEvents()) {
+            if (serveEvent.getStubMapping().getId().equals(transientHeaderStub.getId())) {
+                fileWithTransientHeadersWasMatched = true;
+            }
+        }
 
-        //assertEquals("document.core.app.*", subscriptions.get(0).getEvent());
+        assertTrue(fileWithTransientHeadersWasMatched);
+
+        // assert onStartup has been called
+        assertTrue(worker.hasStartedUp);
+        assertTrue(worker.shouldHandleRequestCalled);
+        assertNotNull(worker.fetchedFile);
+        assertEquals(1, worker.callCount);
+
+        try {
+            workerLauncher.stop();
+        } catch (Throwable t) {
+            // something is wrong..
+        }
     }
 
     /**

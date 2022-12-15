@@ -1,6 +1,6 @@
 package com.github.libgraviton.workerbase;
 
-import com.fasterxml.jackson.jr.ob.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
@@ -18,6 +18,7 @@ import io.micrometer.core.instrument.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -61,7 +62,10 @@ public class QueueWorkerRunner {
 
     private final boolean areWeAsync;
     private final QueueWorkerAbstract worker;
-    private ExecutorService executorService;
+    private final ObjectMapper objectMapper;
+    private final ExecutorService executorService;
+
+    private final List<WorkerRunnable.AfterCompleteCallback> afterCompleteCallbacks = new ArrayList<>();
 
     @Inject
     public QueueWorkerRunner(QueueWorkerAbstract worker) {
@@ -69,15 +73,18 @@ public class QueueWorkerRunner {
         areWeAsync = (this instanceof AsyncQueueWorkerInterface);
         if (areWeAsync) {
             executorService = DependencyInjection.getInstance(ExecutorService.class);
+        } else {
+            executorService = null;
         }
 
         this.worker = worker;
+        this.objectMapper = DependencyInjection.getInstance(ObjectMapper.class);
 
         // register ack state
         acknowledgeStates = List.of(
-                worker.getAcknowledgeState(),
-                EventStatusStatus.Status.FAILED,
-                EventStatusStatus.Status.IGNORED
+            worker.getAcknowledgeState(),
+            EventStatusStatus.Status.FAILED,
+            EventStatusStatus.Status.IGNORED
         );
 
         // create our metrics -> outcome
@@ -95,7 +102,10 @@ public class QueueWorkerRunner {
         Gauge.builder("worker_queue_events_working", eventWorkingCounter::get)
                 .description("How many events are currently in working state.")
                 .register(Metrics.globalRegistry);
+    }
 
+    public void addOnCompleteCallback(final WorkerRunnable.AfterCompleteCallback afterCompleteCallback) {
+        afterCompleteCallbacks.add(afterCompleteCallback);
     }
 
     public void run() throws WorkerException {
@@ -107,7 +117,7 @@ public class QueueWorkerRunner {
         try {
             queueManager.connect((messageId, message, acknowledger) -> {
                 try {
-                    final QueueEvent queueEvent = JSON.std.beanFrom(QueueEvent.class, message);
+                    final QueueEvent queueEvent = objectMapper.readValue(message, QueueEvent.class);
                     handleDelivery(queueEvent, messageId, acknowledger);
                 } catch (Throwable t) {
                     LOG.error("Unable to work on message '{}'", message, t);
@@ -116,6 +126,10 @@ public class QueueWorkerRunner {
         } catch (CannotConnectToQueue | CannotRegisterConsumer e) {
             throw new WorkerException("Unable to initialize worker.", e);
         }
+    }
+
+    public void close() {
+        queueManager.close();
     }
 
     protected void register() throws WorkerException {
@@ -142,9 +156,8 @@ public class QueueWorkerRunner {
         // mark as received
         eventReceivedCounter.increment();
 
-        AtomicBoolean isAcknowledged = new AtomicBoolean(false);
-
-        String statusUrl = worker.getWorkerScope().convertToGravitonUrl(queueEvent.getStatus().get$ref());
+        final AtomicBoolean isAcknowledged = new AtomicBoolean(false);
+        final String statusUrl = worker.getWorkerScope().convertToGravitonUrl(queueEvent.getStatus().get$ref());
 
         final AcknowledgeCallback acknowledgeCallback = ((doNackAndRedeliver) -> {
             // ack or nack?
@@ -173,7 +186,7 @@ public class QueueWorkerRunner {
             eventStates.incrementAndGet(EventStatusStatus.Status.FAILED);
 
             // logic should differ when event status does not exist!
-            boolean eventStatusDoesNotExist = (throwable instanceof NonExistingEventStatusException);
+            final boolean eventStatusDoesNotExist = (throwable instanceof NonExistingEventStatusException);
 
             LOG.error("Error in worker {}: {}", worker.getWorkerId(), throwable.getMessage(), throwable);
 
@@ -226,7 +239,7 @@ public class QueueWorkerRunner {
             // should we acknowledge now?
             if (acknowledgeStates.contains(status) && !isAcknowledged.get()) {
                 acknowledgeCallback.onAck(false);
-                LOG.info("Acknowledged QueueEvent status '{}' as message ID '{}' to queue.", statusUrl, messageId);
+                //LOG.info("Acknowledged QueueEvent status '{}' as message ID '{}' to queue.", statusUrl, messageId);
                 isAcknowledged.set(true);
             }
 
@@ -237,39 +250,40 @@ public class QueueWorkerRunner {
 
         try {
             // wrap with status handling stuff
-            final Runnable workerRunnable = new WorkerRunnable(
-                    queueEvent,
-                    () -> {
-                        WorkerRunnableInterface workload;
-                        if (areWeAsync) {
-                            workload = ((AsyncQueueWorkerInterface) this).handleRequestAsync(queueEvent);
-                        } else {
-                            workload = worker::handleRequest;
-                        }
+            final WorkerRunnable workerRunnable = new WorkerRunnable(
+                queueEvent,
+                () -> {
+                    final WorkerRunnableInterface workload;
+                    if (areWeAsync) {
+                        workload = ((AsyncQueueWorkerInterface) this).handleRequestAsync(queueEvent);
+                    } else {
+                        workload = worker::handleRequest;
+                    }
+                    return workload;
+                },
+                afterStatusChangeCallback,
+                (workingDuration) -> {
 
-                        return workload;
-                    },
-                    afterStatusChangeCallback,
-                    (workingDuration) -> {
+                    // decrement working
+                    long workingCounter = eventWorkingCounter.decrementAndGet();
+                    if (workingCounter < 0) {
+                        eventWorkingCounter.set(0);
+                    }
 
-                        // decrement working
-                        long workingCounter = eventWorkingCounter.decrementAndGet();
-                        if (workingCounter < 0) {
-                            eventWorkingCounter.set(0);
-                        }
+                    LOG.info(
+                            "QueueEvent processing is completed, working duration of '{}' ms. Message acknowledge state is '{}'.",
+                            workingDuration.toMillis(),
+                            isAcknowledged.get()
+                    );
 
-                        LOG.info(
-                                "QueueEvent processing is completed, working duration of '{}' ms. Message acknowledge state is '{}'.",
-                                workingDuration.toMillis(),
-                                isAcknowledged.get()
-                        );
-
-                        // record duration
-                        eventWorkingDurationTimer.record(workingDuration);
-                    },
-                    exceptionCallback,
-                    worker::shouldHandleRequest
+                    // record duration
+                    eventWorkingDurationTimer.record(workingDuration);
+                },
+                exceptionCallback,
+                worker::shouldHandleRequest
             );
+
+            afterCompleteCallbacks.forEach(workerRunnable::addAfterCompleteCallback);
 
             if (areWeAsync) {
                 executorService.execute(workerRunnable);

@@ -26,7 +26,7 @@ public class EventStatusHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventStatusHandler.class);
 
-    protected GravitonApi gravitonApi;
+    private final GravitonApi gravitonApi;
 
     final int retryLimit;
 
@@ -37,6 +37,10 @@ public class EventStatusHandler {
     public EventStatusHandler(GravitonApi gravitonApi, int retryLimit) {
         this.gravitonApi = gravitonApi;
         this.retryLimit = retryLimit;
+    }
+
+    public GravitonApi getGravitonApi() {
+        return gravitonApi;
     }
 
     /**

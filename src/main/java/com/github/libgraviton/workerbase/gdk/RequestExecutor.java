@@ -11,6 +11,7 @@ import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseExcep
 import com.github.libgraviton.workerbase.gdk.requestexecutor.auth.Authenticator;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.exception.AuthenticatorException;
 import io.activej.inject.annotation.Inject;
+import io.activej.inject.annotation.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,11 @@ import org.slf4j.LoggerFactory;
  */
 @GravitonWorkerDiScan
 public class RequestExecutor {
+
+    @Provides
+    public static RequestExecutor getInstance(ObjectMapper objectMapper, GravitonGateway gateway) {
+        return new RequestExecutor(objectMapper, gateway);
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestExecutor.class);
 
@@ -42,14 +48,6 @@ public class RequestExecutor {
     public RequestExecutor(ObjectMapper objectMapper, GravitonGateway gateway) {
         this.gateway = gateway;
         this.objectMapper = objectMapper;
-    }
-
-    public Authenticator getAuthenticator() {
-        return authenticator;
-    }
-
-    public void setAuthenticator(Authenticator authenticator) {
-        this.authenticator = authenticator;
     }
 
     /**
