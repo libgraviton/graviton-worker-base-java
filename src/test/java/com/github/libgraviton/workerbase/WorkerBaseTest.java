@@ -27,6 +27,10 @@ public class WorkerBaseTest {
      * - 404 event status!
      * - FileWorkerTest!
      *
+     * TODO REST
+     * - GravitonGatewayAuthenticator
+     * - DownloadClient
+     *
      *
      * @throws Exception
      */

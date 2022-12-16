@@ -1,10 +1,9 @@
 package com.github.libgraviton.workerbase.gdk.api.header;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-
-import static org.junit.Assert.*;
 
 public class HeaderBagTest {
 
@@ -16,19 +15,19 @@ public class HeaderBagTest {
                 .set("link", inputLink)
                 .build();
 
-        assertEquals(expectedLink, headers.getLink(LinkHeader.EVENT_STATUS));
+        Assertions.assertEquals(expectedLink, headers.getLink(LinkHeader.EVENT_STATUS));
 
         headers = new HeaderBag.Builder()
                 .build();
 
-        assertNull(expectedLink, headers.getLink(LinkHeader.EVENT_STATUS));
+        Assertions.assertNull(headers.getLink(LinkHeader.EVENT_STATUS));
     }
 
     @Test
     public void testSetNoHeader() {
         HeaderBag headers = new HeaderBag.Builder()
                 .build();
-        assertEquals(0, headers.all().size());
+        Assertions.assertEquals(0, headers.all().size());
     }
 
     @Test
@@ -38,9 +37,9 @@ public class HeaderBagTest {
         HeaderBag headers = new HeaderBag.Builder()
                 .set(headerName, headerValue1)
                 .build();
-        assertEquals(1, headers.all().size());
-        assertEquals(1, headers.get(headerName).all().size());
-        assertEquals(headerValue1, headers.get(headerName).get(0));
+        Assertions.assertEquals(1, headers.all().size());
+        Assertions.assertEquals(1, headers.get(headerName).all().size());
+        Assertions.assertEquals(headerValue1, headers.get(headerName).get(0));
     }
 
     @Test
@@ -52,10 +51,10 @@ public class HeaderBagTest {
                 .set(headerName, headerValue1)
                 .set(headerName, headerValue2)
                 .build();
-        assertEquals(1, headers.all().size());
-        assertEquals(2, headers.get(headerName).all().size());
-        assertEquals(headerValue1, headers.get(headerName).get(0));
-        assertEquals(headerValue2, headers.get(headerName).get(1));
+        Assertions.assertEquals(1, headers.all().size());
+        Assertions.assertEquals(2, headers.get(headerName).all().size());
+        Assertions.assertEquals(headerValue1, headers.get(headerName).get(0));
+        Assertions.assertEquals(headerValue2, headers.get(headerName).get(1));
     }
 
     @Test
@@ -67,9 +66,9 @@ public class HeaderBagTest {
                 .set(headerName, headerValue1)
                 .set(headerName, headerValue2, true)
                 .build();
-        assertEquals(1, headers.all().size());
-        assertEquals(1, headers.get(headerName).all().size());
-        assertEquals(headerValue2, headers.get(headerName).get(0));
+        Assertions.assertEquals(1, headers.all().size());
+        Assertions.assertEquals(1, headers.get(headerName).all().size());
+        Assertions.assertEquals(headerValue2, headers.get(headerName).get(0));
     }
 
     @Test
@@ -80,10 +79,10 @@ public class HeaderBagTest {
         HeaderBag headers = new HeaderBag.Builder()
                 .set(headerName, Arrays.asList(headerValue1, headerValue2))
                 .build();
-        assertEquals(1, headers.all().size());
-        assertEquals(2, headers.get(headerName).all().size());
-        assertEquals(headerValue1, headers.get(headerName).get(0));
-        assertEquals(headerValue2, headers.get(headerName).get(1));
+        Assertions.assertEquals(1, headers.all().size());
+        Assertions.assertEquals(2, headers.get(headerName).all().size());
+        Assertions.assertEquals(headerValue1, headers.get(headerName).get(0));
+        Assertions.assertEquals(headerValue2, headers.get(headerName).get(1));
     }
 
     @Test
@@ -98,7 +97,7 @@ public class HeaderBagTest {
                 .unset(headerName1)
                 .unset(headerName2, headerValue2)
                 .build();
-        assertEquals(1, headers.all().size());
+        Assertions.assertEquals(1, headers.all().size());
     }
 
     @Test
@@ -108,15 +107,15 @@ public class HeaderBagTest {
         HeaderBag headers1 = new HeaderBag.Builder()
                 .set(headerName, headerValue)
                 .build();
-        assertEquals(1, headers1.all().size());
-        assertEquals(headerValue, headers1.get(headerName).get(0));
+        Assertions.assertEquals(1, headers1.all().size());
+        Assertions.assertEquals(headerValue, headers1.get(headerName).get(0));
         HeaderBag headers2 = new HeaderBag.Builder(headers1)
                 .build();
-        assertNotEquals(headers1, headers2);
-        assertEquals(1, headers1.all().size());
-        assertEquals(headerValue, headers1.get(headerName).get(0));
+        Assertions.assertNotEquals(headers1, headers2);
+        Assertions.assertEquals(1, headers1.all().size());
+        Assertions.assertEquals(headerValue, headers1.get(headerName).get(0));
         HeaderBag headers3 = new HeaderBag.Builder(null)
                 .build();
-        assertEquals(0, headers3.all().size());
+        Assertions.assertEquals(0, headers3.all().size());
     }
 }

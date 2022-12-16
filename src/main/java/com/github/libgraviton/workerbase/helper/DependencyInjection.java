@@ -92,6 +92,9 @@ public class DependencyInjection {
     }
 
     public static <T> T getInstance(Class<T> clazz) {
+        if (injector == null) {
+            init();
+        }
         if (instanceOverrides.containsKey(clazz)) {
             return (T) instanceOverrides.get(clazz);
         }

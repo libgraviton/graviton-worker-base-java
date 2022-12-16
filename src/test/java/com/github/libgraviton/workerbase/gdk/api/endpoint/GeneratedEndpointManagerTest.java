@@ -2,17 +2,12 @@ package com.github.libgraviton.workerbase.gdk.api.endpoint;
 
 import com.github.libgraviton.workerbase.gdk.api.endpoint.exception.UnableToLoadEndpointAssociationsException;
 import com.github.libgraviton.workerbase.gdk.exception.NoCorrespondingEndpointException;
-import org.junit.Rule;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
-
-import static org.junit.Assert.*;
-
 
 public class GeneratedEndpointManagerTest {
 
@@ -24,17 +19,17 @@ public class GeneratedEndpointManagerTest {
         String className = "some.ClassName";
         Endpoint endpoint = new Endpoint("endpoint://item", "endpoint://item/collection/");
 
-        assertFalse(generatedServiceManager.hasEndpoint(className));
+        Assertions.assertFalse(generatedServiceManager.hasEndpoint(className));
         generatedServiceManager.addEndpoint(className, endpoint);
-        assertTrue(generatedServiceManager.hasEndpoint(className));
+        Assertions.assertTrue(generatedServiceManager.hasEndpoint(className));
 
-        assertEquals(1, generatedServiceManager.persist());
+        Assertions.assertEquals(1, generatedServiceManager.persist());
 
         generatedServiceManager = new GeneratedEndpointManager(serializationFile, GeneratedEndpointManager.Mode.CREATE);
-        assertFalse(generatedServiceManager.hasEndpoint(className));
-        assertEquals(1, generatedServiceManager.load());
-        assertTrue(generatedServiceManager.hasEndpoint(className));
-        assertEquals(generatedServiceManager.getEndpoint(className), endpoint);
+        Assertions.assertFalse(generatedServiceManager.hasEndpoint(className));
+        Assertions.assertEquals(1, generatedServiceManager.load());
+        Assertions.assertTrue(generatedServiceManager.hasEndpoint(className));
+        Assertions.assertEquals(generatedServiceManager.getEndpoint(className), endpoint);
     }
 
     @Test
@@ -45,7 +40,7 @@ public class GeneratedEndpointManagerTest {
 
             String className = "some.ClassName";
             Endpoint endpoint = new Endpoint("endpoint://item", "endpoint://item/collection/");
-            assertEquals(generatedServiceManager.getEndpoint(className), endpoint);
+            Assertions.assertEquals(generatedServiceManager.getEndpoint(className), endpoint);
         });
     }
 
@@ -54,8 +49,8 @@ public class GeneratedEndpointManagerTest {
         Assertions.assertThrows(UnableToLoadEndpointAssociationsException.class, () -> {
             File serializationFile = File.createTempFile("endpoint-associations-deleted", ".tmp");
             // make sure the file does not exist
-            assertTrue(serializationFile.delete());
-            assertFalse(serializationFile.exists());
+            Assertions.assertTrue(serializationFile.delete());
+            Assertions.assertFalse(serializationFile.exists());
 
             GeneratedEndpointManager generatedServiceManager = new GeneratedEndpointManager(serializationFile, GeneratedEndpointManager.Mode.LOAD);
             generatedServiceManager.load();
@@ -71,7 +66,7 @@ public class GeneratedEndpointManagerTest {
             ObjectOutputStream oos = new ObjectOutputStream(fout);
             oos.writeObject(content);
 
-            assertTrue(serializationFile.exists());
+            Assertions.assertTrue(serializationFile.exists());
 
             GeneratedEndpointManager generatedServiceManager = new GeneratedEndpointManager(serializationFile, GeneratedEndpointManager.Mode.CREATE);
             generatedServiceManager.load();
@@ -91,7 +86,7 @@ public class GeneratedEndpointManagerTest {
 
         // new service initialized with default assoc path
         generatedServiceManager = new GeneratedEndpointManager(serializationFile, GeneratedEndpointManager.Mode.LOAD);
-        assertEquals(filePath, generatedServiceManager.serializationFile.getPath());
+        Assertions.assertEquals(filePath, generatedServiceManager.serializationFile.getPath());
 
         serializationFile.delete();
     }

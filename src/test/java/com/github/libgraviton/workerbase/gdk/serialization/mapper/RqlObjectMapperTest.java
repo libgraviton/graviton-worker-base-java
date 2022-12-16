@@ -14,7 +14,6 @@ public class RqlObjectMapperTest {
 
     @Test
     public void testDateFormat() {
-        DependencyInjection.init();
         RqlObjectMapper mapper = DependencyInjection.getInstance(RqlObjectMapper.class);
 
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -26,7 +25,6 @@ public class RqlObjectMapperTest {
 
     @Test
     public void testIgnoreNullValues() {
-        DependencyInjection.init();
         RqlObjectMapper mapper = DependencyInjection.getInstance(RqlObjectMapper.class);
 
         SimpleClass simpleClass = new SimpleClass();

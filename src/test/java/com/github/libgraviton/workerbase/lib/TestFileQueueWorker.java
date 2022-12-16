@@ -3,7 +3,6 @@ package com.github.libgraviton.workerbase.lib;
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.workerbase.FileQueueWorkerAbstract;
 import com.github.libgraviton.workerbase.annotation.GravitonWorker;
-import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.QueueEventScope;
 import com.github.libgraviton.workerbase.helper.WorkerScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;

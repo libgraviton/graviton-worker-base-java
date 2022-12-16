@@ -14,7 +14,6 @@ public class GravitonObjectMapperTest {
 
     @Test
     public void testDateFormat() {
-        DependencyInjection.init();
         ObjectMapper mapper = DependencyInjection.getInstance(ObjectMapper.class);
 
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));

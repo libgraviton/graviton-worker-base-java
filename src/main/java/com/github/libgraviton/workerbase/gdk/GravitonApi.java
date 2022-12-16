@@ -38,7 +38,7 @@ public class GravitonApi {
 
     @Provides
     @Transient
-    public static GravitonApi getInstance(GeneratedEndpointManager endpointManager, ObjectMapper objectMapper, RqlObjectMapper rqlObjectMapper) {
+    public static GravitonApi getInstance(EndpointManager endpointManager, ObjectMapper objectMapper, RqlObjectMapper rqlObjectMapper) {
         return new GravitonApi(endpointManager, objectMapper, rqlObjectMapper);
     }
 
@@ -66,7 +66,7 @@ public class GravitonApi {
     private HeaderAuth auth;
 
     @Inject
-    public GravitonApi(GeneratedEndpointManager endpointManager, ObjectMapper objectMapper, RqlObjectMapper rqlObjectMapper) {
+    public GravitonApi(EndpointManager endpointManager, ObjectMapper objectMapper, RqlObjectMapper rqlObjectMapper) {
         this.baseUrl = WorkerProperties.getProperty(WorkerProperties.GRAVITON_BASE_URL);
         this.authHeaderValue = WorkerProperties.getProperty(WorkerProperties.AUTH_PREFIX_USERNAME)
                 .concat(WorkerProperties.getProperty(WorkerProperties.WORKER_ID));

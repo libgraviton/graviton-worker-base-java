@@ -3,15 +3,14 @@ package com.github.libgraviton.workerbase.messaging.strategy.rabbitmq;
 import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.messaging.exception.CannotPublishMessage;
 import com.rabbitmq.client.*;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class RabbitMqConnectionTest {
@@ -24,7 +23,7 @@ public class RabbitMqConnectionTest {
 
     private ConnectionFactory rabbitFactory;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception{
         rabbitConnection = mock(Connection.class);
 
@@ -50,23 +49,23 @@ public class RabbitMqConnectionTest {
         connection = spy(connection);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         connection.close();
     }
 
     @Test
     public void testIsOpen() throws Exception {
-        assertFalse(connection.isOpen());
+        Assertions.assertFalse(connection.isOpen());
         connection.open();
-        assertTrue(connection.isOpen());
+        Assertions.assertTrue(connection.isOpen());
         connection.close();
-        assertFalse(connection.isOpen());
+        Assertions.assertFalse(connection.isOpen());
     }
 
     @Test
     public void testConnectionName() {
-        assertEquals("exchange - queue", connection.getConnectionName());
+        Assertions.assertEquals("exchange - queue", connection.getConnectionName());
     }
 
     @Test

@@ -14,7 +14,7 @@ public class WorkerPropertiesTest {
     }
 
     @Test
-    public void testHandling() throws Exception {
+    public void testHandling() {
         // was set in test scope
         Assertions.assertEquals("dude", WorkerProperties.getProperty("addition"));
     }

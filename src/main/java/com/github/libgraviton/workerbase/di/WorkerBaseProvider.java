@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.libgraviton.workerbase.QueueManager;
 import com.github.libgraviton.workerbase.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
+import com.github.libgraviton.workerbase.gdk.api.endpoint.EndpointManager;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.GeneratedEndpointManager;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.exception.UnableToLoadEndpointAssociationsException;
 import com.github.libgraviton.workerbase.gdk.api.gateway.GravitonGateway;
@@ -46,6 +47,8 @@ public class WorkerBaseProvider extends AbstractModule {
             }
             return null;
         });
+
+        bind(EndpointManager.class).to(Key.of(GeneratedEndpointManager.class));
     }
 
     @Provides
