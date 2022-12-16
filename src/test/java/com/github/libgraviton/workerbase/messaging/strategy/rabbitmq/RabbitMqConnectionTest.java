@@ -1,17 +1,12 @@
 package com.github.libgraviton.workerbase.messaging.strategy.rabbitmq;
 
-import com.github.libgraviton.workerbase.messaging.consumer.AcknowledgingConsumer;
-import com.github.libgraviton.workerbase.messaging.consumer.Consumer;
 import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.messaging.exception.CannotPublishMessage;
-import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
 import com.rabbitmq.client.*;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -148,30 +143,6 @@ public class RabbitMqConnectionTest {
 
         Assertions.assertThrows(CannotConnectToQueue.class, () -> {
             connection.open();
-        });
-    }
-
-    @Test
-    public void testRegisterConsumer() throws Exception {
-        Consumer consumer = mock(Consumer.class);
-        connection.consume(consumer);
-        verify(rabbitChannel).basicConsume(eq("queue"), eq(true), any(RabbitMqConsumer.class));
-    }
-
-    @Test
-    public void testRegisterAcknowledgingConsumer() throws Exception {
-        Consumer consumer = mock(AcknowledgingConsumer.class);
-        connection.consume(consumer);
-        verify(rabbitChannel).basicConsume(eq("queue"), eq(false), any(RabbitMqConsumer.class));
-    }
-
-    @Test
-    public void testRegisterConsumerFailed() throws Exception {
-        doThrow(new IOException()).when(rabbitChannel).basicConsume(eq("queue"), eq(true), any(RabbitMqConsumer.class));
-
-        Assertions.assertThrows(CannotRegisterConsumer.class, () -> {
-            Consumer consumer = mock(Consumer.class);
-            connection.consume(consumer);
         });
     }
 

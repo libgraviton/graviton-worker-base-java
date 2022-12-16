@@ -23,6 +23,10 @@ public class DependencyInjection {
 
     private static final HashMap<Class<?>, Object> instanceOverrides = new HashMap<>();
 
+    public static void init() {
+        init(List.of());
+    }
+
     public static void init(List<Object> addedProviders) {
         if (injector != null) {
             return;

@@ -1,15 +1,14 @@
 package com.github.libgraviton.workerbase.helper;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-
 public class WorkerPropertiesTest {
 
-    @BeforeClass
+    @BeforeAll
     static void setup() throws IOException {
         WorkerProperties.load();
     }
@@ -17,7 +16,7 @@ public class WorkerPropertiesTest {
     @Test
     public void testHandling() throws Exception {
         // was set in test scope
-        assertEquals("dude", WorkerProperties.getProperty("addition"));
+        Assertions.assertEquals("dude", WorkerProperties.getProperty("addition"));
     }
 
 }

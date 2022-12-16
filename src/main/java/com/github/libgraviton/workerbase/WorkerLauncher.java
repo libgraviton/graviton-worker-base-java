@@ -18,7 +18,7 @@ import java.util.Properties;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  */
 @GravitonWorkerDiScan
-final class WorkerLauncher {
+public final class WorkerLauncher {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerLauncher.class);
 

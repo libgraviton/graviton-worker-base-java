@@ -10,7 +10,7 @@ import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
-import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
+import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumeable;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.google.common.util.concurrent.AtomicLongMap;
 import io.activej.inject.annotation.Inject;
@@ -123,7 +123,7 @@ public class QueueWorkerRunner {
                     LOG.error("Unable to work on message '{}'", message, t);
                 }
             });
-        } catch (CannotConnectToQueue | CannotRegisterConsumer e) {
+        } catch (CannotConnectToQueue | CannotRegisterConsumeable e) {
             throw new WorkerException("Unable to initialize worker.", e);
         }
     }

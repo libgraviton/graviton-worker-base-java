@@ -26,18 +26,17 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
 
     private static final Logger LOG = LoggerFactory.getLogger(FileQueueWorkerAbstract.class);
 
-    // just to pass around!
-    private File currentFile;
-
     public FileQueueWorkerAbstract(WorkerScope workerScope) {
         super(workerScope);
     }
 
-    public boolean shouldHandleRequest(QueueEvent queueEvent) throws WorkerException, GravitonCommunicationException {
+    public boolean shouldHandleRequest(QueueEvent queueEvent, QueueEventScope queueEventScope) throws GravitonCommunicationException {
         List<String> actions = getActionsOfInterest(queueEvent);
 
         // get the file
-        currentFile = getFileFromQueueEvent(queueEvent);
+        File currentFile = queueEventScope.getFileEndpoint().getFileFromQueueEvent(queueEvent);
+
+        queueEventScope.getScopeCacheMap().put("currentFetchedFile", currentFile);
 
         if (currentFile == null) {
             // something is off..
@@ -62,7 +61,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
         }
 
         // something matches. clear the actions from the files first.
-        removeFileActionCommand(currentFile, matching);
+        removeFileActionCommand(currentFile, matching, queueEventScope);
 
         return !ListUtils.intersection(actions, referencedActions).isEmpty();
     }
@@ -70,11 +69,10 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
     final public void handleRequest(QueueEvent body, QueueEventScope queueEventScope) throws WorkerException, GravitonCommunicationException {
         // get the file..
         File fileToPass;
-        if (currentFile != null) {
-            fileToPass = currentFile;
-            currentFile = null;
+        if (queueEventScope.getScopeCacheMap().containsKey("currentFetchedFile")) {
+            fileToPass = (File) queueEventScope.getScopeCacheMap().get("currentFetchedFile");
         } else {
-            fileToPass = getFileFromQueueEvent(body);
+            fileToPass = queueEventScope.getFileEndpoint().getFileFromQueueEvent(body);
         }
 
         handleFileRequest(body, fileToPass, queueEventScope);
@@ -88,21 +86,6 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
      */
     public abstract List<String> getActionsOfInterest(QueueEvent queueEvent);
 
-    private File getFileFromQueueEvent(QueueEvent queueEvent) throws GravitonCommunicationException {
-        return getGravitonFile(queueEvent.getDocument().get$ref());
-    }
-
-    /**
-     * gets file metadata from backend as a GravitonFile object
-     *
-     * @param fileUrl the url of the object
-     * @throws GravitonCommunicationException if file could not be fetched.
-     * @return file instance
-     */
-    public File getGravitonFile(String fileUrl) throws GravitonCommunicationException {
-        return workerScope.getFileEndpoint().getFileMetadata(fileUrl);
-    }    
-    
     /**
      * checks if a certain action is present in the metadata.action array
      *
@@ -126,7 +109,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
      *
      * @throws GravitonCommunicationException when file action command could not be removed at Graviton
      */
-    protected void removeFileActionCommand(File gravitonFile, List<String> actions) throws GravitonCommunicationException {
+    private void removeFileActionCommand(File gravitonFile, List<String> actions, QueueEventScope queueEventScope) throws GravitonCommunicationException {
         FileMetadata metadata = gravitonFile.getMetadata();
 
         // get the matching ones
@@ -140,7 +123,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
             gravitonFile.getMetadata().getAction().removeAll(matchingActions);
 
             try {
-                workerScope.getFileEndpoint().patch(gravitonFile).execute();
+                queueEventScope.getFileEndpoint().patch(gravitonFile).execute();
             } catch (CommunicationException e) {
                 throw new GravitonCommunicationException("Unable to remove file action elements from '" + gravitonFile.getId() + "'.", e);
             }

@@ -8,7 +8,9 @@ import com.github.libgraviton.workerbase.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
 import io.activej.inject.annotation.Inject;
 import okhttp3.HttpUrl;
+import org.apache.commons.collections4.map.HashedMap;
 
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -17,10 +19,11 @@ import java.util.Properties;
 @GravitonWorkerDiScan
 public class WorkerScope {
 
-    protected final GravitonApi gravitonApi;
-    protected final Properties properties;
-    protected final EventStatusHandler statusHandler;
-    protected final GravitonFileEndpoint fileEndpoint;
+    private final GravitonApi gravitonApi;
+    private final Properties properties;
+    private final EventStatusHandler statusHandler;
+    private final GravitonFileEndpoint fileEndpoint;
+    private final Map<String, Object> scopeCacheMap;
 
     @Inject
     public WorkerScope(Properties properties, GravitonApi gravitonApi, EventStatusHandler statusHandler, GravitonFileEndpoint fileEndpoint) {
@@ -28,6 +31,7 @@ public class WorkerScope {
         this.gravitonApi = gravitonApi;
         this.statusHandler = statusHandler;
         this.fileEndpoint = fileEndpoint;
+        scopeCacheMap = new HashedMap<>();
     }
 
     public GravitonApi getGravitonApi() {
@@ -48,6 +52,10 @@ public class WorkerScope {
 
     public String getWorkerId() {
         return properties.getProperty(WorkerProperties.WORKER_ID);
+    }
+
+    public Map<String, Object> getScopeCacheMap() {
+        return scopeCacheMap;
     }
 
     /**

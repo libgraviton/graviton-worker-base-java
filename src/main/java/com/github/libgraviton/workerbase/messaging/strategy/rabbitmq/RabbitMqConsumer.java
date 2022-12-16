@@ -1,10 +1,10 @@
 package com.github.libgraviton.workerbase.messaging.strategy.rabbitmq;
 
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
-import com.github.libgraviton.workerbase.messaging.consumer.AcknowledgingConsumer;
-import com.github.libgraviton.workerbase.messaging.consumer.Consumer;
+import com.github.libgraviton.workerbase.messaging.consumer.Consumeable;
+import com.github.libgraviton.workerbase.messaging.consumer.WorkerConsumer;
 import com.github.libgraviton.workerbase.messaging.exception.CannotAcknowledgeMessage;
-import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
+import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumeable;
 import com.rabbitmq.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,11 +13,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Wraps an instance of {@link Consumer} in order to consume from an AMQP RabbitMQ queue. Moreover, this consumer does
+ * Wraps an instance of {@link WorkerConsumer} in order to consume from an AMQP RabbitMQ queue. Moreover, this consumer does
  * also connection recovery if an com.github.libgraviton.workerbase.messaging.exception on the channel occurred (exception.g. remote channel close).
- *
- * If the wrapped {@link Consumer} is an {@link AcknowledgingConsumer}, this class will receive the acknowledgment and
- * do the basicAck on the queue.
  */
 class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
 
@@ -29,17 +26,12 @@ class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
 
     private final RabbitMqConnection connection;
 
-    private final Consumer consumer;
+    private final WorkerConsumer consumer;
 
-    RabbitMqConsumer(RabbitMqConnection connection, Consumer consumer) {
+    RabbitMqConsumer(RabbitMqConnection connection, Consumeable consumeable) {
         super(connection.getChannel());
-        this.consumer = consumer;
+        this.consumer = new WorkerConsumer(consumeable, this);
         this.connection = connection;
-    }
-
-    RabbitMqConsumer(RabbitMqConnection connection, AcknowledgingConsumer consumer) {
-        this(connection, (Consumer) consumer);
-        consumer.setAcknowledger(this);
     }
 
     public int getPrefetchCount() {
@@ -72,8 +64,8 @@ class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
             LOG.info("Recovering connection to queue '{}'...", connection.getConnectionName());
             connection.close();
             try {
-                connection.consume(consumer);
-            } catch (CannotRegisterConsumer e) {
+                connection.consume(consumer.getConsumeable());
+            } catch (CannotRegisterConsumeable e) {
                 LOG.error("Connection recovery for queue '{}' failed.", connection.getConnectionName());
             }
         }
@@ -97,9 +89,5 @@ class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
         } catch (IOException e) {
             throw new CannotAcknowledgeMessage(this, messageId, e);
         }
-    }
-
-    Consumer getConsumer() {
-        return consumer;
     }
 }

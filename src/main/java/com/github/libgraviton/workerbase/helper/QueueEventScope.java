@@ -32,9 +32,9 @@ public class QueueEventScope extends WorkerScope {
     public void setQueueEvent(QueueEvent queueEvent) {
         this.queueEvent = queueEvent;
         Map<String, String> headers = Map.copyOf(queueEvent.getTransientHeaders());
-        gravitonApi.setTransientHeaders(headers);
-        fileEndpoint.gravitonApi().setTransientHeaders(headers);
-        statusHandler.getGravitonApi().setTransientHeaders(headers);
+        getGravitonApi().setTransientHeaders(headers);
+        getFileEndpoint().gravitonApi().setTransientHeaders(headers);
+        getStatusHandler().getGravitonApi().setTransientHeaders(headers);
     }
 
     public QueueEvent getQueueEvent() {

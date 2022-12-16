@@ -3,30 +3,28 @@ package com.github.libgraviton.workerbase;
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadata;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadataAction;
-import com.github.libgraviton.workerbase.exception.WorkerException;
-import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
-import com.github.libgraviton.workerbase.gdk.api.Request;
-import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
-import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
-import com.github.libgraviton.workerbase.helper.DependencyInjection;
-import com.github.libgraviton.workerbase.helper.QueueEventScope;
-import com.github.libgraviton.workerbase.helper.WorkerScope;
+import com.github.libgraviton.workerbase.lib.TestFileQueueWorker;
+import com.github.libgraviton.workerbase.lib.WorkerTestExtension;
 import com.github.libgraviton.workerbase.model.QueueEvent;
-import com.github.libgraviton.workertestbase.BaseWorkerTest;
 import com.github.tomakehurst.wiremock.matching.MultipartValuePatternBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.junit.Assert.*;
 
-public class FileWorkerBaseTest extends BaseWorkerTest {
+public class FileWorkerBaseTest {
 
+    @RegisterExtension
+    public static WorkerTestExtension workerTestExtension = (new WorkerTestExtension())
+            .setStartWiremock(true)
+            .setStartRabbitMq(true);
+
+    /**
     private FileQueueWorkerAbstract sut;
 
     protected boolean innerWorkerWasCalled = false;
@@ -60,6 +58,14 @@ public class FileWorkerBaseTest extends BaseWorkerTest {
             }
         };
     }
+     **/
+
+    /*
+    TODO testing:
+    * actions that are not in interested array
+    * fetch file as binary (the content, not the file) in queueeventscope
+    * assert all with the transient headers
+     */
 
     @Test
     public void testFileHandling() throws Exception {
@@ -68,22 +74,45 @@ public class FileWorkerBaseTest extends BaseWorkerTest {
         eventFile.setId("test-fileId");
         FileMetadata fileMetadata = new FileMetadata();
         FileMetadataAction action = new FileMetadataAction();
-        action.setCommand("test");
+        action.setCommand("doYourStuff");
         fileMetadata.setAction(List.of(action));
         eventFile.setMetadata(fileMetadata);
 
-        stubFor(
+        workerTestExtension.getWireMockServer().stubFor(
                 put(urlEqualTo("/file/test-grv-file"))
                         .withMultipartRequestBody(new MultipartValuePatternBuilder().withName("upload").withName("metadata"))
                         .willReturn(aResponse().withStatus(201))
         );
 
+        WorkerLauncher workerLauncher = workerTestExtension.getWrappedWorker(TestFileQueueWorker.class);
+
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        workerLauncher.getQueueWorkerRunner().addOnCompleteCallback((duration) -> {
+            countDownLatch.countDown();
+        });
+
+        workerLauncher.run();
+
+        QueueEvent queueEvent = workerTestExtension.getQueueEvent(Map.of(), "USER_ID", eventFile);
+
+        workerTestExtension.sendToWorker(queueEvent);
+
+        // wait until finished!
+        countDownLatch.await();
+
+        TestFileQueueWorker worker = (TestFileQueueWorker) workerLauncher.getWorker();
+
+        Assertions.assertTrue(worker.onStartupCalled);
+        Assertions.assertInstanceOf(File.class, worker.fileObj);
+
+        int hans = 3;
+
+        /*
         sut = getFileTestWorker((fileEndpoint, body, file) -> {
             // by comparing this we know that it was fetched through Wiremock and passed to the worker..
             // and by this we're testing FileEndpoint
             assertEquals(eventFile.getId(), file.getId());
 
-            /** test PUT **/
             String data = "SPECIALINFORMATION";
             Request request = fileEndpoint.put(data.getBytes(StandardCharsets.UTF_8), file).build();
             List<Part> parts = request.getParts();
@@ -108,6 +137,9 @@ public class FileWorkerBaseTest extends BaseWorkerTest {
             fileEndpoint.put(testFile, testGrvFile).execute();
         });
 
+         */
+
+        /*
         prepareWorker(sut);
 
         produceQueueEvent(sut, eventFile);
@@ -116,5 +148,8 @@ public class FileWorkerBaseTest extends BaseWorkerTest {
         verify(1, putRequestedFor(urlEqualTo("/file/test-grv-file")));
 
         assertTrue(innerWorkerWasCalled);
+
+         */
     }
+
 }

@@ -54,6 +54,7 @@ public class WorkerBaseProvider extends AbstractModule {
     }
 
     @Provides
+    @Transient
     public static QueueManager getQueueManager(Properties properties) {
         return new QueueManager(properties);
     }

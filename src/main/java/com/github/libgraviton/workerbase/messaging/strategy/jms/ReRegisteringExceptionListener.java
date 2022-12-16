@@ -1,8 +1,7 @@
 package com.github.libgraviton.workerbase.messaging.strategy.jms;
 
-import com.github.libgraviton.workerbase.messaging.consumer.Consumer;
-import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
-import com.github.libgraviton.workerbase.messaging.strategy.jms.JmsConnection;
+import com.github.libgraviton.workerbase.messaging.consumer.Consumeable;
+import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumeable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,35 +11,32 @@ class ReRegisteringExceptionListener extends RecoveringExceptionListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(com.github.libgraviton.workerbase.messaging.strategy.jms.ReRegisteringExceptionListener.class);
 
-    private Consumer consumer;
+    private final Consumeable consumeable;
 
-    ReRegisteringExceptionListener(JmsConnection connection, Consumer consumer) {
+    ReRegisteringExceptionListener(JmsConnection connection, Consumeable consumeable) {
         super(connection);
-        this.consumer = consumer;
+        this.consumeable = consumeable;
     }
 
     @Override
     public void onException(JMSException e) {
         super.onException(e);
         try {
-            LOG.info(String.format(
-                    "Re-registering consumer '%s' on queue '%s'...",
-                    consumer,
-                    connection.getConnectionName())
+            LOG.info("Re-registering consumer '{}' on queue '{}'...",
+                    consumeable,
+                    connection.getConnectionName()
             );
-            connection.consume(consumer);
-            LOG.info(String.format(
-                    "Successfully re-registered consumer '%s' on queue '%s'.",
-                    consumer,
-                    connection.getConnectionName())
+            connection.consume(consumeable);
+            LOG.info("Successfully re-registered consumer '{}' on queue '{}'.",
+                    consumeable,
+                    connection.getConnectionName()
             );
-        } catch (CannotRegisterConsumer registerException) {
-            LOG.error(String.format(
-                    "Re-registration of consumer '%s' on queue '%s' failed: %s",
-                    consumer,
+        } catch (CannotRegisterConsumeable registerException) {
+            LOG.error("Re-registration of consumer '{}' on queue '{}' failed: {}",
+                    consumeable,
                     connection.getConnectionName(),
                     registerException.getMessage()
-            ));
+            );
         }
     }
 }

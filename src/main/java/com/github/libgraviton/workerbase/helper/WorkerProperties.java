@@ -88,6 +88,14 @@ public class WorkerProperties {
         propertyOverrides.clear();
     }
 
+    public static String getProperty(String name, String defaultValue) {
+        String value = getProperty(name);
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
+    }
+
     public static String getProperty(String name) {
         if (!alreadyLoaded) {
             LOG.warn("Properties were called here without explicit call to WorkerProperties.load() before! " +

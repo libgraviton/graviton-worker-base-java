@@ -2,22 +2,24 @@ package com.github.libgraviton.workerbase.lib;
 
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.workerbase.FileQueueWorkerAbstract;
-import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
+import com.github.libgraviton.workerbase.annotation.GravitonWorker;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.QueueEventScope;
 import com.github.libgraviton.workerbase.helper.WorkerScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import io.activej.inject.annotation.Inject;
 
 import java.util.List;
 
+@GravitonWorker
 public class TestFileQueueWorker extends FileQueueWorkerAbstract {
 
-    public boolean concerningRequestCalled = false;
-    public boolean shouldHandleRequestMocked = true;
+    public boolean onStartupCalled = false;
 
     public File fileObj;
     public boolean actionPresent;
 
+    @Inject
     public TestFileQueueWorker(WorkerScope workerScope) {
         super(workerScope);
     }
@@ -30,32 +32,16 @@ public class TestFileQueueWorker extends FileQueueWorkerAbstract {
      */
     public void handleFileRequest(QueueEvent queueEvent, File file, QueueEventScope queueEventScope) {
         fileObj = file;
-        actionPresent = isActionCommandPresent(this.fileObj, getActionsOfInterest(queueEvent).get(0));
-    }
-
-    /**
-     * Here, the worker should decide if this requests concerns him in the first
-     * place. If false is returned, we ignore the message..
-     *
-     * @param queueEvent message body as object
-     *
-     * @return boolean true if not, false if yes
-     */
-    public boolean shouldHandleRequest(QueueEvent queueEvent) throws WorkerException, GravitonCommunicationException {
-        if (shouldHandleRequestMocked) {
-            concerningRequestCalled = true;
-            return true;
-        }
-        return super.shouldHandleRequest(queueEvent);
+        actionPresent = isActionCommandPresent(this.fileObj, getActionsOfInterest(queueEvent).get(1));
     }
 
     @Override
     public List<String> getActionsOfInterest(QueueEvent queueEvent) {
-        return List.of("doYourStuff");
+        return List.of("doNotIgnoreThis", "doYourStuff");
     }
 
     @Override
-    public void onStartUp() throws WorkerException {
-
+    public void onStartUp() {
+        onStartupCalled = true;
     }
 }

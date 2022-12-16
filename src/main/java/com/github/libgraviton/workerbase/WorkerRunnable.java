@@ -34,7 +34,7 @@ public class WorkerRunnable implements Runnable {
 
     @FunctionalInterface
     public interface RelevantEventCallback {
-        boolean isRevelant(QueueEvent body) throws Throwable;
+        boolean isRevelant(QueueEvent body, QueueEventScope queueEventScope) throws Throwable;
     }
 
     private final QueueEvent queueEvent;
@@ -69,16 +69,16 @@ public class WorkerRunnable implements Runnable {
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         try {
+            final QueueEventScope queueEventScope = DependencyInjection.getInstance(QueueEventScope.class);
+            queueEventScope.setQueueEvent(queueEvent);
+
             // is it relevant?
-            if (!relevantEventCallback.isRevelant(queueEvent)) {
+            if (!relevantEventCallback.isRevelant(queueEvent, queueEventScope)) {
                 afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.IGNORED);
                 return;
             }
 
             afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.WORKING);
-
-            final QueueEventScope queueEventScope = DependencyInjection.getInstance(QueueEventScope.class);
-            queueEventScope.setQueueEvent(queueEvent);
 
             // call the worker
             getWorkloadCallback.getWorkload().doWork(queueEvent, queueEventScope);

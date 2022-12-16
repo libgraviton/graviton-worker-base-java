@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase.messaging.strategy.jms;
 
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
-import com.github.libgraviton.workerbase.messaging.consumer.AcknowledgingConsumer;
-import com.github.libgraviton.workerbase.messaging.consumer.Consumer;
+import com.github.libgraviton.workerbase.messaging.consumer.Consumeable;
+import com.github.libgraviton.workerbase.messaging.consumer.WorkerConsumer;
 import com.github.libgraviton.workerbase.messaging.exception.CannotAcknowledgeMessage;
 import com.github.libgraviton.workerbase.messaging.exception.CannotConsumeMessage;
 import org.slf4j.Logger;
@@ -13,30 +13,29 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 /**
- * Wraps an instance of {@link Consumer} in order to consume from a JMS based queue.
+ * Wraps an instance of {@link WorkerConsumer} in order to consume from a JMS based queue.
  *
  * Moreover, this class does also the automatic message acknowledgment after the
- * {@link Consumer#consume(String, String)} terminated. Except if the wrapped {@link Consumer} is an
- * {@link AcknowledgingConsumer}, it will do the JMS acknowledgment as soon as it receives the acknowledgment from the
+ * {@link WorkerConsumer#consume(String, String)} terminated. Except if the wrapped {@link WorkerConsumer}
  * wrapped consumer.
  */
 class JmsConsumer implements MessageListener, MessageAcknowledger {
 
     private static final Logger LOG = LoggerFactory.getLogger(com.github.libgraviton.workerbase.messaging.strategy.jms.JmsConsumer.class);
 
-    private Consumer consumer;
+    private final WorkerConsumer consumer;
 
-    private HashMap<String, Message> messages;
+    private final HashMap<String, Message> messages;
 
-    JmsConsumer(Consumer consumer) {
-        this.consumer = consumer;
+    JmsConsumer(Consumeable consumeable) {
+        consumer = new WorkerConsumer(consumeable, this);
         // onMessage() can be called by several threads.
         messages = new HashMap<>();
     }
 
     @Override
     public void onMessage(Message jmsMessage) {
-        LOG.debug(String.format("Received message of type '%s' from queue.", jmsMessage.getClass().getName()));
+        LOG.debug("Received message of type '{}' from queue.", jmsMessage.getClass().getName());
         String message;
         String messageId = null;
         try {
@@ -60,12 +59,10 @@ class JmsConsumer implements MessageListener, MessageAcknowledger {
             // Catch com.github.libgraviton.workerbase.messaging.exception to avoid endless loop because the message will trigger 'onMessage' again and again.
             LOG.error("Unexpected error occurred while processing queue feedback message.", e);
         } finally {
-            if (!(consumer instanceof AcknowledgingConsumer)) {
-                try {
-                    acknowledge(messageId);
-                } catch (CannotAcknowledgeMessage cam) {
-                    LOG.error(cam.getMessage());
-                }
+            try {
+                acknowledge(messageId);
+            } catch (CannotAcknowledgeMessage cam) {
+                LOG.error(cam.getMessage());
             }
         }
     }

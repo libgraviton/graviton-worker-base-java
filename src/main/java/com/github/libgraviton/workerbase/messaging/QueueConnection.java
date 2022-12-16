@@ -2,7 +2,7 @@ package com.github.libgraviton.workerbase.messaging;
 
 import com.github.libgraviton.workerbase.messaging.config.ContextProperties;
 import com.github.libgraviton.workerbase.messaging.config.PropertyUtil;
-import com.github.libgraviton.workerbase.messaging.consumer.Consumer;
+import com.github.libgraviton.workerbase.messaging.consumer.Consumeable;
 import com.github.libgraviton.workerbase.messaging.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +21,6 @@ abstract public class QueueConnection {
     private final double connectionAttemptsWait;
 
     protected final String queueName;
-
-    private Consumer consumer;
 
     protected QueueConnection(Builder builder) {
         connectionAttempts = builder.connectionAttempts;
@@ -77,7 +75,6 @@ abstract public class QueueConnection {
      */
     public void close() {
         LOG.info("Closing connection to queue '{}'...", getConnectionName());
-        consumer = null;
         try {
             closeConnection();
             LOG.info("Connection to queue '{}' successfully closed.", getConnectionName());
@@ -94,27 +91,16 @@ abstract public class QueueConnection {
      * per design to make queue abstraction easier. If you need multiple consumers on the same queue for some reason,
      * please use a composite consumer.
      *
-     * @param consumer The consumer
-     *
-     * @throws CannotRegisterConsumer If the consumer cannot be registered for some reason.
+     * @throws CannotRegisterConsumeable If the consumer cannot be registered for some reason.
      */
-    public void consume(Consumer consumer) throws CannotRegisterConsumer {
+    public void consume(Consumeable consumeable) throws CannotRegisterConsumeable {
         LOG.info("Registering consumer on queue '{}'...", getConnectionName());
-        // This allows easier consumer recovery on queue exceptions
-        if (null != this.consumer) {
-            throw new CannotRegisterConsumer(
-                    consumer,
-                    "Another consumer is already registered. " +
-                            "Please register a composite consumer If you want to use multiple consumers."
-            );
-        }
         try {
             openIfClosed();
         } catch (CannotConnectToQueue e) {
-            throw new CannotRegisterConsumer(consumer, e);
+            throw new CannotRegisterConsumeable(consumeable, e);
         }
-        registerConsumer(consumer);
-        this.consumer = consumer;
+        registerConsumer(consumeable);
         LOG.info("Consumer successfully registered on queue '{}'. Waiting for messages...",
                 getConnectionName()
         );
@@ -210,11 +196,9 @@ abstract public class QueueConnection {
     /**
      * Does the queue system specific logic to register a consumer / listener.
      *
-     * @param consumer The consumer to register. You most likely need to wrap this by a queue system specific consumer.
-     *
-     * @throws CannotRegisterConsumer If the consumer cannot be registered.
+     * @throws CannotRegisterConsumeable If the consumer cannot be registered.
      */
-    abstract protected void registerConsumer(Consumer consumer) throws CannotRegisterConsumer;
+    abstract protected void registerConsumer(Consumeable consumeable) throws CannotRegisterConsumeable;
 
     /**
      * Does the queue system specific logic to publish a text message on the queue.

@@ -10,12 +10,12 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public class QueueEvent {
-    public String event;
-    public String coreUserId;
-    public GravitonRef document;
-    public GravitonRef status;
-    public Map<String, String> transientHeaders = new HashMap<>();
-    
+    private String event;
+    private String coreUserId;
+    private GravitonRef document;
+    private GravitonRef status;
+    private Map<String, String> transientHeaders = new HashMap<>();
+
     /**
      * <p>Getter for the field <code>event</code>.</p>
      *

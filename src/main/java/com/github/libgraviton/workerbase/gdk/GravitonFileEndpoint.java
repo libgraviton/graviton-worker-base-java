@@ -10,6 +10,7 @@ import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
 import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.SerializationException;
+import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.github.libgraviton.workerbase.util.DownloadClient;
 
 import java.io.IOException;
@@ -46,13 +47,17 @@ public record GravitonFileEndpoint(GravitonApi gravitonApi) {
         }
     }
 
+    public File getFileFromQueueEvent(QueueEvent queueEvent) throws GravitonCommunicationException {
+        return getFileMetadata(queueEvent.getDocument().get$ref());
+    }
+
     /**
      * Writes the Graviton file *contents* to disk..
      *
      * @param urlOrId
      * @param destinationPath
      */
-    public void writeFileContentToDisk(String urlOrId, String destinationPath) throws Exception {
+    public void writeFileContentToDisk(String urlOrId, String destinationPath) {
         String fileId = gravitonApi.getIdFromUrlOrId(urlOrId);
         String fileUrl = getFileDownloadUrl(fileId);
 

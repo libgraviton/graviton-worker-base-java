@@ -69,7 +69,7 @@ import java.util.regex.Pattern;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-public class PagingResponseIterator<T> extends AbstractIterator<T> {
+class PagingResponseIterator<T> extends AbstractIterator<T> {
 
     /**
      * internal iterator

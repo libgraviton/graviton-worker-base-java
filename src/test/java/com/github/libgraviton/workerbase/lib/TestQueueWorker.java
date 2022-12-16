@@ -22,6 +22,8 @@ public class TestQueueWorker extends QueueWorkerAbstract {
 
     public int callCount = 0;
 
+    public int errorCount = 0;
+
     @Inject
     public TestQueueWorker(WorkerScope workerScope) {
         super(workerScope);
@@ -39,9 +41,16 @@ public class TestQueueWorker extends QueueWorkerAbstract {
         try {
             fetchedFile = queueEventScope.getFileEndpoint().getFileMetadata("test-workerfile");
         } catch (Throwable t) {
+            throw new WorkerException("Error fetching file", t);
         }
 
         callCount++;
+
+        // here we should fail! -> fail max 3 times!
+        if (qevent.getCoreUserId() != null && qevent.getCoreUserId().equals("PLEASE_FAIL_HERE!") && errorCount < 3) {
+            errorCount++;
+            throw new WorkerException("YES_I_DO_FAIL_NOW");
+        }
     }
 
     /**
@@ -53,16 +62,16 @@ public class TestQueueWorker extends QueueWorkerAbstract {
      * 
      * @return boolean true if not, false if yes
      */
-    public boolean shouldHandleRequest(QueueEvent qevent) {
+    public boolean shouldHandleRequest(QueueEvent qevent, QueueEventScope queueEventScope) {
         this.shouldHandleRequestCalled = true;
-        return true;
+        if (qevent.getCoreUserId() == null) {
+            return true;
+        }
+
+        return !qevent.getCoreUserId().equals("SPECIAL_USER");
     }
 
-    public QueueEvent getHandledQueueEvent() {
-        return handledQueueEvent;
-    }
-
-    public void onStartUp() throws WorkerException {
+    public void onStartUp() {
         hasStartedUp = true;
     }
 }

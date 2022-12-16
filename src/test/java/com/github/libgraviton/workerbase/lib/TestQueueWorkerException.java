@@ -36,7 +36,7 @@ public class TestQueueWorkerException extends QueueWorkerAbstract {
         }
     }
     
-    public boolean shouldHandleRequest(QueueEvent qevent) {
+    public boolean shouldHandleRequest(QueueEvent qevent, QueueEventScope queueEventScope) {
         return true;
     }
     
@@ -51,7 +51,7 @@ public class TestQueueWorkerException extends QueueWorkerAbstract {
     }
 
     @Override
-    public void onStartUp() throws WorkerException {
+    public void onStartUp() {
 
     }
 }

@@ -9,14 +9,12 @@ import com.github.libgraviton.workerbase.model.QueueEvent;
 import io.activej.inject.annotation.Inject;
 
 @GravitonWorker
-public class TestQueueWorkerNoAuto extends QueueWorkerAbstract {
+public class TestQueueWorkerNoRetryOnException extends QueueWorkerAbstract {
 
-    public boolean concerningRequestCalled = false;
-    public boolean handleRequestCalled = false;
-    public boolean isConcerningRequest = true;
+    public int callCount = 0;
 
     @Inject
-    public TestQueueWorkerNoAuto(WorkerScope workerScope) {
+    public TestQueueWorkerNoRetryOnException(WorkerScope workerScope) {
         super(workerScope);
     }
 
@@ -25,8 +23,9 @@ public class TestQueueWorkerNoAuto extends QueueWorkerAbstract {
      *
      * @throws WorkerException
      */
-    public void handleRequest(QueueEvent qevent, QueueEventScope queueEventScope) {
-        this.handleRequestCalled = true;
+    public void handleRequest(QueueEvent qevent, QueueEventScope queueEventScope) throws WorkerException {
+        callCount++;
+        throw new WorkerException("Not good!");
     }
     
     /**
@@ -36,18 +35,13 @@ public class TestQueueWorkerNoAuto extends QueueWorkerAbstract {
      * @return boolean true if not, false if yes
      */
     public boolean shouldHandleRequest(QueueEvent qevent, QueueEventScope queueEventScope) {
-        this.concerningRequestCalled = true;
-        return this.isConcerningRequest;
+        return true;
     }
-    
-    public boolean shouldAutoUpdateStatus()
+
+    @Override
+    public boolean shouldAutoAcknowledgeOnException()
     {
-        return false;
-    }
-    
-    public boolean shouldAutoRegister()
-    {
-        return false;
+        return true;
     }
 
     @Override

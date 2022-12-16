@@ -2,12 +2,11 @@ package com.github.libgraviton.workerbase.messaging.strategy.rabbitmq;
 
 import com.github.libgraviton.workerbase.messaging.QueueConnection;
 import com.github.libgraviton.workerbase.messaging.config.PropertyUtil;
-import com.github.libgraviton.workerbase.messaging.consumer.AcknowledgingConsumer;
-import com.github.libgraviton.workerbase.messaging.consumer.Consumer;
+import com.github.libgraviton.workerbase.messaging.consumer.Consumeable;
 import com.github.libgraviton.workerbase.messaging.exception.CannotCloseConnection;
 import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.messaging.exception.CannotPublishMessage;
-import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumer;
+import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumeable;
 import com.rabbitmq.client.*;
 
 import java.io.IOException;
@@ -43,6 +42,8 @@ public class RabbitMqConnection extends QueueConnection {
     private final ConnectionFactory connectionFactory;
 
     private String queueName;
+
+    private String consumerTag;
 
     private Connection connection;
 
@@ -116,26 +117,19 @@ public class RabbitMqConnection extends QueueConnection {
     }
 
     /**
-     * Registers a consumer. If the consumer implements {@link AcknowledgingConsumer}, the autoAck flag is set to false,
-     * otherwise it's set to true.
+     * Registers a consumer.
      *
-     * @param consumer The consumer to register.
-     *
-     * @throws CannotRegisterConsumer If the consumer cannot be registered.
+     * @throws CannotRegisterConsumeable If the consumer cannot be registered.
      */
     @Override
-    protected void registerConsumer(Consumer consumer) throws CannotRegisterConsumer {
-        com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConsumer rabbitMqConsumer = new com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConsumer(this, consumer);
-        boolean autoAck = !(consumer instanceof AcknowledgingConsumer);
-        if (!autoAck) {
-            ((AcknowledgingConsumer) consumer).setAcknowledger(rabbitMqConsumer);
-        }
+    protected void registerConsumer(Consumeable consumeable) throws CannotRegisterConsumeable {
+        com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConsumer rabbitMqConsumer = new com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConsumer(this, consumeable);
         try {
             // see https://www.rabbitmq.com/consumer-prefetch.html - normally should only 1, "0" is infinite!
             channel.basicQos(rabbitMqConsumer.getPrefetchCount());
-            channel.basicConsume(queueName, autoAck, rabbitMqConsumer);
+            consumerTag = channel.basicConsume(queueName, false, rabbitMqConsumer);
         } catch (IOException e) {
-            throw new CannotRegisterConsumer(consumer, e);
+            throw new CannotRegisterConsumeable(consumeable, e);
         }
     }
 
@@ -181,6 +175,11 @@ public class RabbitMqConnection extends QueueConnection {
     protected void closeConnection() throws CannotCloseConnection {
         try {
             if (channel != null && channel.isOpen()) {
+                // cancel consumer?
+                if (consumerTag != null) {
+                    channel.basicCancel(consumerTag);
+                    consumerTag = null;
+                }
                 channel.close();
             }
             if (connection != null && connection.isOpen()) {

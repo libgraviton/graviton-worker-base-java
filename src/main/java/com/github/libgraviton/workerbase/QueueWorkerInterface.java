@@ -14,7 +14,7 @@ public interface QueueWorkerInterface {
   /**
    * true or false - should we handle this request?
    */
-  boolean shouldHandleRequest(QueueEvent body) throws WorkerException, GravitonCommunicationException;
+  boolean shouldHandleRequest(QueueEvent body, QueueEventScope queueEventScope) throws WorkerException, GravitonCommunicationException;
 
   boolean shouldAutoAcknowledgeOnException();
 
