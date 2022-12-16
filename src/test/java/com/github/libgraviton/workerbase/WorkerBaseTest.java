@@ -3,6 +3,7 @@ package com.github.libgraviton.workerbase;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workerbase.lib.*;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.github.libgraviton.workertestbase.WorkerTestExtension;
 import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import org.junit.jupiter.api.Assertions;

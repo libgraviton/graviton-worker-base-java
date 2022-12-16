@@ -1,7 +1,7 @@
 package com.github.libgraviton.workerbase.gdk.okhttp;
 
 import com.github.libgraviton.workerbase.gdk.util.okhttp.interceptor.RetryInterceptor;
-import com.github.libgraviton.workerbase.lib.WorkerTestExtension;
+import com.github.libgraviton.workertestbase.WorkerTestExtension;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

@@ -44,7 +44,6 @@
     <jackson-jr.version>2.14.0</jackson-jr.version>
     <log4j.version>2.19.0</log4j.version>
     <jmockit.version>1.49</jmockit.version>
-    <testcontainers.version>1.17.6</testcontainers.version>
   </properties>
 
   <repositories>
@@ -267,20 +266,6 @@
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock-jre8</artifactId>
       <version>2.35.0</version>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- testcontainers -->
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>testcontainers</artifactId>
-      <version>${testcontainers.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>rabbitmq</artifactId>
-      <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
