@@ -5,7 +5,6 @@ import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.QueueEventScope;
 import com.github.libgraviton.workerbase.helper.WorkerScope;
-import com.github.libgraviton.workerbase.model.QueueEvent;
 import io.activej.inject.annotation.Inject;
 
 @GravitonWorkerDiScan
@@ -22,12 +21,10 @@ public class TestQueueWorkerException extends QueueWorkerAbstract {
 
     /**
      * worker logic is implemented here
-     * 
-     * @param queueEvent message body as object
-     * 
+     *
      * @throws WorkerException
      */
-    public void handleRequest(QueueEvent queueEvent, QueueEventScope queueEventScope) throws WorkerException {
+    public void handleRequest(QueueEventScope queueEventScope) throws WorkerException {
         this.handleRequestCalled = true;
         if (this.throwWorkerException) {
             throw new WorkerException("Something bad happened!");
@@ -36,7 +33,7 @@ public class TestQueueWorkerException extends QueueWorkerAbstract {
         }
     }
     
-    public boolean shouldHandleRequest(QueueEvent qevent, QueueEventScope queueEventScope) {
+    public boolean shouldHandleRequest(QueueEventScope queueEventScope) {
         return true;
     }
     

@@ -25,13 +25,10 @@ public class TestFileQueueWorker extends FileQueueWorkerAbstract {
 
     /**
      * worker logic is implemented here
-     * 
-     * @param queueEvent message body as object
-
      */
-    public void handleFileRequest(QueueEvent queueEvent, File file, QueueEventScope queueEventScope) {
+    public void handleFileRequest(File file, QueueEventScope queueEventScope) {
         fileObj = file;
-        actionPresent = isActionCommandPresent(this.fileObj, getActionsOfInterest(queueEvent).get(1));
+        actionPresent = isActionCommandPresent(this.fileObj, getActionsOfInterest(queueEventScope.getQueueEvent()).get(1));
     }
 
     @Override

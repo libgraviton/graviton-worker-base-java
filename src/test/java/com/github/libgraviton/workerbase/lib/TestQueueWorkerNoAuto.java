@@ -5,7 +5,6 @@ import com.github.libgraviton.workerbase.annotation.GravitonWorker;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.QueueEventScope;
 import com.github.libgraviton.workerbase.helper.WorkerScope;
-import com.github.libgraviton.workerbase.model.QueueEvent;
 import io.activej.inject.annotation.Inject;
 
 @GravitonWorker
@@ -25,7 +24,7 @@ public class TestQueueWorkerNoAuto extends QueueWorkerAbstract {
      *
      * @throws WorkerException
      */
-    public void handleRequest(QueueEvent qevent, QueueEventScope queueEventScope) {
+    public void handleRequest(QueueEventScope queueEventScope) {
         this.handleRequestCalled = true;
     }
     
@@ -35,7 +34,7 @@ public class TestQueueWorkerNoAuto extends QueueWorkerAbstract {
      *
      * @return boolean true if not, false if yes
      */
-    public boolean shouldHandleRequest(QueueEvent qevent, QueueEventScope queueEventScope) {
+    public boolean shouldHandleRequest(QueueEventScope queueEventScope) {
         this.concerningRequestCalled = true;
         return this.isConcerningRequest;
     }

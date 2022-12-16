@@ -30,7 +30,8 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
         super(workerScope);
     }
 
-    public boolean shouldHandleRequest(QueueEvent queueEvent, QueueEventScope queueEventScope) throws GravitonCommunicationException {
+    public boolean shouldHandleRequest(QueueEventScope queueEventScope) throws GravitonCommunicationException {
+        QueueEvent queueEvent = queueEventScope.getQueueEvent();
         List<String> actions = getActionsOfInterest(queueEvent);
 
         // get the file
@@ -66,16 +67,16 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
         return !ListUtils.intersection(actions, referencedActions).isEmpty();
     }
 
-    final public void handleRequest(QueueEvent body, QueueEventScope queueEventScope) throws WorkerException, GravitonCommunicationException {
+    final public void handleRequest(QueueEventScope queueEventScope) throws WorkerException, GravitonCommunicationException {
         // get the file..
         File fileToPass;
         if (queueEventScope.getScopeCacheMap().containsKey("currentFetchedFile")) {
             fileToPass = (File) queueEventScope.getScopeCacheMap().get("currentFetchedFile");
         } else {
-            fileToPass = queueEventScope.getFileEndpoint().getFileFromQueueEvent(body);
+            fileToPass = queueEventScope.getFileEndpoint().getFileFromQueueEvent(queueEventScope.getQueueEvent());
         }
 
-        handleFileRequest(body, fileToPass, queueEventScope);
+        handleFileRequest(fileToPass, queueEventScope);
     }
 
     /**

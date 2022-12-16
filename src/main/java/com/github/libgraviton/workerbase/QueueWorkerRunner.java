@@ -252,10 +252,10 @@ public class QueueWorkerRunner {
             // wrap with status handling stuff
             final WorkerRunnable workerRunnable = new WorkerRunnable(
                 queueEvent,
-                () -> {
+                (queueEventScope) -> {
                     final WorkerRunnableInterface workload;
                     if (areWeAsync) {
-                        workload = ((AsyncQueueWorkerInterface) this).handleRequestAsync(queueEvent);
+                        workload = ((AsyncQueueWorkerInterface) this).handleRequestAsync(queueEventScope);
                     } else {
                         workload = worker::handleRequest;
                     }

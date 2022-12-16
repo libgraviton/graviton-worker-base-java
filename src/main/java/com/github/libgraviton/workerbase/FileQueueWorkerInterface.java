@@ -7,5 +7,5 @@ import com.github.libgraviton.workerbase.helper.QueueEventScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 
 public interface FileQueueWorkerInterface {
-  void handleFileRequest(QueueEvent body, File file, QueueEventScope queueEventScope) throws WorkerException, GravitonCommunicationException;
+  void handleFileRequest(File file, QueueEventScope queueEventScope) throws WorkerException, GravitonCommunicationException;
 }

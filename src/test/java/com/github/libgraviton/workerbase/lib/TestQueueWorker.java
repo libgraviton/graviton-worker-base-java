@@ -29,14 +29,8 @@ public class TestQueueWorker extends QueueWorkerAbstract {
         super(workerScope);
     }
 
-    /**
-     * worker logic is implemented here
-     * 
-     * @param qevent queue event from request
-     *
-     */
-    public void handleRequest(QueueEvent qevent, QueueEventScope queueEventScope) throws WorkerException {
-        handledQueueEvent = qevent;
+    public void handleRequest(QueueEventScope queueEventScope) throws WorkerException {
+        handledQueueEvent = queueEventScope.getQueueEvent();
 
         try {
             fetchedFile = queueEventScope.getFileEndpoint().getFileMetadata("test-workerfile");
@@ -47,7 +41,7 @@ public class TestQueueWorker extends QueueWorkerAbstract {
         callCount++;
 
         // here we should fail! -> fail max 3 times!
-        if (qevent.getCoreUserId() != null && qevent.getCoreUserId().equals("PLEASE_FAIL_HERE!") && errorCount < 3) {
+        if (handledQueueEvent.getCoreUserId() != null && handledQueueEvent.getCoreUserId().equals("PLEASE_FAIL_HERE!") && errorCount < 3) {
             errorCount++;
             throw new WorkerException("YES_I_DO_FAIL_NOW");
         }
@@ -57,18 +51,16 @@ public class TestQueueWorker extends QueueWorkerAbstract {
 
      * Here, the worker should decide if this requests concerns him in the first
      * place. If false is returned, we ignore the message..
-     * 
-     * @param qevent queue event from request
-     * 
+     *
      * @return boolean true if not, false if yes
      */
-    public boolean shouldHandleRequest(QueueEvent qevent, QueueEventScope queueEventScope) {
+    public boolean shouldHandleRequest(QueueEventScope queueEventScope) {
         this.shouldHandleRequestCalled = true;
-        if (qevent.getCoreUserId() == null) {
+        if (queueEventScope.getQueueEvent().getCoreUserId() == null) {
             return true;
         }
 
-        return !qevent.getCoreUserId().equals("SPECIAL_USER");
+        return !queueEventScope.getQueueEvent().getCoreUserId().equals("SPECIAL_USER");
     }
 
     public void onStartUp() {

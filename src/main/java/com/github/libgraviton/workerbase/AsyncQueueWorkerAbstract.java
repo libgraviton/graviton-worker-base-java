@@ -13,6 +13,6 @@ public abstract class AsyncQueueWorkerAbstract extends QueueWorkerAbstract imple
     }
 
     @Override
-    final public void handleRequest(QueueEvent body, QueueEventScope queueEventScope) {
+    final public void handleRequest(QueueEventScope queueEventScope) {
     }
 }

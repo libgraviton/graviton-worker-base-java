@@ -5,7 +5,6 @@ import com.github.libgraviton.workerbase.annotation.GravitonWorker;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.QueueEventScope;
 import com.github.libgraviton.workerbase.helper.WorkerScope;
-import com.github.libgraviton.workerbase.model.QueueEvent;
 import io.activej.inject.annotation.Inject;
 
 @GravitonWorker
@@ -23,7 +22,7 @@ public class TestQueueWorkerNoRetryOnException extends QueueWorkerAbstract {
      *
      * @throws WorkerException
      */
-    public void handleRequest(QueueEvent qevent, QueueEventScope queueEventScope) throws WorkerException {
+    public void handleRequest(QueueEventScope queueEventScope) throws WorkerException {
         callCount++;
         throw new WorkerException("Not good!");
     }
@@ -34,7 +33,7 @@ public class TestQueueWorkerNoRetryOnException extends QueueWorkerAbstract {
      *
      * @return boolean true if not, false if yes
      */
-    public boolean shouldHandleRequest(QueueEvent qevent, QueueEventScope queueEventScope) {
+    public boolean shouldHandleRequest(QueueEventScope queueEventScope) {
         return true;
     }
 
