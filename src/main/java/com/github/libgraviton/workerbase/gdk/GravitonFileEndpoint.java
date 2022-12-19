@@ -61,7 +61,7 @@ public record GravitonFileEndpoint(GravitonApi gravitonApi) {
         String fileId = gravitonApi.getIdFromUrlOrId(urlOrId);
         String fileUrl = getFileDownloadUrl(fileId);
 
-        DownloadClient.downloadFile(fileUrl, destinationPath);
+        DownloadClient.downloadFile(fileUrl, destinationPath, gravitonApi.getRequestHeaders());
     }
 
     @Deprecated(since = "Use writeFileContentToDisk(), File and streams to deal with files, not byte arrays!")

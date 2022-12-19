@@ -1,6 +1,8 @@
 package com.github.libgraviton.workerbase.gdk;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
+import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.Response;
@@ -10,6 +12,8 @@ import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.auth.Authenticator;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.exception.AuthenticatorException;
+import com.github.libgraviton.workerbase.helper.EventStatusHandler;
+import com.google.common.base.Stopwatch;
 import io.activej.inject.annotation.Inject;
 import io.activej.inject.annotation.Provides;
 import org.slf4j.Logger;
@@ -72,14 +76,33 @@ public class RequestExecutor {
             logBody(request);
         }
 
-        Response response = gateway.execute(request);
+        final Stopwatch reqStopwatch = Stopwatch.createStarted();
+
+        final Response response = gateway.execute(request);
         response.setObjectMapper(getObjectMapper());
 
+        // special treatment for event status
+        String addedText = "";
+        if (request.getUrl().getPath().startsWith("/event/status/")) {
+            EventStatusStatus.Status containingStatus = null;
+            for (EventStatusStatus.Status status : EventStatusStatus.Status.values()) {
+                if (request.getBody() != null && request.getBody().contains("\""+status.value()+"\"")) {
+                    containingStatus = status;
+                }
+            }
+
+            if (containingStatus != null) {
+                addedText = " [EventStatus set to \"" + containingStatus + "\"]";
+            }
+        }
+
         LOG.info(
-                "Request '{}' to '{}' ended with code {}.",
+                "REQ '{}' to '{}'. RES code '{}' in '{}' ms.{}",
                 request.getMethod(),
                 request.getUrl(),
-                response.getCode()
+                response.getCode(),
+                reqStopwatch.elapsed().toMillis(),
+                addedText
         );
 
         if (!response.isSuccessful()) {

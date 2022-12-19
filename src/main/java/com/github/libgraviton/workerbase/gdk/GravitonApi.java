@@ -7,7 +7,6 @@ import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.gdk.api.NoopRequest;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.EndpointManager;
-import com.github.libgraviton.workerbase.gdk.api.endpoint.GeneratedEndpointManager;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
 import com.github.libgraviton.workerbase.gdk.api.query.rql.Rql;
 import com.github.libgraviton.workerbase.gdk.auth.HeaderAuth;
@@ -67,10 +66,10 @@ public class GravitonApi {
 
     @Inject
     public GravitonApi(EndpointManager endpointManager, ObjectMapper objectMapper, RqlObjectMapper rqlObjectMapper) {
-        this.baseUrl = WorkerProperties.getProperty(WorkerProperties.GRAVITON_BASE_URL);
-        this.authHeaderValue = WorkerProperties.getProperty(WorkerProperties.AUTH_PREFIX_USERNAME)
-                .concat(WorkerProperties.getProperty(WorkerProperties.WORKER_ID));
-        this.authHeaderName = WorkerProperties.getProperty(WorkerProperties.AUTH_HEADER_NAME);
+        this.baseUrl = WorkerProperties.GRAVITON_BASE_URL.get();
+        this.authHeaderValue = WorkerProperties.AUTH_PREFIX_USERNAME.get()
+                .concat(WorkerProperties.WORKER_ID.get());
+        this.authHeaderName = WorkerProperties.AUTH_HEADER_NAME.get();
         this.endpointManager = endpointManager;
         this.objectMapper = objectMapper;
         this.rqlObjectMapper = rqlObjectMapper;
@@ -243,6 +242,13 @@ public class GravitonApi {
         }
     }
 
+    public Map<String, String> getRequestHeaders() {
+        Map<String, String> headers = new HashMap<>(transientHeaders);
+        headers.put(authHeaderName, authHeaderValue);
+
+        return headers;
+    }
+
     public ObjectMapper getObjectMapper() {
         return objectMapper;
     }
@@ -250,16 +256,13 @@ public class GravitonApi {
     protected HeaderBag.Builder getDefaultHeaders() {
         HeaderBag.Builder builder = new HeaderBag.Builder()
                 .set("Content-Type", "application/json")
-                .set("Accept", "application/json")
-                .set(authHeaderName, authHeaderValue);
+                .set("Accept", "application/json");
+
+        Map<String, String> requestHeaders = getRequestHeaders();
 
         // transient headers?
-        if (!transientHeaders.isEmpty()) {
-            for (Map.Entry<String, String> entry : transientHeaders.entrySet()) {
-                builder.set(entry.getKey(), entry.getValue());
-            }
-
-            LOG.info("Including transient headers from QueueEvent in request: {}", transientHeaders);
+        if (!requestHeaders.isEmpty()) {
+            requestHeaders.forEach(builder::set);
         }
 
         auth.addHeader(builder);

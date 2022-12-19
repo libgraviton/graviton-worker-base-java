@@ -29,6 +29,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         super(workerScope);
     }
 
+    /*
     protected void update(EventStatus eventStatus, String workerId, EventStatusStatus.Status status) throws GravitonCommunicationException {
         if (shouldLinkAction(workerId, eventStatus.getStatus())) {
             workerScope.getStatusHandler().updateWithAction(eventStatus, workerId, status, getWorkerAction());
@@ -37,7 +38,9 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         }
     }
 
-    protected boolean shouldLinkAction(String workerId, List<EventStatusStatus> status) {
+     */
+
+    public boolean shouldLinkAction(String workerId, List<EventStatusStatus> status) {
         for (EventStatusStatus statusEntry : status) {
             if (workerId.equals(statusEntry.getWorkerId())
                     && statusEntry.getAction() != null) {
@@ -47,9 +50,12 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         return true;
     }
 
+    /*
     protected void update(String eventStatusUrl, EventStatusStatus.Status status) throws GravitonCommunicationException {
         update(workerScope.getStatusHandler().getEventStatusFromUrl(eventStatusUrl), getWorkerId(), status);
     }
+
+     */
 
 
     /**
@@ -90,8 +96,8 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         return EventStatusStatus.Status.DONE;
     }
 
-    protected List<EventWorkerSubscription> getSubscriptions() {
-        String[] subscriptionKeys = WorkerProperties.getProperty(WorkerProperties.GRAVITON_SUBSCRIPTION).split(",");
+    public List<EventWorkerSubscription> getSubscriptions() {
+        String[] subscriptionKeys = WorkerProperties.GRAVITON_SUBSCRIPTION.get().split(",");
         List<EventWorkerSubscription> subscriptions = new ArrayList<>();
         for (String subscriptionKey: subscriptionKeys) {
             EventWorkerSubscription subscription = new EventWorkerSubscription();
@@ -108,7 +114,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
      *
      * @return link to worker action
      */
-    protected EventStatusStatusAction getWorkerAction() {
+    public EventStatusStatusAction getWorkerAction() {
         String eventStatusActionEndpointUrl = workerScope.getGravitonApi()
                 .getEndpointManager()
                 .getEndpoint(EventStatusAction.class.getName())

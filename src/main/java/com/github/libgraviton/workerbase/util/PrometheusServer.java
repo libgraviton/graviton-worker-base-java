@@ -37,9 +37,10 @@ public class PrometheusServer {
 
     // app name
     registry.config().commonTags("application", appName);
+    final int prometheusPort = Integer.parseInt(WorkerProperties.PROMETHEUS_PORT.get());
 
     try {
-      HttpServer server = HttpServer.create(new InetSocketAddress(Integer.parseInt(WorkerProperties.getProperty(WorkerProperties.PROMETHEUS_PORT))), 0);
+      HttpServer server = HttpServer.create(new InetSocketAddress(prometheusPort), 0);
       server.createContext("/metrics", httpExchange -> {
         String response = registry.scrape();
         httpExchange.sendResponseHeaders(200, response.getBytes().length);
@@ -50,14 +51,7 @@ public class PrometheusServer {
       server.setExecutor(null);
       server.start();
 
-      /*
-      serverThread = new Thread(server::start);
-      serverThread.start();
-      serverThread.interrupt();
-
-       */
-
-      LOG.info("Started prometheus HTTPServer for metrics on http://0.0.0.0:{}/metrics", WorkerProperties.getProperty(WorkerProperties.PROMETHEUS_PORT));
+      LOG.info("Started prometheus HTTPServer for metrics on http://0.0.0.0:{}/metrics", prometheusPort);
     } catch (Throwable t) {
       LOG.error("Could not start prometheus metrics HTTPServer", t);
     }

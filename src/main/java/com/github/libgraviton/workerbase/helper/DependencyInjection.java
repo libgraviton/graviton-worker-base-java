@@ -10,16 +10,17 @@ import io.activej.inject.module.ModuleBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class DependencyInjection {
 
     private static Injector injector;
 
-    private static final String scanClass = "com.github.libgraviton";
+    public static final String scanClass = "com.github.libgraviton";
 
     private static final Logger LOG = LoggerFactory.getLogger(DependencyInjection.class);
+
+    private static final Set<Class<WorkerInterface>> workerClasses = new HashSet<>();
 
     private static final HashMap<Class<?>, Object> instanceOverrides = new HashMap<>();
 
@@ -63,6 +64,8 @@ public class DependencyInjection {
                         }
                     }, WorkerScope.class);
 
+                    workerClasses.add(workerClazz);
+
                     continue;
                 }
 
@@ -99,6 +102,10 @@ public class DependencyInjection {
             return (T) instanceOverrides.get(clazz);
         }
         return injector.getInstance(clazz);
+    }
+
+    public static Set<Class<WorkerInterface>> getWorkerClasses() {
+        return workerClasses;
     }
 
     public static void addInstanceOverride(Class<?> clazz, Object instance) {

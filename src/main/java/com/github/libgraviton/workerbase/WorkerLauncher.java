@@ -40,9 +40,10 @@ public final class WorkerLauncher {
         }
 
         LOG.info(
-                "Starting '{} {}' (worker-base '{}'). Runtime '{}' version '{}', TZ '{}'",
+                "Starting '{} {}' (class '{}', worker-base '{}'). Runtime '{}' version '{}', TZ '{}'",
                 applicationName,
                 properties.getProperty("application.version"),
+                worker.getClass().getName(),
                 WorkerUtil.getWorkerBaseVersion(),
                 System.getProperty("java.runtime.name"),
                 System.getProperty("java.runtime.version"),
@@ -84,7 +85,7 @@ public final class WorkerLauncher {
         } else if (worker instanceof QueueWorkerAbstract && queueWorkerRunner != null) {
             queueWorkerRunner.run();
         } else {
-            throw new RuntimeException("Could not find any runnable worker!");
+            throw new RuntimeException("The worker is not runnable!");
         }
     }
 

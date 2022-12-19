@@ -21,8 +21,6 @@ import io.activej.inject.binding.Binding;
 import io.activej.inject.module.AbstractModule;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -33,8 +31,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class WorkerBaseProvider extends AbstractModule {
-
-    private static final Logger LOG = LoggerFactory.getLogger(WorkerBaseProvider.class);
 
     @Override
     protected void configure() {
@@ -64,15 +60,18 @@ public class WorkerBaseProvider extends AbstractModule {
 
     @Provides
     @Transient
-    public static EventStatusHandler eventStatusHandler(GravitonApi gravitonApi) {
-        return new EventStatusHandler(gravitonApi);
+    public static EventStatusHandler eventStatusHandler(Properties properties, GravitonApi gravitonApi) {
+        return new EventStatusHandler(
+                gravitonApi,
+                Integer.parseInt(WorkerProperties.STATUSHANDLER_RETRY_LIMIT.get())
+        );
     }
 
     @Provides
-    public static OkHttpClient getOkHttpClient(Properties properties) throws Exception {
-        boolean hasRetry = properties.getProperty("graviton.okhttp.shouldRetry").equals("true");
-        boolean forceHttp11 = properties.getProperty("graviton.okhttp.forcehttp11").equals("true");
-        boolean trustAll = properties.getProperty("graviton.okhttp.trustAll").equals("true");
+    public static OkHttpClient getOkHttpClient() throws Exception {
+        final boolean hasRetry = WorkerProperties.HTTP_CLIENT_DORETRY.get().equals("true");
+        final boolean forceHttp11 = WorkerProperties.HTTP_CLIENT_FORCE_HTTP1_1.get().equals("true");
+        final boolean trustAll = WorkerProperties.HTTP_CLIENT_TLS_TRUST_ALL.get().equals("true");
 
         OkHttpClient client = OkHttpGatewayFactory.getInstance(hasRetry);
         if (trustAll) {

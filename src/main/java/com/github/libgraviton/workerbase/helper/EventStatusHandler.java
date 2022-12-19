@@ -28,11 +28,7 @@ public class EventStatusHandler {
 
     private final GravitonApi gravitonApi;
 
-    final int retryLimit;
-
-    public EventStatusHandler(GravitonApi gravitonApi) {
-        this(gravitonApi, 30);
-    }
+    private final int retryLimit;
 
     public EventStatusHandler(GravitonApi gravitonApi, int retryLimit) {
         this.gravitonApi = gravitonApi;
@@ -138,12 +134,6 @@ public class EventStatusHandler {
         }
 
         update(eventStatus);
-
-        LOG.info(
-                "Updated /event/status/{} to '{}'.",
-                eventStatus.getId(),
-                workerStatus.getStatus()
-        );
     }
 
     public EventStatus getEventStatusFromUrl(String url) throws GravitonCommunicationException {

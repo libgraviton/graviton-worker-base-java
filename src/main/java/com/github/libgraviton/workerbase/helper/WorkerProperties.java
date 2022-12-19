@@ -16,14 +16,28 @@ import java.util.*;
  */
 public class WorkerProperties {
 
-    public static final String GRAVITON_BASE_URL = "graviton.base.url";
+    public record WorkerProperty(String name) {
+        @Override
+        public String toString() {
+            return name;
+        }
 
-    public static final String GRAVITON_SUBSCRIPTION = "graviton.subscription";
-    public static final String WORKER_ID = "graviton.workerId";
-    public static final String AUTH_PREFIX_USERNAME = "graviton.authentication.prefix.username";
-    public static final String AUTH_HEADER_NAME = "graviton.authentication.header.name";
+        public String get() {
+            return WorkerProperties.getProperty(name);
+        }
+    }
 
-    public static final String PROMETHEUS_PORT = "graviton.prometheus.port";
+    public static final WorkerProperty GRAVITON_BASE_URL = new WorkerProperty("graviton.base.url");
+    public static final WorkerProperty GRAVITON_SUBSCRIPTION = new WorkerProperty("graviton.subscription");
+    public static final WorkerProperty WORKER_ID = new WorkerProperty("graviton.workerId");
+    public static final WorkerProperty AUTH_PREFIX_USERNAME = new WorkerProperty("graviton.authentication.prefix.username");
+    public static final WorkerProperty AUTH_HEADER_NAME = new WorkerProperty("graviton.authentication.header.name");
+    public static final WorkerProperty PROMETHEUS_PORT = new WorkerProperty("graviton.prometheus.port");
+    public static final WorkerProperty WORKER_MAIN_CLASS = new WorkerProperty("worker.mainClass");
+    public static final WorkerProperty HTTP_CLIENT_DORETRY = new WorkerProperty("graviton.okhttp.shouldRetry");
+    public static final WorkerProperty HTTP_CLIENT_FORCE_HTTP1_1 = new WorkerProperty("graviton.okhttp.forcehttp11");
+    public static final WorkerProperty HTTP_CLIENT_TLS_TRUST_ALL = new WorkerProperty("graviton.okhttp.trustAll");
+    public static final WorkerProperty STATUSHANDLER_RETRY_LIMIT = new WorkerProperty("graviton.statushandler.retrylimit");
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerProperties.class);
 

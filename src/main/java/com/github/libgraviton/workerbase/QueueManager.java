@@ -23,8 +23,8 @@ public class QueueManager {
 
     public QueueManager(Properties properties) {
         connection = new RabbitMqConnection.Builder()
-                .queueName(properties.getProperty(WorkerProperties.WORKER_ID))
-                .routingKey(properties.getProperty(WorkerProperties.WORKER_ID))
+                .queueName(properties.getProperty(WorkerProperties.WORKER_ID.toString()))
+                .routingKey(properties.getProperty(WorkerProperties.WORKER_ID.toString()))
                 .applyProperties(properties, "queue.")
                 .build();
     }

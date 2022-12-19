@@ -35,7 +35,7 @@ public class EventStatusHandlerTest {
     @Test
     public void testStatusHandlerUpdateWithoutValidStatus() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
             EventStatus eventStatus = new EventStatus();
             EventStatusStatus workerStatus = new EventStatusStatus();
             workerStatus.setWorkerId("workerId");
@@ -48,7 +48,7 @@ public class EventStatusHandlerTest {
     @Test
     public void testStatusHandlerUpdateWithFailingBackend() {
         Assertions.assertThrows(GravitonCommunicationException.class, () -> {
-            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
             EventStatus eventStatus = new EventStatus();
             EventStatusStatus workerStatus = new EventStatusStatus();
             workerStatus.setWorkerId("workerId");
@@ -65,7 +65,7 @@ public class EventStatusHandlerTest {
     @Test
     public void testGetEventStatusFromUrl() {
         Assertions.assertThrows(GravitonCommunicationException.class, () -> {
-            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
             String url = "testUrl";
             when(gravitonApi.get(url).execute()).thenThrow(new CommunicationException("Ooops!"));
             statusHandler.getEventStatusFromUrl(url);
@@ -75,7 +75,7 @@ public class EventStatusHandlerTest {
     @Test
     public void testGetEventStatusByFilterWithNoMatchingResponse() {
         Assertions.assertThrows(GravitonCommunicationException.class, () -> {
-            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
 
             List<EventStatus> statusDocuments = new ArrayList<>();
             doReturn(statusDocuments).when(statusHandler).findEventStatus(filterTemplate);
@@ -86,7 +86,7 @@ public class EventStatusHandlerTest {
     @Test
     public void testGetEventStatusByFilterWithMultipleMatchingResponse() {
         Assertions.assertThrows(GravitonCommunicationException.class, () -> {
-            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
 
             List<EventStatus> statusDocuments = new ArrayList<>();
             statusDocuments.add(new EventStatus());
@@ -99,7 +99,7 @@ public class EventStatusHandlerTest {
 
     @Test
     public void testGetEventStatusByFilterWithOneMatchingResponse() throws GravitonCommunicationException {
-        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
 
         List<EventStatus> statusDocuments = new ArrayList<>();
         statusDocuments.add(new EventStatus());
@@ -110,7 +110,7 @@ public class EventStatusHandlerTest {
 
     @Test
     public void testGetRqlFilter()  {
-        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
 
         String expectedFilter = "?elemMatch(information,and(eq(content,myInput),eq(workerId,anotherInput)))&elemMatch(status,and(ne(status,done),eq(workerId,last%2Dinput)))";
         String firstParam = "myInput";
@@ -125,7 +125,7 @@ public class EventStatusHandlerTest {
 
     @Test
     public void testGetRqlFilterWithTooManyParams()  {
-        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
 
         String expectedFilter = "?elemMatch(information,and(eq(content,myInput),eq(workerId,anotherInput)))&elemMatch(status,and(ne(status,done),eq(workerId,last%2Dinput)))";
         String firstParam = "myInput";
@@ -141,7 +141,7 @@ public class EventStatusHandlerTest {
 
     @Test
     public void testGetRqlFilterWithInsufficientParams()  {
-        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
 
         String expectedFilter = "?elemMatch(information,and(eq(content,myInput),eq(workerId,{workerId})))&elemMatch(status,and(ne(status,done),eq(workerId,{workerId})))";
         String firstParam = "myInput";

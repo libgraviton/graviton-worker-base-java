@@ -51,7 +51,7 @@ public class WorkerScope {
     }
 
     public String getWorkerId() {
-        return properties.getProperty(WorkerProperties.WORKER_ID);
+        return WorkerProperties.WORKER_ID.get();
     }
 
     public Map<String, Object> getScopeCacheMap() {
@@ -65,7 +65,7 @@ public class WorkerScope {
      * @return corrected url
      */
     public String convertToGravitonUrl(String url) {
-        HttpUrl baseUrl = HttpUrl.parse(properties.getProperty(WorkerProperties.GRAVITON_BASE_URL));
+        HttpUrl baseUrl = HttpUrl.parse(WorkerProperties.GRAVITON_BASE_URL.get());
 
         // convert
         HttpUrl targetUrl = HttpUrl

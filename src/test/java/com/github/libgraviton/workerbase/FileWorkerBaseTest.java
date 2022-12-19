@@ -4,6 +4,7 @@ import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadata;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadataAction;
 import com.github.libgraviton.workerbase.lib.TestFileQueueWorker;
+import com.github.libgraviton.workerbase.lib.TestFileQueueWorkerIgnoredAction;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.github.libgraviton.workertestbase.WorkerTestExtension;
 import com.github.tomakehurst.wiremock.matching.MultipartValuePatternBuilder;
@@ -24,49 +25,6 @@ public class FileWorkerBaseTest {
             .setStartWiremock(true)
             .setStartRabbitMq(true);
 
-    /**
-    private FileQueueWorkerAbstract sut;
-
-    protected boolean innerWorkerWasCalled = false;
-
-    @FunctionalInterface
-    private interface FileHandler {
-        void handleFileRequest(GravitonFileEndpoint fileEndpoint, QueueEvent body, File file) throws CommunicationException, MalformedURLException, URISyntaxException;
-    }
-
-    private FileQueueWorkerAbstract getFileTestWorker(FileHandler fileHandler) {
-        WorkerScope workerScope = DependencyInjection.getInstance(WorkerScope.class);
-        return new FileQueueWorkerAbstract(workerScope) {
-            @Override
-            public void onStartUp() throws WorkerException {
-
-            }
-
-            @Override
-            public List<String> getActionsOfInterest(QueueEvent queueEvent) {
-                return List.of("test");
-            }
-
-            @Override
-            public void handleFileRequest(QueueEvent body, File file, QueueEventScope queueEventScope) throws WorkerException {
-                try {
-                    fileHandler.handleFileRequest(workerScope.getFileEndpoint(), body, file);
-                    innerWorkerWasCalled = true;
-                } catch (Throwable t) {
-                    throw new WorkerException("Errror", t);
-                }
-            }
-        };
-    }
-     **/
-
-    /*
-    TODO testing:
-    * actions that are not in interested array
-    * fetch file as binary (the content, not the file) in queueeventscope
-    * assert all with the transient headers
-     */
-
     @Test
     public void testFileHandling() throws Exception {
 
@@ -78,22 +36,41 @@ public class FileWorkerBaseTest {
         fileMetadata.setAction(List.of(action));
         eventFile.setMetadata(fileMetadata);
 
+        WorkerLauncher workerLauncher = workerTestExtension.getWrappedWorker(TestFileQueueWorker.class);
+
+        final CountDownLatch countDownLatch = workerTestExtension.getCountDownLatch(1, workerLauncher);
+
+        workerLauncher.run();
+
+        Map<String, String> transientHeaders = Map.of("my-custom-header", "file-dude", "header", "value");
+        QueueEvent queueEvent = workerTestExtension.getQueueEvent(transientHeaders, "USER_ID", eventFile);
+
         workerTestExtension.getWireMockServer().stubFor(
                 put(urlEqualTo("/file/test-grv-file"))
+                        .withHeader("my-custom-header", equalTo("file-dude"))
+                        .withHeader("header", equalTo("value"))
                         .withMultipartRequestBody(new MultipartValuePatternBuilder().withName("upload").withName("metadata"))
                         .willReturn(aResponse().withStatus(201))
         );
 
-        WorkerLauncher workerLauncher = workerTestExtension.getWrappedWorker(TestFileQueueWorker.class);
+        workerTestExtension.getWireMockServer().stubFor(
+                get(urlEqualTo("/file/test-grv-file"))
+                        .withHeader("my-custom-header", equalTo("file-dude"))
+                        .withHeader("header", equalTo("value"))
+                        .willReturn(aResponse().withBody("THIS-IS-THE-CONTENT").withHeader("Content-Type", "text/plain").withStatus(200))
+        );
 
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
-        workerLauncher.getQueueWorkerRunner().addOnCompleteCallback((duration) -> {
-            countDownLatch.countDown();
-        });
-
-        workerLauncher.run();
-
-        QueueEvent queueEvent = workerTestExtension.getQueueEvent(Map.of(), "USER_ID", eventFile);
+        // whatever request!
+        workerTestExtension.getWireMockServer()
+                .stubFor(
+                        get(urlMatching("/core/app/hans"))
+                                // the transient headers
+                                .withHeader("my-custom-header", equalTo("file-dude"))
+                                .withHeader("header", equalTo("value"))
+                                .willReturn(
+                                        aResponse().withBody("HANSITEST").withStatus(200)
+                                )
+                );
 
         workerTestExtension.sendToWorker(queueEvent);
 
@@ -105,51 +82,47 @@ public class FileWorkerBaseTest {
         Assertions.assertTrue(worker.onStartupCalled);
         Assertions.assertInstanceOf(File.class, worker.fileObj);
 
-        int hans = 3;
-
-        /*
-        sut = getFileTestWorker((fileEndpoint, body, file) -> {
-            // by comparing this we know that it was fetched through Wiremock and passed to the worker..
-            // and by this we're testing FileEndpoint
-            assertEquals(eventFile.getId(), file.getId());
-
-            String data = "SPECIALINFORMATION";
-            Request request = fileEndpoint.put(data.getBytes(StandardCharsets.UTF_8), file).build();
-            List<Part> parts = request.getParts();
-            assertEquals(2, parts.size());
-
-            Part part1 = parts.get(1);
-            assertEquals("upload", part1.getFormName());
-            assertEquals(data, new String(part1.getBody()));
-
-            Part part2 = parts.get(0);
-            assertEquals("metadata", part2.getFormName());
-            assertTrue(new String(part2.getBody()).contains("\"id\":\"test-fileId\""));
-
-            // test real PUT
-            URL testFileUrl = this.getClass().getClassLoader().getResource("files/test.pdf");
-            java.io.File testFile = new java.io.File(testFileUrl.toURI());
-
-            // testGrvFile
-            File testGrvFile = new File();
-            testGrvFile.setId("test-grv-file");
-
-            fileEndpoint.put(testFile, testGrvFile).execute();
-        });
-
-         */
-
-        /*
-        prepareWorker(sut);
-
-        produceQueueEvent(sut, eventFile);
-
-        verify(1, getRequestedFor(urlMatching("^/file/(.*)")));
-        verify(1, putRequestedFor(urlEqualTo("/file/test-grv-file")));
-
-        assertTrue(innerWorkerWasCalled);
-
-         */
+        verify(1,
+                getRequestedFor(urlEqualTo("/core/app/hans"))
+        );
     }
 
+    @Test
+    public void testFileHandlingActionIgnoredByBase() throws Exception {
+        WorkerLauncher workerLauncher = workerTestExtension.getWrappedWorker(TestFileQueueWorkerIgnoredAction.class);
+        final CountDownLatch countDownLatch = workerTestExtension.getCountDownLatch(1, workerLauncher);
+
+        workerLauncher.run();
+
+        File eventFile = new File();
+        eventFile.setId("test-fileId");
+        FileMetadata fileMetadata = new FileMetadata();
+        FileMetadataAction action = new FileMetadataAction();
+        action.setCommand("THIS-DOES-NOT-INTEREST-WORKER");
+        fileMetadata.setAction(List.of(action));
+        eventFile.setMetadata(fileMetadata);
+
+        QueueEvent queueEvent = workerTestExtension.getQueueEvent(Map.of(), "HANS", eventFile);
+        workerTestExtension.sendToWorker(queueEvent);
+
+        countDownLatch.await();
+
+        TestFileQueueWorkerIgnoredAction worker = (TestFileQueueWorkerIgnoredAction) workerLauncher.getWorker();
+
+        Assertions.assertTrue(worker.onStartupCalled);
+        Assertions.assertFalse(worker.handleFileRequestCalled);
+
+        verify(1,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
+                        .withRequestBody(containing("\"ignored\""))
+        );
+        verify(0,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
+                        .withRequestBody(containing("\"working\""))
+        );
+        verify(0,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
+                        .withRequestBody(containing("\"done\""))
+        );
+    }
 }

@@ -1,6 +1,7 @@
 package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
@@ -70,7 +71,7 @@ public class QueueWorkerRunner {
     @Inject
     public QueueWorkerRunner(QueueWorkerAbstract worker) {
         this.queueManager = DependencyInjection.getInstance(QueueManager.class);
-        areWeAsync = (this instanceof AsyncQueueWorkerInterface);
+        areWeAsync = (worker instanceof AsyncQueueWorkerInterface);
         if (areWeAsync) {
             executorService = DependencyInjection.getInstance(ExecutorService.class);
         } else {
@@ -173,7 +174,7 @@ public class QueueWorkerRunner {
                 // ACK -> no redeliver!
                 try {
                     acknowledger.acknowledge(messageId);
-                    LOG.info("Acknowledged QueueEvent status '{}' as message ID '{}' to queue -> NO REDELIVER!", statusUrl, messageId);
+                    LOG.info("Acknowledged QueueEvent status '{}' as message ID '{}' to queue. DONE!", statusUrl, messageId);
                 } catch (Throwable t) {
                     LOG.error("Unable to ack messageId '{}' on message queue.", messageId, t);
                 }
@@ -244,7 +245,12 @@ public class QueueWorkerRunner {
             }
 
             if (worker.shouldAutoUpdateStatus()) {
-                worker.update(statusUrl, status);
+                EventStatus eventStatus = worker.getWorkerScope().getStatusHandler().getEventStatusFromUrl(statusUrl);
+                if (worker.shouldLinkAction(worker.getWorkerId(), eventStatus.getStatus())) {
+                    worker.getWorkerScope().getStatusHandler().updateWithAction(eventStatus, worker.getWorkerId(), status, worker.getWorkerAction());
+                } else {
+                    worker.getWorkerScope().getStatusHandler().update(eventStatus, worker.getWorkerId(), status);
+                }
             }
         };
 
@@ -255,7 +261,7 @@ public class QueueWorkerRunner {
                 (queueEventScope) -> {
                     final WorkerRunnableInterface workload;
                     if (areWeAsync) {
-                        workload = ((AsyncQueueWorkerInterface) this).handleRequestAsync(queueEventScope);
+                        workload = ((AsyncQueueWorkerInterface) worker).handleRequestAsync(queueEventScope);
                     } else {
                         workload = worker::handleRequest;
                     }
