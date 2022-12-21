@@ -1,9 +1,7 @@
 package com.github.libgraviton.workerbase.gdk;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
-import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.gdk.api.gateway.GravitonGateway;
@@ -12,9 +10,7 @@ import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.auth.Authenticator;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.exception.AuthenticatorException;
-import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.google.common.base.Stopwatch;
-import io.activej.inject.annotation.Inject;
 import io.activej.inject.annotation.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +22,6 @@ import org.slf4j.LoggerFactory;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-@GravitonWorkerDiScan
 public class RequestExecutor {
 
     @Provides
@@ -46,12 +41,16 @@ public class RequestExecutor {
      */
     private final GravitonGateway gateway;
 
-    protected Authenticator authenticator;
+    private final Authenticator authenticator;
 
-    @Inject
     public RequestExecutor(ObjectMapper objectMapper, GravitonGateway gateway) {
+        this(objectMapper, gateway, null);
+    }
+
+    public RequestExecutor(ObjectMapper objectMapper, GravitonGateway gateway, Authenticator authenticator) {
         this.gateway = gateway;
         this.objectMapper = objectMapper;
+        this.authenticator = authenticator;
     }
 
     /**

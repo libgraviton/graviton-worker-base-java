@@ -22,12 +22,6 @@ public class WorkerBaseTest {
             .setStartWiremock(true)
             .setStartRabbitMq(true);
 
-    /**
-     * TODO REST
-     * - GravitonGatewayAuthenticator
-     * @throws Exception
-     */
-
     @Test
     public void testAllTheBasicsAndAutoRegister() throws Exception {
         WorkerLauncher workerLauncher = workerTestExtension.getWrappedWorker(TestQueueWorker.class);

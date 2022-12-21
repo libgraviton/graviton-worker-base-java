@@ -28,6 +28,9 @@ public class WorkerProperties {
     }
 
     public static final WorkerProperty GRAVITON_BASE_URL = new WorkerProperty("graviton.base.url");
+    public static final WorkerProperty GATEWAY_BASE_URL = new WorkerProperty("gateway.url");
+    public static final WorkerProperty GATEWAY_USERNAME = new WorkerProperty("gateway.username");
+    public static final WorkerProperty GATEWAY_PASSWORD = new WorkerProperty("gateway.password");
     public static final WorkerProperty GRAVITON_SUBSCRIPTION = new WorkerProperty("graviton.subscription");
     public static final WorkerProperty WORKER_ID = new WorkerProperty("graviton.workerId");
     public static final WorkerProperty AUTH_PREFIX_USERNAME = new WorkerProperty("graviton.authentication.prefix.username");
