@@ -115,6 +115,11 @@ public class QueueWorkerRunner {
             register();
         }
 
+        if (worker.getSubscriptions().isEmpty()) {
+            LOG.info("Worker has no queue subscriptions in properties, not connecting to queue.");
+            return;
+        }
+
         try {
             queueManager.connect((messageId, message, acknowledger) -> {
                 try {
