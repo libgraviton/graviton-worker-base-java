@@ -41,8 +41,6 @@ public class GravitonApi {
         return new GravitonApi(endpointManager, objectMapper, rqlObjectMapper);
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger(GravitonApi.class);
-
     /**
      * Defines the base setUrl of the Graviton server
      */
