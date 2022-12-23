@@ -16,7 +16,7 @@ public class EndpointManager {
     /**
      * The POJO class to endpoint association.
      */
-    protected Map<String, Endpoint> endpoints = new HashMap<>();
+    protected final Map<String, Endpoint> endpoints = new HashMap<>();
 
     protected EndpointInclusionStrategy strategy;
 

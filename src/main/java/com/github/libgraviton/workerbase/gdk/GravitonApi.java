@@ -3,7 +3,6 @@ package com.github.libgraviton.workerbase.gdk;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.gdk.api.NoopRequest;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.EndpointManager;
@@ -16,11 +15,6 @@ import com.github.libgraviton.workerbase.gdk.exception.SerializationException;
 import com.github.libgraviton.workerbase.gdk.serialization.JsonPatcher;
 import com.github.libgraviton.workerbase.gdk.serialization.mapper.RqlObjectMapper;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
-import io.activej.inject.annotation.Inject;
-import io.activej.inject.annotation.Provides;
-import io.activej.inject.annotation.Transient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,14 +26,7 @@ import java.util.Map;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-@GravitonWorkerDiScan
 public class GravitonApi {
-
-    @Provides
-    @Transient
-    public static GravitonApi getInstance(EndpointManager endpointManager, ObjectMapper objectMapper, RqlObjectMapper rqlObjectMapper) {
-        return new GravitonApi(endpointManager, objectMapper, rqlObjectMapper);
-    }
 
     /**
      * Defines the base setUrl of the Graviton server
@@ -62,7 +49,6 @@ public class GravitonApi {
 
     private HeaderAuth auth;
 
-    @Inject
     public GravitonApi(EndpointManager endpointManager, ObjectMapper objectMapper, RqlObjectMapper rqlObjectMapper) {
         this.baseUrl = WorkerProperties.GRAVITON_BASE_URL.get();
         this.authHeaderValue = WorkerProperties.AUTH_PREFIX_USERNAME.get()

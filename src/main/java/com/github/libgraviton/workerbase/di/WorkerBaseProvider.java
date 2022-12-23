@@ -53,7 +53,6 @@ public class WorkerBaseProvider extends AbstractModule {
     }
 
     @Provides
-    @Transient
     public static QueueManager getQueueManager(Properties properties) {
         return new QueueManager(properties);
     }
@@ -65,6 +64,12 @@ public class WorkerBaseProvider extends AbstractModule {
                 gravitonApi,
                 Integer.parseInt(WorkerProperties.STATUSHANDLER_RETRY_LIMIT.get())
         );
+    }
+
+    @Provides
+    @Transient
+    public static GravitonApi gravitonApi(EndpointManager endpointManager, ObjectMapper objectMapper, RqlObjectMapper rqlObjectMapper) {
+        return new GravitonApi(endpointManager, objectMapper, rqlObjectMapper);
     }
 
     @Provides

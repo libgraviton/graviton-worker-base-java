@@ -2,6 +2,7 @@ package com.github.libgraviton.workerbase.gdk;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.libgraviton.workerbase.di.WorkerBaseProvider;
 import com.github.libgraviton.workerbase.gdk.api.HttpMethod;
 import com.github.libgraviton.workerbase.gdk.api.NoopRequest;
 import com.github.libgraviton.workerbase.gdk.api.Request;
@@ -41,7 +42,7 @@ public class GravitonApiTest {
         when(endpoint.getUrl()).thenReturn(endpointUrl);
         when(endpointManager.getEndpoint(anyString())).thenReturn(endpoint);
 
-        gravitonApi = spy(GravitonApi.getInstance(
+        gravitonApi = spy(WorkerBaseProvider.gravitonApi(
                 endpointManager,
                 DependencyInjection.getInstance(ObjectMapper.class),
                 DependencyInjection.getInstance(RqlObjectMapper.class)

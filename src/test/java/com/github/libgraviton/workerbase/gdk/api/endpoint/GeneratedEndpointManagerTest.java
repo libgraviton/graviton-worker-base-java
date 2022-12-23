@@ -86,7 +86,7 @@ public class GeneratedEndpointManagerTest {
 
         // new service initialized with default assoc path
         generatedServiceManager = new GeneratedEndpointManager(serializationFile, GeneratedEndpointManager.Mode.LOAD);
-        Assertions.assertEquals(filePath, generatedServiceManager.serializationFile.getPath());
+        Assertions.assertEquals(filePath, generatedServiceManager.getSerializationFile().getPath());
 
         serializationFile.delete();
     }

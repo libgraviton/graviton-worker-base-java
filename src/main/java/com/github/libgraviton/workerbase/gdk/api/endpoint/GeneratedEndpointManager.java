@@ -24,7 +24,7 @@ public class GeneratedEndpointManager extends EndpointManager {
     /**
      * The file holding the serialized service to POJO class association.
      */
-    protected File serializationFile;
+    private final File serializationFile;
 
     private final String assocFilePath;
 
@@ -53,6 +53,10 @@ public class GeneratedEndpointManager extends EndpointManager {
         }
 
         this.strategy = EndpointInclusionStrategy.create(EndpointInclusionStrategy.Strategy.DEFAULT, null);
+    }
+
+    public File getSerializationFile() {
+        return serializationFile;
     }
 
     /**
@@ -84,9 +88,16 @@ public class GeneratedEndpointManager extends EndpointManager {
      */
     public int load() throws UnableToLoadEndpointAssociationsException {
         try {
-            ObjectInputStream objectinputstream = new ObjectInputStream(loadInputStream());
-            endpoints = (Map<String, Endpoint>) objectinputstream.readObject();
-            objectinputstream.close();
+            try (InputStream inputStream = loadInputStream()) {
+                if (inputStream != null) {
+                    try (ObjectInputStream objectinputstream = new ObjectInputStream(inputStream)) {
+                        endpoints.putAll(
+                                (Map<String, Endpoint>) objectinputstream.readObject()
+                        );
+                    }
+                }
+            }
+
             LOG.debug(endpoints.size() + " endpoints loaded");
         } catch (IOException e) {
             throw new UnableToLoadEndpointAssociationsException(
@@ -124,14 +135,8 @@ public class GeneratedEndpointManager extends EndpointManager {
 
         // try to load as resource first
         LOG.debug("Load resource as stream from '" + assocFilePath + "'.");
-        InputStream inputStream = GeneratedEndpointManager.class.getClassLoader().getResourceAsStream(assocFilePath);
 
-        if (inputStream == null) {
-            throw new UnableToLoadEndpointAssociationsException(
-                    "Resource  '" + assocFilePath + "' does not exist."
-            );
-        }
-        return inputStream;
+        return GeneratedEndpointManager.class.getClassLoader().getResourceAsStream(assocFilePath);
     }
 
     /**

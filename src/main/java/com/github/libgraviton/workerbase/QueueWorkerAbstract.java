@@ -21,7 +21,6 @@ import java.util.List;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-@GravitonWorkerDiScan
 public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWorkerInterface {
 
     @Inject

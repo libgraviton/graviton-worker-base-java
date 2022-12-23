@@ -9,16 +9,17 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RetryInterceptor implements Interceptor {
 
   private static final Logger LOG = LoggerFactory.getLogger(com.github.libgraviton.workerbase.gdk.util.okhttp.interceptor.RetryInterceptor.class);
 
   private final ArrayList<Integer> retryHttpCodes = new ArrayList<>();
-  private final Integer retryCount;
-  private final Integer waitInBetween;
+  private final int retryCount;
+  private final int waitInBetween;
 
-  private Integer retried = 0;
+  private final AtomicInteger retried = new AtomicInteger(0);
 
   public RetryInterceptor() {
     this(
@@ -27,7 +28,7 @@ public class RetryInterceptor implements Interceptor {
     );
   }
 
-  public RetryInterceptor(Integer retryCount, Integer waitInBetween) {
+  public RetryInterceptor(int retryCount, int waitInBetween) {
     this.retryCount = retryCount;
     this.waitInBetween = waitInBetween;
 
@@ -39,20 +40,20 @@ public class RetryInterceptor implements Interceptor {
 
   @Override public Response intercept(Chain chain) throws IOException {
     // reset counter
-    retried = 0;
+    retried.set(0);
     Boolean available = false;
 
-    while (!available && (retried < retryCount)) {
+    while (!available && (retried.get() < retryCount)) {
       available = isAvailable(chain);
       if (!available) {
         try {
           LOG.info("Waiting for '{}' seconds before next retry...", waitInBetween);
-          Thread.sleep(waitInBetween * 1000);
+          Thread.sleep(waitInBetween * 1000L);
         } catch (InterruptedException retriedException) {
           throw new IOException("System failure, unable to Thread.wait()", retriedException);
         }
 
-        retried++;
+        retried.incrementAndGet();
       }
     }
 
@@ -105,7 +106,7 @@ public class RetryInterceptor implements Interceptor {
     return false;
   }
 
-  public Integer getRetried() {
-    return retried;
+  public int getRetried() {
+    return retried.get();
   }
 }
