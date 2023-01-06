@@ -98,7 +98,7 @@ public class GeneratedEndpointManager extends EndpointManager {
                 }
             }
 
-            LOG.debug(endpoints.size() + " endpoints loaded");
+            LOG.debug("{} endpoints loaded", endpoints.size());
         } catch (IOException e) {
             throw new UnableToLoadEndpointAssociationsException(
                     "Unable to deserialize '" + assocFilePath + "'.",
@@ -134,7 +134,7 @@ public class GeneratedEndpointManager extends EndpointManager {
         }
 
         // try to load as resource first
-        LOG.debug("Load resource as stream from '" + assocFilePath + "'.");
+        LOG.debug("Load resource as stream from '{}'.", assocFilePath);
 
         return GeneratedEndpointManager.class.getClassLoader().getResourceAsStream(assocFilePath);
     }

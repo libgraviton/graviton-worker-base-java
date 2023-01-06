@@ -49,7 +49,14 @@ public class NoopRequest extends Request {
                 throw new UnsuccessfulRequestException(String.format("'%s' to '%s' failed due to malformed url.", method, url),
                         e);
             }
-            LOG.info(request.getMethod() + " request to '" + request.getUrl() + "' not executed due to '" + request.getReason() + "'.");
+
+            LOG.info(
+                    "{} request to '{}' not executed due to '{}'.",
+                    request.getMethod(),
+                    request.getUrl(),
+                    request.getReason()
+            );
+
             return new NoopResponse(request);
         }
     }

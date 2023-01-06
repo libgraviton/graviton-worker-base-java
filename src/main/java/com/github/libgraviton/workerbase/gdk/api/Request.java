@@ -280,7 +280,7 @@ public class Request {
 
         protected URL buildUrl() throws MalformedURLException {
             String generatedQuery = query != null ? query.generate() : "";
-            String url = this.url + generatedQuery;
+            String url = this.url.concat(generatedQuery);
             for (Map.Entry<String, String> param : params.entrySet()) {
                 url = url.replace(String.format("{%s}", param.getKey()), param.getValue());
             }

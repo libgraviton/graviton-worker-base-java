@@ -81,7 +81,7 @@ public class RequestExecutor {
         response.setObjectMapper(getObjectMapper());
 
         // special treatment for event status
-        String addedText = "";
+        StringBuilder addedText = new StringBuilder();
         if (request.getUrl().getPath().startsWith("/event/status/")) {
             EventStatusStatus.Status containingStatus = null;
             for (EventStatusStatus.Status status : EventStatusStatus.Status.values()) {
@@ -91,7 +91,9 @@ public class RequestExecutor {
             }
 
             if (containingStatus != null) {
-                addedText = " [EventStatus set to \"" + containingStatus + "\"]";
+                addedText.append(" [EventStatus set to \"");
+                addedText.append(containingStatus);
+                addedText.append("\"]");
             }
         }
 
@@ -139,13 +141,14 @@ public class RequestExecutor {
         StringBuilder builder = new StringBuilder();
         for (Part part: request.getParts()) {
             byte[] body = part.getBody();
-            String loggablePart = "Part{" +
-                    "formName='" + part.getFormName() + '\'' +
-                    ", body='" +
-                    new String(body) +
-                    '\'' +
-                    "}";
-            builder.append(loggablePart).append("\n");
+            builder.append(
+                String.format(
+                        "Part{formName='%s', body='%s'}",
+                        part.getFormName(),
+                        new String(body)
+                )
+            );
+            builder.append("\n");
         }
         LOG.debug("with multipart request body [\n{}]", builder);
     }

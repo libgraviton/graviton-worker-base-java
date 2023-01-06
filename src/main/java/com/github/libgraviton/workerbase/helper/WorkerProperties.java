@@ -115,8 +115,9 @@ public class WorkerProperties {
 
     public static String getProperty(String name) {
         if (!alreadyLoaded) {
-            LOG.warn("Properties were called here without explicit call to WorkerProperties.load() before! " +
-                    "This is discouraged as the error handling is disabled here. Please fix that. Continuing ignoring errors.");
+            LOG.warn("Properties were called here without explicit call to WorkerProperties.load() before! "
+                            .concat("This is discouraged as the error handling is disabled here. Please fix that. Continuing ignoring errors.")
+            );
 
             try {
                 WorkerProperties.load();

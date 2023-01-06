@@ -92,8 +92,19 @@ public class OkHttpGateway implements GravitonGateway {
     }
 
     private RequestBody generateDefaultRequestBody(Request request) {
-        return null == request.getBodyBytes() ? null :
-                RequestBody.create(request.getBodyBytes(), MediaType.parse(request.getHeaders().get("Content-Type") + "; charset=utf-8"));
+        if (null == request.getBodyBytes()) {
+            return null;
+        }
+
+        return RequestBody.create(
+                request.getBodyBytes(),
+                MediaType.parse(
+                        String.format(
+                                "%s; charset=utf-8",
+                                request.getHeaders().get("Content-Type").toString()
+                        )
+                )
+        );
     }
 
     private Response generateResponse(Request request, okhttp3.Response okHttpResponse, byte[] body) {

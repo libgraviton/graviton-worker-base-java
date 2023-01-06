@@ -9,6 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * <p>Worker class.</p>
@@ -49,6 +53,46 @@ public final class WorkerLauncher {
                 System.getProperty("java.runtime.version"),
                 System.getProperty("user.timezone")
         );
+
+        final TimerTask memoryReporter = new TimerTask() {
+
+            private final AtomicLong lastRecordedUsage = new AtomicLong(0);
+            private final AtomicInteger maxRecordedUsage = new AtomicInteger(0);
+
+            @Override
+            public void run() {
+                final int mb = 1048576;
+                long totalMemory = Runtime.getRuntime().totalMemory() / mb;
+                long freeMemory = Runtime.getRuntime().freeMemory() / mb;
+                long maxMemory = Runtime.getRuntime().maxMemory() / mb;
+                long usedMemory = totalMemory-freeMemory;
+
+                int percentageUsedMax = (int) (usedMemory * 100.0 / maxMemory + 0.5);
+
+                if (usedMemory == lastRecordedUsage.get()) {
+                    return;
+                }
+
+                if (percentageUsedMax > maxRecordedUsage.get()) {
+                    maxRecordedUsage.set(percentageUsedMax);
+                }
+
+                LOG.info(
+                        "Heap memory stats: Using {} MB of max {} MB ({}%). Allocated {} MB. Max usage was {}%",
+                        (int) Math.floor(usedMemory),
+                        maxMemory,
+                        percentageUsedMax,
+                        (int) Math.floor(totalMemory),
+                        maxRecordedUsage.get()
+                );
+
+                lastRecordedUsage.set(usedMemory);
+            }
+        };
+
+        final Timer timer = new Timer();
+        // every 60 seconds
+        timer.scheduleAtFixedRate(memoryReporter, 1000, 60000);
 
         prometheusServer = new PrometheusServer(worker.getWorkerId());
 

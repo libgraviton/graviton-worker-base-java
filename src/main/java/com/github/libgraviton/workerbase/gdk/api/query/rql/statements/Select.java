@@ -33,6 +33,6 @@ public class Select implements QueryStatement {
         }
         StringJoiner joiner = new StringJoiner(",");
         attributeNames.forEach(joiner::add);
-        return "select(" + joiner.toString() + ")";
+        return String.format("select(%s)", joiner);
     }
 }

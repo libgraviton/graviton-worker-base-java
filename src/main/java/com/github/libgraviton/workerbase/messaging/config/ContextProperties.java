@@ -24,7 +24,7 @@ public class ContextProperties extends Properties {
 
     @Override
     public String getProperty(String name) {
-        return super.getProperty(context + name);
+        return super.getProperty(context.concat(name));
     }
 
 }

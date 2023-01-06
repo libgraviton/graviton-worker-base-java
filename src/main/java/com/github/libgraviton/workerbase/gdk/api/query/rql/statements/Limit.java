@@ -12,23 +12,23 @@ import com.github.libgraviton.workerbase.gdk.api.query.QueryStatement;
  */
 public class Limit implements QueryStatement {
 
-    private Integer numberOfElements;
+    private final int numberOfElements;
 
-    private Integer offset;
+    private int offset = 0;
 
-    public Limit(Integer numberOfElements, Integer offset) {
+    public Limit(int numberOfElements, int offset) {
         this.numberOfElements = numberOfElements;
         this.offset = offset;
     }
 
-    public Limit(Integer numberOfElements) {
+    public Limit(int numberOfElements) {
         this.numberOfElements = numberOfElements;
     }
 
     @Override
     public String build() {
-        return offset != null ?
-                "limit(" + numberOfElements + "," + offset + ")" :
-                "limit(" + numberOfElements + ")";
+        return offset > 0 ?
+                String.format("limit(%s,%s)", numberOfElements, offset) :
+                String.format("limit(%s)", numberOfElements);
     }
 }

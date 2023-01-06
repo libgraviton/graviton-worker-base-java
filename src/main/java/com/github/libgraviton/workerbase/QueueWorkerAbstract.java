@@ -121,7 +121,7 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
 
         String workerId = getWorkerScope().getWorkerId();
         EventStatusStatusAction action = new EventStatusStatusAction();
-        action.set$ref(eventStatusActionEndpointUrl + workerId + "-default");
+        action.set$ref(String.format("%s%s-default", eventStatusActionEndpointUrl, workerId));
         return action;
     }
 }

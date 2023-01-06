@@ -76,7 +76,7 @@ public record GravitonFileEndpoint(GravitonApi gravitonApi) {
     }
 
     private String getFileDownloadUrl(String id) {
-        return gravitonApi.getEndpointManager().getEndpoint(File.class.getName()).getUrl() + id;
+        return gravitonApi.getEndpointManager().getEndpoint(File.class.getName()).getUrl().concat(id);
     }
 
     public Request.Builder post(byte[] data, GravitonBase resource) throws SerializationException {
