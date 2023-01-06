@@ -189,6 +189,12 @@
       <version>${jackson-jr.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>io.github.classgraph</groupId>
+      <artifactId>classgraph</artifactId>
+      <version>4.8.154</version>
+    </dependency>
+
     <!-- metrics -->
     <dependency>
       <groupId>io.micrometer</groupId>
