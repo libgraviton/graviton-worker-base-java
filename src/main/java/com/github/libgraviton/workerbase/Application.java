@@ -14,7 +14,7 @@ public class Application {
         WorkerProperties.load();
         DependencyInjection.init();
 
-        Set<Class<WorkerInterface>> workerClasses = DependencyInjection.getWorkerClasses();
+        Set<Class<?>> workerClasses = DependencyInjection.getWorkerClasses();
 
         Class<WorkerInterface> classToLoad = null;
 
@@ -45,7 +45,7 @@ public class Application {
 
         // perfect - just one.. pick that!
         if (workerClasses.size() == 1) {
-            classToLoad = workerClasses.stream().toList().get(0);
+            classToLoad = (Class<WorkerInterface>) workerClasses.stream().toList().get(0);
         }
 
         if (classToLoad == null) {
