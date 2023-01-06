@@ -4,6 +4,7 @@ import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,10 +39,10 @@ public class RetryInterceptor implements Interceptor {
     retryHttpCodes.add(503);
   }
 
-  @Override public Response intercept(Chain chain) throws IOException {
+  @Override public @NotNull Response intercept(@NotNull Chain chain) throws IOException {
     // reset counter
     retried.set(0);
-    Boolean available = false;
+    boolean available = false;
 
     while (!available && (retried.get() < retryCount)) {
       available = isAvailable(chain);
@@ -60,7 +61,7 @@ public class RetryInterceptor implements Interceptor {
     return chain.proceed(chain.request());
   }
 
-  public Boolean isAvailable(Chain chain) {
+  public boolean isAvailable(Chain chain) {
     // let's build a new request to the root
     HttpUrl thisUrl = chain.request()
         .url()
@@ -98,7 +99,7 @@ public class RetryInterceptor implements Interceptor {
           thisUrl
       );
     } finally {
-      if (response != null) {
+      if (response != null && response.body() != null) {
         response.body().close();
       }
     }

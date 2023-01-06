@@ -57,7 +57,7 @@ public final class WorkerLauncher {
         final TimerTask memoryReporter = new TimerTask() {
 
             private final AtomicLong lastRecordedUsage = new AtomicLong(0);
-            private final AtomicInteger maxRecordedUsage = new AtomicInteger(0);
+            private final AtomicInteger maxRecordedAllocation = new AtomicInteger(0);
 
             @Override
             public void run() {
@@ -67,23 +67,25 @@ public final class WorkerLauncher {
                 long maxMemory = Runtime.getRuntime().maxMemory() / mb;
                 long usedMemory = totalMemory-freeMemory;
 
-                int percentageUsedMax = (int) (usedMemory * 100.0 / maxMemory + 0.5);
+                int percentageUsed = (int) (usedMemory * 100.0 / maxMemory + 0.5);
+                int percentageAllocated = (int) (totalMemory * 100.0 / maxMemory + 0.5);
 
                 if (usedMemory == lastRecordedUsage.get()) {
                     return;
                 }
 
-                if (percentageUsedMax > maxRecordedUsage.get()) {
-                    maxRecordedUsage.set(percentageUsedMax);
+                if (percentageAllocated > maxRecordedAllocation.get()) {
+                    maxRecordedAllocation.set(percentageAllocated);
                 }
 
                 LOG.info(
-                        "Heap memory stats: Using {} MB of max {} MB ({}%). Allocated {} MB. Max usage was {}%",
+                        "Heap memory stats: Using {} MB of max {} MB ({}%). Allocated {} MB ({}%, max {}%).",
                         (int) Math.floor(usedMemory),
                         maxMemory,
-                        percentageUsedMax,
+                        percentageUsed,
                         (int) Math.floor(totalMemory),
-                        maxRecordedUsage.get()
+                        percentageAllocated,
+                        maxRecordedAllocation.get()
                 );
 
                 lastRecordedUsage.set(usedMemory);

@@ -1,5 +1,7 @@
 package com.github.libgraviton.workerbase;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
@@ -125,7 +127,14 @@ public class QueueWorkerRunner {
                 try {
                     final QueueEvent queueEvent = objectMapper.readValue(message, QueueEvent.class);
                     handleDelivery(queueEvent, messageId, acknowledger);
-                } catch (Throwable t) {
+                } catch (JsonProcessingException e) {
+                    LOG.error("The content received from the queue could not be unserialized into an QueueEvent instance. Dismissing the message.", e);
+                    try {
+                        acknowledger.acknowledge(messageId);
+                    } catch (Throwable t) {
+                        LOG.error("Unable to acknowledge non-serializable message content", t);
+                    }
+                } catch (RuntimeException t) {
                     LOG.error("Unable to work on message '{}'", message, t);
                 }
             });

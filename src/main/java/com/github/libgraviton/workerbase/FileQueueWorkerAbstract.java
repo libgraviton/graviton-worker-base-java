@@ -94,7 +94,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
      * @param action a {@link java.lang.String} object.
      * @return true if yes, false if not
      */
-    public Boolean isActionCommandPresent(File gravitonFile, String action) {
+    public boolean isActionCommandPresent(File gravitonFile, String action) {
         FileMetadata metadata = gravitonFile.getMetadata();
         for (FileMetadataAction singleAction: metadata.getAction()) {
             if (singleAction.getCommand() != null && singleAction.getCommand().equals(action) ) {

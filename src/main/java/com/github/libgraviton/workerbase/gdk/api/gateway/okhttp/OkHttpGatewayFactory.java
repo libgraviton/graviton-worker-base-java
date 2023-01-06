@@ -26,7 +26,7 @@ public class OkHttpGatewayFactory {
    * @return
    * @throws Exception
    */
-  public static OkHttpClient getAllTrustingInstance(Boolean hasRetry, OkHttpClient baseClient) throws Exception {
+  public static OkHttpClient getAllTrustingInstance(boolean hasRetry, OkHttpClient baseClient) throws Exception {
     Builder baseBuilder;
     if (baseClient != null) {
       baseBuilder = baseClient.newBuilder();
@@ -41,7 +41,7 @@ public class OkHttpGatewayFactory {
     return baseBuilder.build();
   }
 
-  private static Builder getBaseBuilder(Boolean hasRetry) {
+  private static Builder getBaseBuilder(boolean hasRetry) {
     Builder builder = new Builder()
         .connectTimeout(60, TimeUnit.SECONDS)
         .writeTimeout(60, TimeUnit.SECONDS)
