@@ -8,7 +8,6 @@ import com.github.libgraviton.workerbase.gdk.api.query.Query;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulRequestException;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
-import io.activej.inject.annotation.Inject;
 
 import java.net.MalformedURLException;
 import java.net.URL;

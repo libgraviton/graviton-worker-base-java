@@ -71,7 +71,7 @@ public record GravitonFileEndpoint(GravitonApi gravitonApi) {
         return DownloadClient.downloadFileBytes(fileUrl);
     }
 
-    public void writeFileContentToDisk(String urlOrId, java.io.File destinationPath) throws Exception {
+    public void writeFileContentToDisk(String urlOrId, java.io.File destinationPath) {
         writeFileContentToDisk(urlOrId, destinationPath.getAbsolutePath());
     }
 

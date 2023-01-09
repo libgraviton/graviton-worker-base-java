@@ -53,7 +53,7 @@ class JmsConsumer implements MessageListener, MessageAcknowledger {
                 return;
             }
             consumer.consume(jmsMessage.getJMSMessageID(), message);
-        } catch (JMSException | CannotConsumeMessage e) {
+        } catch (JMSException e) {
             LOG.error("Could not process feedback message.", e);
         } catch (Exception e) {
             // Catch com.github.libgraviton.workerbase.messaging.exception to avoid endless loop because the message will trigger 'onMessage' again and again.

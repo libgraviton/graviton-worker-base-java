@@ -112,7 +112,7 @@ public class DependencyInjection {
         return injector.getInstance(clazz);
     }
 
-    public static Set<Class<?>> getWorkerClasses() throws IOException {
+    public static Set<Class<?>> getWorkerClasses() {
         return doClassScan(GravitonWorker.class);
     }
 

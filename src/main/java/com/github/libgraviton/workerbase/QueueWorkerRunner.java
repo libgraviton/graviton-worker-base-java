@@ -1,7 +1,6 @@
 package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
@@ -138,7 +137,7 @@ public class QueueWorkerRunner {
                     LOG.error("Unable to work on message '{}'", message, t);
                 }
             });
-        } catch (CannotConnectToQueue | CannotRegisterConsumeable e) {
+        } catch (CannotRegisterConsumeable e) {
             throw new WorkerException("Unable to initialize worker.", e);
         }
     }
@@ -228,12 +227,8 @@ public class QueueWorkerRunner {
                     shouldWeGiveUp = true;
                 }
 
-                if (shouldWeGiveUp) {
-                    // -> no redeliver!
-                    acknowledgeCallback.onAck(false);
-                } else {
-                    acknowledgeCallback.onAck(true);
-                }
+                // -> no redeliver!
+                acknowledgeCallback.onAck(!shouldWeGiveUp);
 
                 isAcknowledged.set(true);
             }

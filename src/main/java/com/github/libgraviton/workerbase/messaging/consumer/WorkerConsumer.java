@@ -21,7 +21,7 @@ final public class WorkerConsumer {
         return acknowledger;
     }
 
-    public void consume(String messageId, String message) throws CannotConsumeMessage {
+    public void consume(String messageId, String message) {
         consumeable.onMessage(messageId, message, acknowledger);
     }
 }

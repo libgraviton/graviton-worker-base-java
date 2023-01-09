@@ -3,7 +3,6 @@ package com.github.libgraviton.workerbase;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.helper.QueueEventScope;
-import com.github.libgraviton.workerbase.helper.WorkerScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.google.common.base.Stopwatch;
 

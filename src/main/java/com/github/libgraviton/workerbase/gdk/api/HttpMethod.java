@@ -10,7 +10,7 @@ public enum HttpMethod {
     PATCH ("PATCH"),
     DELETE ("DELETE");
 
-    private String method;
+    private final String method;
 
     HttpMethod(String method) {
         this.method = method;

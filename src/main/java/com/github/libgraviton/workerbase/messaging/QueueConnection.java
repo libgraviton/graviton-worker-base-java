@@ -364,7 +364,6 @@ abstract public class QueueConnection {
          *
          * @return The RabbitMQ Connection
          *
-         * @throws CannotBuildConnection If the connection cannot be built
          */
         abstract public com.github.libgraviton.workerbase.messaging.QueueConnection build() throws CannotBuildConnection;
 

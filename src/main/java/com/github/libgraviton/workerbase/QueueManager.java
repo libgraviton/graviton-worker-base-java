@@ -32,10 +32,9 @@ public class QueueManager {
     /**
      * Async connection to queue.
      *
-     * @throws CannotConnectToQueue if connection to queue cannot be established
      * @throws CannotRegisterConsumeable if connection was successfully established, but consumer registration failed
      */
-    public void connect(final Consumeable consumeable) throws CannotConnectToQueue, CannotRegisterConsumeable {
+    public void connect(final Consumeable consumeable) throws CannotRegisterConsumeable {
         connection.consume(consumeable);
     }
 

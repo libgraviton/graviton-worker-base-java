@@ -152,7 +152,7 @@ public class Response {
 
         protected String message;
 
-        protected Request request;
+        protected final Request request;
 
         protected byte[] body;
 

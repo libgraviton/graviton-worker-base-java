@@ -13,7 +13,7 @@ package com.github.libgraviton.workerbase.messaging.exception;
  */
 public class CannotCloseConnection extends Exception {
 
-    private String queueName;
+    private final String queueName;
 
     public CannotCloseConnection(String queueName, Throwable cause) {
         super(String.format("Unable to close connection to queue '%s'.", queueName), cause);

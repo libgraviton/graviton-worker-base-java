@@ -1,14 +1,11 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
-import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatusAction;
 import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventStatusAction;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workerbase.helper.WorkerScope;
-import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import io.activej.inject.annotation.Inject;
 
 import java.util.ArrayList;
