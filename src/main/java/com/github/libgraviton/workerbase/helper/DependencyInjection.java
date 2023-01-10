@@ -36,7 +36,8 @@ public class DependencyInjection {
     private static Set<Class<?>> doClassScan(Class<?> interestedAnnotation, boolean useCache) {
         final Set<Class<?>> clazzez = new HashSet<>();
 
-        if (useCache) {
+        // property can override the use of the cache (disabled for tests)
+        if (useCache && WorkerProperties.DI_CLASS_SCAN_USE_CACHE.get().equals("true")) {
             loadClassScanCache();
             if (classScanCache != null && classScanCache.containsKey(interestedAnnotation.getName())) {
                 for (String clazzName : classScanCache.get(interestedAnnotation.getName())) {

@@ -41,6 +41,7 @@ public class WorkerProperties {
     public static final WorkerProperty HTTP_CLIENT_FORCE_HTTP1_1 = new WorkerProperty("graviton.okhttp.forcehttp11");
     public static final WorkerProperty HTTP_CLIENT_TLS_TRUST_ALL = new WorkerProperty("graviton.okhttp.trustAll");
     public static final WorkerProperty STATUSHANDLER_RETRY_LIMIT = new WorkerProperty("graviton.statushandler.retrylimit");
+    public static final WorkerProperty DI_CLASS_SCAN_USE_CACHE = new WorkerProperty("graviton.di.class_scan.use_cache");
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerProperties.class);
 
