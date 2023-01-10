@@ -10,6 +10,7 @@ import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
 import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.SerializationException;
+import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.github.libgraviton.workerbase.util.DownloadClient;
 
 import java.io.IOException;
@@ -18,16 +19,10 @@ import java.io.IOException;
  * Extra Graviton API functionality for /file endpoint calls.
  *
  * @author List of contributors {@literal <https://github.com/libgraviton/gdk-java/graphs/contributors>}
- * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
+ * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  */
-public class GravitonFileEndpoint {
-
-    private final GravitonApi gravitonApi;
-
-    public GravitonFileEndpoint(GravitonApi gravitonApi) {
-        this.gravitonApi = gravitonApi;
-    }
+public record GravitonFileEndpoint(GravitonApi gravitonApi) {
 
     /**
      * gets a temp file..
@@ -41,7 +36,7 @@ public class GravitonFileEndpoint {
 
     /**
      * get a specific File by id (the metadata)
-
+     *
      * @return
      */
     public File getFileMetadata(String urlOrId) throws GravitonCommunicationException {
@@ -52,32 +47,36 @@ public class GravitonFileEndpoint {
         }
     }
 
+    public File getFileFromQueueEvent(QueueEvent queueEvent) throws GravitonCommunicationException {
+        return getFileMetadata(queueEvent.getDocument().get$ref());
+    }
+
     /**
      * Writes the Graviton file *contents* to disk..
      *
      * @param urlOrId
      * @param destinationPath
      */
-    public void writeFileContentToDisk(String urlOrId, String destinationPath) throws Exception {
+    public void writeFileContentToDisk(String urlOrId, String destinationPath) {
         String fileId = gravitonApi.getIdFromUrlOrId(urlOrId);
         String fileUrl = getFileDownloadUrl(fileId);
 
-        DownloadClient.downloadFile(fileUrl, destinationPath, true);
+        DownloadClient.downloadFile(fileUrl, destinationPath, gravitonApi.getRequestHeaders());
     }
 
     @Deprecated(since = "Use writeFileContentToDisk(), File and streams to deal with files, not byte arrays!")
     public byte[] getFileContentAsBytes(String urlOrId) throws IOException {
         String fileId = gravitonApi.getIdFromUrlOrId(urlOrId);
         String fileUrl = getFileDownloadUrl(fileId);
-        return DownloadClient.downloadFileBytes(fileUrl, true);
+        return DownloadClient.downloadFileBytes(fileUrl);
     }
 
-    public void writeFileContentToDisk(String urlOrId, java.io.File destinationPath) throws Exception {
+    public void writeFileContentToDisk(String urlOrId, java.io.File destinationPath) {
         writeFileContentToDisk(urlOrId, destinationPath.getAbsolutePath());
     }
 
     private String getFileDownloadUrl(String id) {
-        return gravitonApi.getEndpointManager().getEndpoint(File.class.getName()).getUrl() + id;
+        return gravitonApi.getEndpointManager().getEndpoint(File.class.getName()).getUrl().concat(id);
     }
 
     public Request.Builder post(byte[] data, GravitonBase resource) throws SerializationException {

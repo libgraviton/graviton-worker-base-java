@@ -56,7 +56,7 @@ public class GravitonGatewayAuthenticator implements Authenticator {
         try {
             requestBuilder
                     .setMethod(HttpMethod.GET)
-                    .setUrl(gatewayUrl + "/security/logout")
+                    .setUrl(gatewayUrl.concat("/security/logout"))
                     .setHeaders(new HeaderBag.Builder()
                             .set(tokenHeaderName, accessToken)
                             .build()
@@ -99,7 +99,7 @@ public class GravitonGatewayAuthenticator implements Authenticator {
 
             Response authResponse = requestBuilder
                     .setMethod(HttpMethod.POST)
-                    .setUrl(gatewayUrl + "/auth")
+                    .setUrl(gatewayUrl.concat("/auth"))
                     .setHeaders(headers.build()).setBody(authBody)
                     .execute();
 

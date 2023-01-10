@@ -1,12 +1,11 @@
 package com.github.libgraviton.workerbase.helper;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import static org.junit.Assert.*;
 
 public class PropertiesLoaderTest {
 
@@ -18,18 +17,18 @@ public class PropertiesLoaderTest {
 
         Properties props = PropertiesLoader.load(map);
 
-        assertEquals("dude", props.getProperty("hans"));
-        assertEquals("the.value__", props.getProperty("entrY.subKey"));
+        Assertions.assertEquals("dude", props.getProperty("hans"));
+        Assertions.assertEquals("the.value__", props.getProperty("entrY.subKey"));
 
         // and now try to add some from other files
         props = PropertiesLoader.addFromResource(props, "addedProps.properties", false);
 
         // should not be overridden!
-        assertEquals("dude", props.getProperty("hans"));
-        assertEquals("value", props.getProperty("addedProp"));
+        Assertions.assertEquals("dude", props.getProperty("hans"));
+        Assertions.assertEquals("value", props.getProperty("addedProp"));
 
         // and now should be overridden!
         props = PropertiesLoader.addFromResource(props, "addedProps.properties", true);
-        assertEquals("OVERRIDEVALUE", props.getProperty("hans"));
+        Assertions.assertEquals("OVERRIDEVALUE", props.getProperty("hans"));
     }
 }

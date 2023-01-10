@@ -1,22 +1,30 @@
 package com.github.libgraviton.workerbase.lib;
 
-import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
 import com.github.libgraviton.workerbase.QueueWorkerAbstract;
+import com.github.libgraviton.workerbase.annotation.GravitonWorker;
 import com.github.libgraviton.workerbase.exception.WorkerException;
-import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.github.libgraviton.workerbase.helper.QueueEventScope;
+import com.github.libgraviton.workerbase.helper.WorkerScope;
+import io.activej.inject.annotation.Inject;
 
+@GravitonWorker
 public class TestQueueWorkerNoAuto extends QueueWorkerAbstract {
 
     public boolean concerningRequestCalled = false;
     public boolean handleRequestCalled = false;
     public boolean isConcerningRequest = true;
-    
+
+    @Inject
+    public TestQueueWorkerNoAuto(WorkerScope workerScope) {
+        super(workerScope);
+    }
+
     /**
      * worker logic is implemented here
      *
      * @throws WorkerException
      */
-    public void handleRequest(QueueEvent qevent) throws WorkerException {
+    public void handleRequest(QueueEventScope queueEventScope) {
         this.handleRequestCalled = true;
     }
     
@@ -26,7 +34,7 @@ public class TestQueueWorkerNoAuto extends QueueWorkerAbstract {
      *
      * @return boolean true if not, false if yes
      */
-    public boolean shouldHandleRequest(QueueEvent qevent) {
+    public boolean shouldHandleRequest(QueueEventScope queueEventScope) {
         this.concerningRequestCalled = true;
         return this.isConcerningRequest;
     }
@@ -41,4 +49,8 @@ public class TestQueueWorkerNoAuto extends QueueWorkerAbstract {
         return false;
     }
 
+    @Override
+    public void onStartUp() {
+
+    }
 }

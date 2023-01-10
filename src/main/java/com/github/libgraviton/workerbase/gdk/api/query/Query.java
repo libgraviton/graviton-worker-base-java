@@ -1,8 +1,5 @@
 package com.github.libgraviton.workerbase.gdk.api.query;
 
-
-import com.github.libgraviton.workerbase.gdk.api.query.QueryStatement;
-
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -23,9 +20,13 @@ public class Query {
      * @return query as String
      */
     public String generate() {
+        if (statements.isEmpty()) {
+            return "";
+        }
+
         StringJoiner joiner = new StringJoiner("&");
-        statements.forEach( statement -> joiner.add(statement.build()));
-        return statements.isEmpty() ? "" : "?" + joiner.toString();
+        statements.forEach(statement -> joiner.add(statement.build()));
+        return String.format("?%s", joiner);
     }
 
     /**

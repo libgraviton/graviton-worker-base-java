@@ -7,14 +7,13 @@ import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusSt
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 /**
@@ -28,69 +27,79 @@ public class EventStatusHandlerTest {
 
     private GravitonApi gravitonApi;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         gravitonApi = mock(GravitonApi.class, RETURNS_DEEP_STUBS);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testStatusHandlerUpdateWithoutValidStatus() throws GravitonCommunicationException {
-        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
-        EventStatus eventStatus = new EventStatus();
-        EventStatusStatus workerStatus = new EventStatusStatus();
-        workerStatus.setWorkerId("workerId");
-        workerStatus.setStatus(EventStatusStatus.Status.WORKING);
+    @Test
+    public void testStatusHandlerUpdateWithoutValidStatus() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
+            EventStatus eventStatus = new EventStatus();
+            EventStatusStatus workerStatus = new EventStatusStatus();
+            workerStatus.setWorkerId("workerId");
+            workerStatus.setStatus(EventStatusStatus.Status.WORKING);
 
-        statusHandler.update(eventStatus, workerStatus);
+            statusHandler.update(eventStatus, workerStatus);
+        });
     }
 
-    @Test(expected = GravitonCommunicationException.class)
-    public void testStatusHandlerUpdateWithFailingBackend() throws Exception {
-        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
-        EventStatus eventStatus = new EventStatus();
-        EventStatusStatus workerStatus = new EventStatusStatus();
-        workerStatus.setWorkerId("workerId");
-        workerStatus.setStatus(EventStatusStatus.Status.WORKING);
-        eventStatus.setStatus(Arrays.asList(workerStatus));
+    @Test
+    public void testStatusHandlerUpdateWithFailingBackend() {
+        Assertions.assertThrows(GravitonCommunicationException.class, () -> {
+            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
+            EventStatus eventStatus = new EventStatus();
+            EventStatusStatus workerStatus = new EventStatusStatus();
+            workerStatus.setWorkerId("workerId");
+            workerStatus.setStatus(EventStatusStatus.Status.WORKING);
+            eventStatus.setStatus(List.of(workerStatus));
 
-        when(gravitonApi.patch(eventStatus).execute())
-                .thenThrow(new CommunicationException("Something strange but beautiful happened"));
+            when(gravitonApi.patch(eventStatus).execute())
+                    .thenThrow(new CommunicationException("Something strange but beautiful happened"));
 
-        statusHandler.update(eventStatus, workerStatus);
+            statusHandler.update(eventStatus, workerStatus);
+        });
     }
 
-    @Test(expected = GravitonCommunicationException.class)
-    public void testGetEventStatusFromUrl() throws Exception {
-        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
-        String url = "testUrl";
-        when(gravitonApi.get(url).execute()).thenThrow(new CommunicationException("Ooops!"));
-        statusHandler.getEventStatusFromUrl(url);
+    @Test
+    public void testGetEventStatusFromUrl() {
+        Assertions.assertThrows(GravitonCommunicationException.class, () -> {
+            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
+            String url = "testUrl";
+            when(gravitonApi.get(url).execute()).thenThrow(new CommunicationException("Ooops!"));
+            statusHandler.getEventStatusFromUrl(url);
+        });
     }
 
-    @Test(expected = GravitonCommunicationException.class)
-    public void testGetEventStatusByFilterWithNoMatchingResponse() throws GravitonCommunicationException {
-        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+    @Test
+    public void testGetEventStatusByFilterWithNoMatchingResponse() {
+        Assertions.assertThrows(GravitonCommunicationException.class, () -> {
+            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
 
-        List<EventStatus> statusDocuments = new ArrayList<>();
-        doReturn(statusDocuments).when(statusHandler).findEventStatus(filterTemplate);
-        statusHandler.getEventStatusByFilter(filterTemplate);
+            List<EventStatus> statusDocuments = new ArrayList<>();
+            doReturn(statusDocuments).when(statusHandler).findEventStatus(filterTemplate);
+            statusHandler.getEventStatusByFilter(filterTemplate);
+        });
     }
 
-    @Test(expected = GravitonCommunicationException.class)
-    public void testGetEventStatusByFilterWithMultipleMatchingResponse() throws GravitonCommunicationException {
-        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+    @Test
+    public void testGetEventStatusByFilterWithMultipleMatchingResponse() {
+        Assertions.assertThrows(GravitonCommunicationException.class, () -> {
+            EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
 
-        List<EventStatus> statusDocuments = new ArrayList<>();
-        statusDocuments.add(new EventStatus());
-        statusDocuments.add(new EventStatus());
+            List<EventStatus> statusDocuments = new ArrayList<>();
+            statusDocuments.add(new EventStatus());
+            statusDocuments.add(new EventStatus());
 
-        doReturn(statusDocuments).when(statusHandler).findEventStatus(filterTemplate);
-        statusHandler.getEventStatusByFilter(filterTemplate);
+            doReturn(statusDocuments).when(statusHandler).findEventStatus(filterTemplate);
+            statusHandler.getEventStatusByFilter(filterTemplate);
+        });
     }
 
     @Test
     public void testGetEventStatusByFilterWithOneMatchingResponse() throws GravitonCommunicationException {
-        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
 
         List<EventStatus> statusDocuments = new ArrayList<>();
         statusDocuments.add(new EventStatus());
@@ -101,7 +110,7 @@ public class EventStatusHandlerTest {
 
     @Test
     public void testGetRqlFilter()  {
-        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
 
         String expectedFilter = "?elemMatch(information,and(eq(content,myInput),eq(workerId,anotherInput)))&elemMatch(status,and(ne(status,done),eq(workerId,last%2Dinput)))";
         String firstParam = "myInput";
@@ -111,12 +120,12 @@ public class EventStatusHandlerTest {
         JSONArray statusDocuments = new JSONArray();
         statusDocuments.put(new JSONObject());
         String rqlFilter = statusHandler.getRqlFilter(filterTemplate, firstParam, secondParam, thirdParam);
-        assertEquals(expectedFilter, rqlFilter);
+        Assertions.assertEquals(expectedFilter, rqlFilter);
     }
 
     @Test
     public void testGetRqlFilterWithTooManyParams()  {
-        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
 
         String expectedFilter = "?elemMatch(information,and(eq(content,myInput),eq(workerId,anotherInput)))&elemMatch(status,and(ne(status,done),eq(workerId,last%2Dinput)))";
         String firstParam = "myInput";
@@ -127,12 +136,12 @@ public class EventStatusHandlerTest {
         JSONArray statusDocuments = new JSONArray();
         statusDocuments.put(new JSONObject());
         String rqlFilter = statusHandler.getRqlFilter(filterTemplate, firstParam, secondParam, thirdParam, forthParam);
-        assertEquals(expectedFilter, rqlFilter);
+        Assertions.assertEquals(expectedFilter, rqlFilter);
     }
 
     @Test
     public void testGetRqlFilterWithInsufficientParams()  {
-        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi));
+        EventStatusHandler statusHandler = spy(new EventStatusHandler(gravitonApi, 20));
 
         String expectedFilter = "?elemMatch(information,and(eq(content,myInput),eq(workerId,{workerId})))&elemMatch(status,and(ne(status,done),eq(workerId,{workerId})))";
         String firstParam = "myInput";
@@ -140,6 +149,6 @@ public class EventStatusHandlerTest {
         JSONArray statusDocuments = new JSONArray();
         statusDocuments.put(new JSONObject());
         String rqlFilter = statusHandler.getRqlFilter(filterTemplate, firstParam);
-        assertEquals(expectedFilter, rqlFilter);
+        Assertions.assertEquals(expectedFilter, rqlFilter);
     }
 }

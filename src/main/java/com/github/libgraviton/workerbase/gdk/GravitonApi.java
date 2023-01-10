@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.libgraviton.workerbase.gdk.api.NoopRequest;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.EndpointManager;
-import com.github.libgraviton.workerbase.gdk.api.endpoint.GeneratedEndpointManager;
-import com.github.libgraviton.workerbase.gdk.api.endpoint.exception.UnableToLoadEndpointAssociationsException;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
 import com.github.libgraviton.workerbase.gdk.api.query.rql.Rql;
 import com.github.libgraviton.workerbase.gdk.auth.HeaderAuth;
@@ -15,12 +13,11 @@ import com.github.libgraviton.workerbase.gdk.auth.NoAuth;
 import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
 import com.github.libgraviton.workerbase.gdk.exception.SerializationException;
 import com.github.libgraviton.workerbase.gdk.serialization.JsonPatcher;
-import com.github.libgraviton.workerbase.gdk.serialization.mapper.GravitonObjectMapper;
 import com.github.libgraviton.workerbase.gdk.serialization.mapper.RqlObjectMapper;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
 
-import java.io.IOException;
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This is the base class used for Graviton API calls.
@@ -35,53 +32,40 @@ public class GravitonApi {
      * Defines the base setUrl of the Graviton server
      */
     private final String baseUrl;
+    private final String authHeaderName;
+    private final String authHeaderValue;
+    private final Map<String, String> transientHeaders = new HashMap<>();
 
     /**
      * The object mapper used to serialize / deserialize to / from JSON
      */
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
+    private final RqlObjectMapper rqlObjectMapper;
 
     /**
      * The endpoint manager which is used
      */
     private final EndpointManager endpointManager;
 
-    private Properties properties;
-
-    private RequestExecutor executor;
-
     private HeaderAuth auth;
 
-    public GravitonApi() {
-        this(null);
-    }
-
-    public GravitonApi(Properties properties) {
-        this.properties = properties;
-        this.baseUrl = properties.getProperty("graviton.base.url");
-
-        setup();
-
-        try {
-            this.endpointManager = initEndpointManager();
-        } catch (UnableToLoadEndpointAssociationsException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    public GravitonApi(String baseUrl, EndpointManager endpointManager) {
-        setup();
-        this.baseUrl = baseUrl;
+    public GravitonApi(EndpointManager endpointManager, ObjectMapper objectMapper, RqlObjectMapper rqlObjectMapper) {
+        this.baseUrl = WorkerProperties.GRAVITON_BASE_URL.get();
+        this.authHeaderValue = WorkerProperties.AUTH_PREFIX_USERNAME.get()
+                .concat(WorkerProperties.WORKER_ID.get());
+        this.authHeaderName = WorkerProperties.AUTH_HEADER_NAME.get();
         this.endpointManager = endpointManager;
+        this.objectMapper = objectMapper;
+        this.rqlObjectMapper = rqlObjectMapper;
+        this.auth = new NoAuth();
     }
 
-    public GravitonApi(String baseUrl, GeneratedEndpointManager endpointManager, HeaderAuth auth) {
-        this(baseUrl, endpointManager);
+    public void setAuth(HeaderAuth auth) {
         this.auth = auth;
     }
 
     /**
-     * if an url is passed, the id is returned.. if it seems to be an id, only that id is returned..
+     * if an url is passed, the id is returned. if it seems to be an id, only that id is returned..
      * @param urlOrId
      * @return
      */
@@ -93,23 +77,6 @@ public class GravitonApi {
         return urlOrId.substring(urlOrId.lastIndexOf("/") + 1);
     }
 
-    protected void setup() {
-        if (properties == null) {
-            try {
-                properties = WorkerProperties.load();
-            } catch (IOException e) {
-                throw new IllegalStateException("Unable to load properties files.", e);
-            }
-        }
-        this.auth = new NoAuth();
-        this.objectMapper = GravitonObjectMapper.getInstance(properties);
-        this.executor = new RequestExecutor(objectMapper);
-    }
-
-    protected GeneratedEndpointManager initEndpointManager() throws UnableToLoadEndpointAssociationsException {
-        return new GeneratedEndpointManager();
-    }
-
     /**
      * Returns the endpoint manager
      *
@@ -117,10 +84,6 @@ public class GravitonApi {
      */
     public EndpointManager getEndpointManager() {
         return endpointManager;
-    }
-
-    public RequestExecutor getRequestExecutor() {
-        return executor;
     }
 
     /**
@@ -138,7 +101,7 @@ public class GravitonApi {
      * @return A new executable request builder
      */
     public Request.Builder request() {
-        return new Request.Builder(executor)
+        return new Request.Builder()
                 .setHeaders(getDefaultHeaders().build());
     }
 
@@ -190,7 +153,7 @@ public class GravitonApi {
      */
     public Request.Builder query(GravitonBase resource) {
         return get(endpointManager.getEndpoint(resource.getClass().getName()).getUrl())
-                .setQuery(new Rql.Builder().setResource(resource, new RqlObjectMapper(properties)).build());
+                .setQuery(new Rql.Builder().setResource(resource, rqlObjectMapper).build());
     }
 
     public Request.Builder delete(String url) {
@@ -263,17 +226,42 @@ public class GravitonApi {
         }
     }
 
+    public Map<String, String> getRequestHeaders() {
+        Map<String, String> headers = new HashMap<>(transientHeaders);
+        headers.put(authHeaderName, authHeaderValue);
+
+        return headers;
+    }
+
     public ObjectMapper getObjectMapper() {
         return objectMapper;
     }
 
-    // TODO make it configurable
     protected HeaderBag.Builder getDefaultHeaders() {
-        HeaderBag.Builder headerBuilder = new HeaderBag.Builder()
+        HeaderBag.Builder builder = new HeaderBag.Builder()
                 .set("Content-Type", "application/json")
                 .set("Accept", "application/json");
-        auth.addHeader(headerBuilder);
 
-        return headerBuilder;
+        Map<String, String> requestHeaders = getRequestHeaders();
+
+        // transient headers?
+        if (!requestHeaders.isEmpty()) {
+            requestHeaders.forEach(builder::set);
+        }
+
+        auth.addHeader(builder);
+
+        return builder;
+    }
+
+    /**
+     * transient headers as those that we receive in {@link com.github.libgraviton.workerbase.model.QueueEvent}
+     * and forward subsequently again on following requests during the request handling in the worker..
+     *
+     * @param transientHeaders
+     */
+    public void setTransientHeaders(Map<String, String> transientHeaders) {
+        this.transientHeaders.clear();
+        this.transientHeaders.putAll(transientHeaders);
     }
 }

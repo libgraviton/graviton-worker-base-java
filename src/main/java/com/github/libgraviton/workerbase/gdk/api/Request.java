@@ -7,6 +7,7 @@ import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
 import com.github.libgraviton.workerbase.gdk.api.query.Query;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulRequestException;
+import com.github.libgraviton.workerbase.helper.DependencyInjection;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -98,14 +99,10 @@ public class Request {
 
         protected List<FilePart> fileParts = new ArrayList<>();
 
-        protected RequestExecutor executor;
+        protected final RequestExecutor executor;
 
         public Builder() {
-            this.executor = new RequestExecutor();
-        }
-
-        public Builder(RequestExecutor executor) {
-            this.executor = executor;
+            this.executor = DependencyInjection.getInstance(RequestExecutor.class);
         }
 
         public Builder setUrl(URL url) {
@@ -282,7 +279,7 @@ public class Request {
 
         protected URL buildUrl() throws MalformedURLException {
             String generatedQuery = query != null ? query.generate() : "";
-            String url = this.url + generatedQuery;
+            String url = this.url.concat(generatedQuery);
             for (Map.Entry<String, String> param : params.entrySet()) {
                 url = url.replace(String.format("{%s}", param.getKey()), param.getValue());
             }

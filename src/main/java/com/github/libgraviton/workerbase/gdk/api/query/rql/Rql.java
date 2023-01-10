@@ -129,11 +129,11 @@ public class Rql extends Query {
             Iterator<String> fieldNames = node.fieldNames();
             while (fieldNames.hasNext()) {
                 String fieldName = fieldNames.next();
-                String currentPath = path == null ? fieldName : path + "." + fieldName;
+                String currentPath = path == null ? fieldName : String.format("%s.%s", path, fieldName);
                 JsonNode currentNode = node.get(fieldName);
                 if (currentNode.isArray()) {
                     for (JsonNode nodeEntry : currentNode) {
-                        statements.addAll(getQueryStatementsFromNode(nodeEntry, dateFormat, currentPath + "."));
+                        statements.addAll(getQueryStatementsFromNode(nodeEntry, dateFormat, currentPath.concat(".")));
                     }
                 } else if (currentNode.isObject()) {
                     statements.addAll(getQueryStatementsFromNode(currentNode, dateFormat, currentPath));
@@ -147,9 +147,13 @@ public class Rql extends Query {
                         try {
                             value = encode(value, DEFAULT_ENCODING);
                         } catch (UnsupportedEncodingException uee) {
-                            LOG.warn("Unsupported encoding '" + DEFAULT_ENCODING + "', using unencoded value '" + value + "'.");
+                            LOG.warn(
+                                    "Unsupported encoding '{}', using unencoded value '{}'.",
+                                    DEFAULT_ENCODING,
+                                    value
+                            );
                         }
-                        value = "string:" + value;
+                        value = String.format("string:%s", value);
                     }
 
                     Eq eq = new Eq(currentPath, value);

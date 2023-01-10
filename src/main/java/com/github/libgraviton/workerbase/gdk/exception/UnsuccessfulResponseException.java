@@ -8,7 +8,7 @@ import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
  */
 public class UnsuccessfulResponseException extends CommunicationException {
 
-    private Response response;
+    private final Response response;
 
     public UnsuccessfulResponseException(Response response) {
         super(generateMessage(response));

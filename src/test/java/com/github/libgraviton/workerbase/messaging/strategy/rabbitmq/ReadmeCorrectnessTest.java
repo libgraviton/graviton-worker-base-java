@@ -1,7 +1,7 @@
 package com.github.libgraviton.workerbase.messaging.strategy.rabbitmq;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
 
@@ -19,7 +19,7 @@ public class ReadmeCorrectnessTest {
     
     private RabbitMqConnection.Builder builder;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         properties = mock(Properties.class);
         builder = spy(new RabbitMqConnection.Builder());

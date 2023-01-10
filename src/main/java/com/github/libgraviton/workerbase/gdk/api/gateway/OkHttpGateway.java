@@ -1,41 +1,30 @@
 package com.github.libgraviton.workerbase.gdk.api.gateway;
 
+import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.Response;
-import com.github.libgraviton.workerbase.gdk.api.gateway.okhttp.OkHttpGatewayFactory;
 import com.github.libgraviton.workerbase.gdk.api.header.Header;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
 import com.github.libgraviton.workerbase.gdk.api.multipart.FilePart;
 import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulRequestException;
+import io.activej.inject.annotation.Inject;
 import okhttp3.*;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@GravitonWorkerDiScan
 public class OkHttpGateway implements GravitonGateway {
 
-    private OkHttpClient okHttp;
+    @Inject
+    OkHttpClient okHttp;
 
+    @Inject
     public OkHttpGateway() {
-        this(
-            OkHttpGatewayFactory.getInstance(true)
-        );
-    }
 
-    public OkHttpGateway(OkHttpClient okHttp) {
-        this.okHttp = okHttp;
-    }
-
-    public void forceHttp1() {
-        this.okHttp = okHttp.newBuilder().protocols(Collections.singletonList(Protocol.HTTP_1_1)).build();
-    }
-
-    public void doTrustEverybody() throws Exception {
-        this.okHttp = OkHttpGatewayFactory.getAllTrustingInstance(false, okHttp);
     }
 
     public OkHttpClient getOkHttp() {
@@ -103,8 +92,19 @@ public class OkHttpGateway implements GravitonGateway {
     }
 
     private RequestBody generateDefaultRequestBody(Request request) {
-        return null == request.getBodyBytes() ? null :
-                RequestBody.create(request.getBodyBytes(), MediaType.parse(request.getHeaders().get("Content-Type") + "; charset=utf-8"));
+        if (null == request.getBodyBytes()) {
+            return null;
+        }
+
+        return RequestBody.create(
+                request.getBodyBytes(),
+                MediaType.parse(
+                        String.format(
+                                "%s; charset=utf-8",
+                                request.getHeaders().get("Content-Type").toString()
+                        )
+                )
+        );
     }
 
     private Response generateResponse(Request request, okhttp3.Response okHttpResponse, byte[] body) {
@@ -118,7 +118,7 @@ public class OkHttpGateway implements GravitonGateway {
                 .build();
     }
 
-    protected Headers createRequestHeaders(HeaderBag headerBag) {
+    private Headers createRequestHeaders(HeaderBag headerBag) {
         Headers.Builder builder = new Headers.Builder();
         for (Map.Entry<String, Header> header : headerBag.all().entrySet()) {
             for (String value : header.getValue()) {
@@ -128,7 +128,7 @@ public class OkHttpGateway implements GravitonGateway {
         return builder.build();
     }
 
-    protected HeaderBag.Builder createResponseHeaders(Headers okhttpHeaders) {
+    private HeaderBag.Builder createResponseHeaders(Headers okhttpHeaders) {
         HeaderBag.Builder builder = new HeaderBag.Builder();
         for (Map.Entry<String, List<String>> header : okhttpHeaders.toMultimap().entrySet()) {
             builder.set(header.getKey(), header.getValue());

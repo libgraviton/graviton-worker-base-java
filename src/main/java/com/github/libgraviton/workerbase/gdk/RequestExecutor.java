@@ -1,15 +1,17 @@
 package com.github.libgraviton.workerbase.gdk;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.gdk.api.gateway.GravitonGateway;
-import com.github.libgraviton.workerbase.gdk.api.gateway.OkHttpGateway;
 import com.github.libgraviton.workerbase.gdk.api.multipart.Part;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.auth.Authenticator;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.exception.AuthenticatorException;
+import com.google.common.base.Stopwatch;
+import io.activej.inject.annotation.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,54 +24,33 @@ import org.slf4j.LoggerFactory;
  */
 public class RequestExecutor {
 
+    @Provides
+    public static RequestExecutor getInstance(ObjectMapper objectMapper, GravitonGateway gateway) {
+        return new RequestExecutor(objectMapper, gateway);
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(RequestExecutor.class);
 
     /**
      * The object mapper used to serialize / deserialize to / from JSON
      */
-    protected ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     /**
      * The http client for making http calls.
      */
-    protected GravitonGateway gateway;
+    private final GravitonGateway gateway;
 
-    protected Authenticator authenticator;
+    private final Authenticator authenticator;
 
-    public RequestExecutor() {
-        this(new ObjectMapper());
+    public RequestExecutor(ObjectMapper objectMapper, GravitonGateway gateway) {
+        this(objectMapper, gateway, null);
     }
 
-    public RequestExecutor(ObjectMapper objectMapper) {
-        this.gateway = new OkHttpGateway();
+    public RequestExecutor(ObjectMapper objectMapper, GravitonGateway gateway, Authenticator authenticator) {
+        this.gateway = gateway;
         this.objectMapper = objectMapper;
-    }
-
-    public Authenticator getAuthenticator() {
-        return authenticator;
-    }
-
-    public void setAuthenticator(Authenticator authenticator) {
         this.authenticator = authenticator;
-    }
-
-    public void doTrustEverybody() {
-        try {
-            gateway.doTrustEverybody();
-        } catch (Exception e) {
-            LOG.error("Could not trust everybody", e);
-        }
-
-        LOG.info("We are going to trust all certificates...");
-    }
-
-    /**
-     * forces HTTP1 on the request execution
-     */
-    public void forceHttp1() {
-        gateway.forceHttp1();
-
-        LOG.info("Forcing HTTP/1.*");
     }
 
     /**
@@ -94,14 +75,35 @@ public class RequestExecutor {
             logBody(request);
         }
 
-        Response response = gateway.execute(request);
+        final Stopwatch reqStopwatch = Stopwatch.createStarted();
+
+        final Response response = gateway.execute(request);
         response.setObjectMapper(getObjectMapper());
 
+        // special treatment for event status
+        StringBuilder addedText = new StringBuilder();
+        if (request.getUrl().getPath().startsWith("/event/status/")) {
+            EventStatusStatus.Status containingStatus = null;
+            for (EventStatusStatus.Status status : EventStatusStatus.Status.values()) {
+                if (request.getBody() != null && request.getBody().contains("\""+status.value()+"\"")) {
+                    containingStatus = status;
+                }
+            }
+
+            if (containingStatus != null) {
+                addedText.append(" [EventStatus set to \"");
+                addedText.append(containingStatus);
+                addedText.append("\"]");
+            }
+        }
+
         LOG.info(
-                "Request '{}' to '{}' ended with code {}.",
+                "REQ '{}' to '{}'. RES code '{}' in '{}' ms.{}",
                 request.getMethod(),
                 request.getUrl(),
-                response.getCode()
+                response.getCode(),
+                reqStopwatch.elapsed().toMillis(),
+                addedText
         );
 
         if (!response.isSuccessful()) {
@@ -139,27 +141,20 @@ public class RequestExecutor {
         StringBuilder builder = new StringBuilder();
         for (Part part: request.getParts()) {
             byte[] body = part.getBody();
-            String loggablePart = "Part{" +
-                    "formName='" + part.getFormName() + '\'' +
-                    ", body='" +
-                    new String(body) +
-                    '\'' +
-                    "}";
-            builder.append(loggablePart).append("\n");
+            builder.append(
+                String.format(
+                        "Part{formName='%s', body='%s'}",
+                        part.getFormName(),
+                        new String(body)
+                )
+            );
+            builder.append("\n");
         }
         LOG.debug("with multipart request body [\n{}]", builder);
     }
 
-    public void setGateway(GravitonGateway gateway) {
-        this.gateway = gateway;
-    }
-
     public GravitonGateway getGateway() {
         return gateway;
-    }
-
-    public void setObjectMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
     }
 
     public ObjectMapper getObjectMapper() {

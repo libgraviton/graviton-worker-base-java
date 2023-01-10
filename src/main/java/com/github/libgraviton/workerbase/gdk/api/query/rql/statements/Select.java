@@ -16,7 +16,7 @@ import java.util.StringJoiner;
  */
 public class Select implements QueryStatement {
 
-    private List<String> attributeNames = new ArrayList<>();
+    private final List<String> attributeNames = new ArrayList<>();
 
     public void add(String attributeName) {
         this.attributeNames.add(attributeName);
@@ -33,6 +33,6 @@ public class Select implements QueryStatement {
         }
         StringJoiner joiner = new StringJoiner(",");
         attributeNames.forEach(joiner::add);
-        return "select(" + joiner.toString() + ")";
+        return String.format("select(%s)", joiner);
     }
 }

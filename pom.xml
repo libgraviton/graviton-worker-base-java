@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>2.8.0</version>
+  <version>3.0.0</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -41,7 +41,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <dependency.locations.enabled>false</dependency.locations.enabled>
     <dependency.details.enabled>false</dependency.details.enabled>
-    <jackson-jr.version>2.14.0</jackson-jr.version>
+    <jackson-jr.version>2.14.1</jackson-jr.version>
     <log4j.version>2.19.0</log4j.version>
     <jmockit.version>1.49</jmockit.version>
   </properties>
@@ -92,6 +92,12 @@
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
       <version>4.10.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jetbrains</groupId>
+          <artifactId>annotations</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -151,7 +157,7 @@
     <dependency>
       <groupId>io.sentry</groupId>
       <artifactId>sentry-log4j2</artifactId>
-      <version>6.8.0</version>
+      <version>6.11.0</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -178,60 +184,46 @@
       <version>${jackson-jr.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.module</groupId>
-      <artifactId>jackson-module-jsonSchema</artifactId>
-      <version>${jackson-jr.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>${jackson-jr.version}</version>
     </dependency>
-    <!-- i really don't know why/where we need this, but we need it ;-/ -->
+
     <dependency>
-      <groupId>com.fasterxml.jackson.module</groupId>
-      <artifactId>jackson-module-jaxb-annotations</artifactId>
-      <version>${jackson-jr.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-json-jackson</artifactId>
-      <version>3.1.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.module</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>io.github.classgraph</groupId>
+      <artifactId>classgraph</artifactId>
+      <version>4.8.154</version>
     </dependency>
 
     <!-- metrics -->
     <dependency>
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-registry-prometheus</artifactId>
-      <version>1.10.1</version>
+      <version>1.10.2</version>
     </dependency>
     <dependency>
       <groupId>io.github.mweirauch</groupId>
       <artifactId>micrometer-jvm-extras</artifactId>
       <version>0.2.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>io.micrometer</groupId>
+          <artifactId>micrometer-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- test -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.2</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.9.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>4.9.0</version>
+      <version>4.11.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -243,7 +235,13 @@
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>graviton-worker-test-base</artifactId>
-      <version>1.2.0</version>
+      <version>3.0.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock-jre8</artifactId>
+      <version>2.35.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -290,6 +288,7 @@
           <target>17</target>
         </configuration>
       </plugin>
+      <!--
       <plugin>
         <groupId>org.eluder.coveralls</groupId>
         <artifactId>coveralls-maven-plugin</artifactId>
@@ -300,6 +299,7 @@
           <serviceJobId>${env.TRAVIS_JOB_ID}</serviceJobId>
         </configuration>
       </plugin>
+      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -309,6 +309,9 @@
           <argLine>
             -javaagent:${settings.localRepository}/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar -Xmx1024m ${argLine}
           </argLine>
+          <includes>
+            <include>**/*Test.java</include>
+          </includes>
         </configuration>
       </plugin>
     </plugins>

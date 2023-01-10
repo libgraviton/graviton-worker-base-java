@@ -1,8 +1,8 @@
 package com.github.libgraviton.workerbase.messaging;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
 
@@ -14,7 +14,7 @@ public class QueueConnectionBuilderTest {
 
     private Properties properties;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         builder = mock(QueueConnection.Builder.class, CALLS_REAL_METHODS);
         properties = new Properties();
@@ -37,11 +37,11 @@ public class QueueConnectionBuilderTest {
     @Test
     public void testProperties() {
         builder.applyProperties(properties);
-        assertEquals("testhost", builder.host);
-        assertEquals(3333, builder.port);
-        assertEquals("myuser", builder.user);
-        assertEquals("mypass", builder.password);
-        assertEquals("myqueuename", builder.queueName);
+        Assertions.assertEquals("testhost", builder.host);
+        Assertions.assertEquals(3333, builder.port);
+        Assertions.assertEquals("myuser", builder.user);
+        Assertions.assertEquals("mypass", builder.password);
+        Assertions.assertEquals("myqueuename", builder.queueName);
     }
 
     @Test
@@ -49,10 +49,10 @@ public class QueueConnectionBuilderTest {
         builder.applyProperties(properties, "context.");
         verify(properties, times(7)).getProperty(matches("^context\\..*$"));
 
-        assertEquals("context.testhost", builder.host);
-        assertEquals(6666, builder.port);
-        assertEquals("context.myuser", builder.user);
-        assertEquals("context.mypass", builder.password);
-        assertEquals("context.myqueuename", builder.queueName);
+        Assertions.assertEquals("context.testhost", builder.host);
+        Assertions.assertEquals(6666, builder.port);
+        Assertions.assertEquals("context.myuser", builder.user);
+        Assertions.assertEquals("context.mypass", builder.password);
+        Assertions.assertEquals("context.myqueuename", builder.queueName);
     }
 }

@@ -1,0 +1,13 @@
+{
+  "id": "16f52c4b00523e2ba27480ce6905ed1d",
+  "links": [{"type": "dude", "$ref": "http://localhost:8000/dude"}],
+  "metadata": {
+    "size": 200,
+    "action": [],
+    "mime": "image/jpeg",
+    "filename": "hans.txt",
+    "createDate": "2015-09-28T06:46:15+0000",
+    "modificationDate": "2015-09-28T06:46:15+0000",
+    "hash": "6129ec9222853b13723e07a2404091b9e8bbe6728e4836cd8a0ea06939e74fb7"
+  }
+}

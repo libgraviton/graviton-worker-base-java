@@ -2,9 +2,9 @@ package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
-import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.github.libgraviton.workerbase.helper.QueueEventScope;
 
 @FunctionalInterface
 public interface WorkerRunnableInterface {
-    void doWork(QueueEvent queueEvent) throws WorkerException, GravitonCommunicationException;
+    void doWork(QueueEventScope queueEventScope) throws WorkerException, GravitonCommunicationException;
 }

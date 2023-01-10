@@ -11,9 +11,9 @@ import com.github.libgraviton.workerbase.gdk.api.query.QueryStatement;
  */
 public class Eq implements QueryStatement {
 
-    private String name;
+    private final String name;
 
-    private String value;
+    private final String value;
 
     public Eq(String name, String value) {
         this.name = name;
@@ -22,6 +22,6 @@ public class Eq implements QueryStatement {
 
     @Override
     public String build() {
-        return "eq(" + name + "," + value + ")";
+        return String.format("eq(%s,%s)", name, value);
     }
 }

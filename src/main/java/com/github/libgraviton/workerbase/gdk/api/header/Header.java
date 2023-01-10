@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Header implements Iterable<String> {
 
-    private List<String> values;
+    private final List<String> values;
 
     public Header() {
         this(new ArrayList<>());

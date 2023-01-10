@@ -1,10 +1,8 @@
 package com.github.libgraviton.workerbase.gdk.api;
 
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
-import org.junit.Test;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class NoopRequestTest {
 
@@ -13,7 +11,7 @@ public class NoopRequestTest {
         Response response = new NoopRequest.Builder("no reason")
                 .setUrl("http://url-to-a-beautiful-place")
                 .execute();
-        assertNotNull(response);
-        assertTrue(response instanceof NoopResponse);
+        Assertions.assertNotNull(response);
+        Assertions.assertTrue(response instanceof NoopResponse);
     }
 }

@@ -12,9 +12,9 @@ import com.github.libgraviton.workerbase.gdk.api.query.QueryStatement;
  */
 public class SimpleQueryStatement implements QueryStatement {
 
-    private String paramName;
+    private final String paramName;
 
-    private String paramValue;
+    private final String paramValue;
 
     public SimpleQueryStatement(String paramName, String paramValue) {
         this.paramName = paramName;
@@ -23,6 +23,6 @@ public class SimpleQueryStatement implements QueryStatement {
 
     @Override
     public String build() {
-        return paramName + "=" + paramValue;
+        return String.format("%s=%s", paramName, paramValue);
     }
 }

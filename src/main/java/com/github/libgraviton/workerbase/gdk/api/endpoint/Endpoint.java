@@ -44,11 +44,11 @@ public class Endpoint implements Serializable {
     }
 
     public String getUrl() {
-        return path != null ? getBaseUrl() + path : path;
+        return path != null ? getBaseUrl().concat(path) : path;
     }
 
     public String getItemUrl() {
-        return itemPath != null ? getBaseUrl() + itemPath : itemPath;
+        return itemPath != null ? getBaseUrl().concat(itemPath) : itemPath;
     }
 
     public String getItemPath() {

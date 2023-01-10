@@ -2,7 +2,6 @@ package com.github.libgraviton.workerbase.gdk.serialization;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.flipkart.zjsonpatch.JsonDiff;
-import com.github.libgraviton.workerbase.gdk.serialization.GravitonJsonPatchFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,7 @@ public class JsonPatcher {
 
     // Since we use WeakHashMap, we don't need to worry about housekeeping.
     // Whenever a map key is no longer referenced, the entry will automatically be removed from this map.
-    private static Map<Object, JsonNode> memory = new WeakHashMap<>();
+    private static final Map<Object, JsonNode> memory = new WeakHashMap<>();
 
     /**
      * Adds the 'reference' object and its JsonNode representation as 'original' to the patch memory.
@@ -36,7 +35,11 @@ public class JsonPatcher {
      */
     public static void add(Object reference, JsonNode original) {
         memory.put(reference, original);
-        LOG.debug("Added new entry of type '" + reference.getClass() + "'. Currently maintaining '" + memory.size() + "' entries.");
+        LOG.debug(
+                "Added new entry of type '{}'. Currently maintaining '{}' entries.",
+                reference.getClass(),
+                memory.size()
+        );
     }
 
     /**

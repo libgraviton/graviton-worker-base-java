@@ -5,8 +5,8 @@ import com.github.libgraviton.workerbase.gdk.requestexecutor.exception.Authentic
 
 public interface Authenticator {
 
-    public Request onRequest(Request request) throws AuthenticatorException;
+    Request onRequest(Request request) throws AuthenticatorException;
 
-    public void onClose() throws AuthenticatorException;
+    void onClose() throws AuthenticatorException;
 
 }
