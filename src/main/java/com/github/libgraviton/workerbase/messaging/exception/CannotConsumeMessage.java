@@ -4,9 +4,9 @@ import java.io.IOException;
 
 public class CannotConsumeMessage extends IOException {
 
-    private String messageId;
+    private final String messageId;
 
-    private String mqMessage;
+    private final String mqMessage;
 
     public CannotConsumeMessage(String messageId, String mqMessage, String reason) {
         super(String.format(

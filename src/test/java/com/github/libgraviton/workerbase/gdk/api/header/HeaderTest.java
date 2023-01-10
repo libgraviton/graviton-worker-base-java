@@ -1,11 +1,10 @@
 package com.github.libgraviton.workerbase.gdk.api.header;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 public class HeaderTest {
 
@@ -15,13 +14,13 @@ public class HeaderTest {
         String headerValue1 = "headerValue1";
 
         Header header1 = new Header();
-        assertEquals(0, header1.all().size());
+        Assertions.assertEquals(0, header1.all().size());
 
         List<String> headerValues = new ArrayList<>();
         headerValues.add(headerValue1);
         Header header2 = new Header(headerValues);
-        assertEquals(1, header2.all().size());
-        assertEquals(headerValue1, header2.get(0));
+        Assertions.assertEquals(1, header2.all().size());
+        Assertions.assertEquals(headerValue1, header2.get(0));
     }
 
     @Test
@@ -32,7 +31,7 @@ public class HeaderTest {
         List<String> headerValues = new ArrayList<>();
         headerValues.add(headerValue1);
         Header header = new Header(headerValues);
-        assertTrue(header.contains(headerValue1));
-        assertFalse(header.contains(headerValue2));
+        Assertions.assertTrue(header.contains(headerValue1));
+        Assertions.assertFalse(header.contains(headerValue2));
     }
 }

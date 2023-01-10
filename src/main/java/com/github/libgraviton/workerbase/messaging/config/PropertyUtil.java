@@ -17,7 +17,7 @@ public class PropertyUtil {
      * @return The property's value or the default value
      */
     public static boolean getBoolean(Properties properties, String propertyName, boolean defaultValue) {
-        return Boolean.valueOf(properties.getProperty(propertyName, Boolean.toString(defaultValue)));
+        return Boolean.parseBoolean(properties.getProperty(propertyName, Boolean.toString(defaultValue)));
     }
 
     /**
@@ -30,7 +30,7 @@ public class PropertyUtil {
      * @return The property's value or the default value
      */
     public static int getInteger(Properties properties, String propertyName, int defaultValue) {
-        return Integer.valueOf(properties.getProperty(propertyName, Integer.toString(defaultValue)));
+        return Integer.parseInt(properties.getProperty(propertyName, Integer.toString(defaultValue)));
     }
 
     /**
@@ -43,7 +43,7 @@ public class PropertyUtil {
      * @return The property's value or the default value
      */
     public static double getDouble(Properties properties, String propertyName, double defaultValue) {
-        return Double.valueOf(properties.getProperty(propertyName, Double.toString(defaultValue)));
+        return Double.parseDouble(properties.getProperty(propertyName, Double.toString(defaultValue)));
     }
 
 }

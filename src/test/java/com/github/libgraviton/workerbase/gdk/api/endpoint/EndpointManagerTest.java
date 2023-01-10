@@ -1,10 +1,10 @@
 package com.github.libgraviton.workerbase.gdk.api.endpoint;
 
 import com.github.libgraviton.workerbase.gdk.exception.NoCorrespondingEndpointException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class EndpointManagerTest {
@@ -13,7 +13,7 @@ public class EndpointManagerTest {
 
     private EndpointInclusionStrategy strategy;
 
-    @Before
+    @BeforeEach
     public void setup() {
         manager = new EndpointManager();
         strategy = mock(EndpointInclusionStrategy.class);
@@ -21,23 +21,25 @@ public class EndpointManagerTest {
     }
 
     @Test
-    public void testExistingEndpoint() throws Exception {
+    public void testExistingEndpoint() {
         String className = "aClassName";
         Endpoint endpoint = new Endpoint("endpoint://item", "endpoint://collection/");
         manager.addEndpoint(className, endpoint);
-        assertTrue(manager.hasEndpoint(className));
-        assertEquals(endpoint, manager.getEndpoint(className));
-    }
-
-    @Test(expected = NoCorrespondingEndpointException.class)
-    public void testMissingEndpoint() throws Exception {
-        String className = "aClassName";
-        assertFalse(manager.hasEndpoint(className));
-        manager.getEndpoint(className);
+        Assertions.assertTrue(manager.hasEndpoint(className));
+        Assertions.assertEquals(endpoint, manager.getEndpoint(className));
     }
 
     @Test
-    public void testShouldSkipEndpointWithStrategy() throws Exception {
+    public void testMissingEndpoint() {
+        Assertions.assertThrows(NoCorrespondingEndpointException.class, () -> {
+            String className = "aClassName";
+            Assertions.assertFalse(manager.hasEndpoint(className));
+            manager.getEndpoint(className);
+        });
+    }
+
+    @Test
+    public void testShouldSkipEndpointWithStrategy() {
         Endpoint endpoint = new Endpoint("endpoint://item", "endpoint://collection/");
         manager.shouldIgnoreEndpoint(endpoint);
         verify(strategy, times(1)).shouldIgnoreEndpoint(endpoint);

@@ -5,7 +5,7 @@ public enum LinkHeader {
     SELF ("self"),
     EVENT_STATUS ("eventStatus");
 
-    private String rel;
+    private final String rel;
 
     LinkHeader(String rel) {
         this.rel = rel;

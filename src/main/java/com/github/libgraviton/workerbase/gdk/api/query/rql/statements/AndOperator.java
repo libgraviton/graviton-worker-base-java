@@ -36,6 +36,6 @@ public class AndOperator implements QueryStatement {
         }
         StringJoiner joiner = new StringJoiner(",");
         statements.forEach(statement -> joiner.add(statement.build()));
-        return "and(" + joiner.toString() + ")";
+        return String.format("and(%s)", joiner);
     }
 }

@@ -9,6 +9,7 @@ import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
 import com.google.common.collect.AbstractIterator;
 
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -69,7 +70,7 @@ import java.util.regex.Pattern;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-public class PagingResponseIterator<T> extends AbstractIterator<T> {
+class PagingResponseIterator<T> extends AbstractIterator<T> {
 
     /**
      * internal iterator
@@ -94,7 +95,7 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
     /**
      * wrapper to communicate with the graviton API
      */
-    private GravitonApi gravitonApi;
+    private final GravitonApi gravitonApi;
 
     /**
      * Constructor to serialize to DeferredMap instances
@@ -197,7 +198,7 @@ public class PagingResponseIterator<T> extends AbstractIterator<T> {
             for (String singleLinkHeader : headerParts) {
                 matcher = pattern.matcher(singleLinkHeader);
                 if (matcher.matches()) {
-                    nextUrl = URLDecoder.decode(matcher.group(1), "UTF-8");
+                    nextUrl = URLDecoder.decode(matcher.group(1), StandardCharsets.UTF_8);
                 }
             }
         }

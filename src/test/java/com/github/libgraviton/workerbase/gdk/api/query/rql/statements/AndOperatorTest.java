@@ -1,12 +1,12 @@
 package com.github.libgraviton.workerbase.gdk.api.query.rql.statements;
 
 import com.github.libgraviton.workerbase.gdk.api.query.QueryStatement;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,14 +24,16 @@ public class AndOperatorTest {
 
         AndOperator andOperator = new AndOperator();
         andOperator.addStatements(statements);
-        assertEquals("and(asdf,fdsa)", andOperator.build());
+        Assertions.assertEquals("and(asdf,fdsa)", andOperator.build());
     }
 
 
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testBuildWithException() {
-        AndOperator andOperator = new AndOperator();
-        andOperator.build();
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            AndOperator andOperator = new AndOperator();
+            andOperator.build();
+        });
     }
 }

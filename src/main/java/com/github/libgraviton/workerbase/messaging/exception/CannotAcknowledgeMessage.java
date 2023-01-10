@@ -6,9 +6,9 @@ import java.io.IOException;
 
 public class CannotAcknowledgeMessage extends IOException {
 
-    private MessageAcknowledger acknowledger;
+    private final MessageAcknowledger acknowledger;
 
-    private String messageId;
+    private final String messageId;
 
     public CannotAcknowledgeMessage(MessageAcknowledger acknowledger, String messageId, String reason) {
         this(acknowledger, messageId, reason, null);

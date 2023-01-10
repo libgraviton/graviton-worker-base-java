@@ -1,211 +1,274 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.workerbase.gdk.GravitonAuthApi;
-import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
-import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
-import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatusAction;
-import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventStatusAction;
-import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
-import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
-import com.github.libgraviton.workerbase.helper.DependencyInjection;
-import com.github.libgraviton.workerbase.helper.EventStatusHandler;
-import com.github.libgraviton.workerbase.lib.TestQueueWorker;
-import com.github.libgraviton.workerbase.lib.TestQueueWorkerException;
-import com.github.libgraviton.workerbase.lib.TestQueueWorkerNoAuto;
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
+import com.github.libgraviton.workerbase.lib.*;
 import com.github.libgraviton.workerbase.model.QueueEvent;
-import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Test;
+import com.github.libgraviton.workertestbase.WorkerTestExtension;
+import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
+import com.github.tomakehurst.wiremock.stubbing.StubMapping;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
-public class WorkerBaseTest extends WorkerBaseTestCase {
+public class WorkerBaseTest {
 
-    @Before
-    public void setUp() throws Exception {    
-        baseMock();
-    }
-
-    @Test
-    public void testRegistrationPreparation() throws Exception {
-        TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
-        // to initialize worker
-        worker = getWrappedWorker(testWorker);
-        List<EventWorkerSubscription> subscriptions = testWorker.getSubscriptions();
-        assertEquals(1, subscriptions.size());
-
-        assertEquals("document.core.app.*", subscriptions.get(0).getEvent());
-    }
+    @RegisterExtension
+    public static WorkerTestExtension workerTestExtension = (new WorkerTestExtension())
+            .setStartWiremock(true)
+            .setStartRabbitMq(true);
 
     @Test
-    public void testGetWorkerAction() throws Exception {
-        when(gravitonApi
-                .getEndpointManager()
-                .getEndpoint(EventStatusAction.class.getName())
-                .getUrl())
-                .thenReturn("http://localhost:8000/event/action/");
+    public void testAllTheBasicsAndAutoRegister() throws Exception {
+        WorkerLauncher workerLauncher = workerTestExtension.getWrappedWorker(TestQueueWorker.class);
 
-        TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
-        // to initialize worker
-        worker = getWrappedWorker(testWorker);
-        EventStatusStatusAction actionRef = testWorker.getWorkerAction();
+        // set these transient headers
+        Map<String, String> transientHeaders = Map.of("my-custom-header", "has-this-value", "header", "value");
+        Map<String, String> transientHeaders2 = Map.of("my-custom-header", "has-this-value2", "header", "value2");
 
-        assertEquals("http://localhost:8000/event/action/java-test-default", actionRef.get$ref());
-    }
+        // register stub for files -> this ensures that transient headers will be applied! -> tests QueueEventScope!
+        StubMapping transientHeaderStub = workerTestExtension.getWireMockServer()
+                .stubFor(
+                    get(urlMatching("/file/test-workerfile"))
+                // the transient headers
+                .withHeader("my-custom-header", equalTo("has-this-value"))
+                .withHeader("header", equalTo("value"))
+                .willReturn(
+                        aResponse().withBodyFile("fileResource.json").withStatus(200)
+                )
+        );
+        StubMapping transientHeaderStub2 = workerTestExtension.getWireMockServer()
+                .stubFor(
+                    get(urlMatching("/file/test-workerfile"))
+                        // the transient headers
+                        .withHeader("my-custom-header", equalTo("has-this-value2"))
+                        .withHeader("header", equalTo("value2"))
+                        .willReturn(
+                                aResponse().withBodyFile("fileResource.json").withStatus(200)
+                        )
+        );
 
-    @Test
-    public void testBasicExecution() throws Exception {
-        TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
-        worker = getWrappedWorker(testWorker);
-        // execution should work even if message queue ack is not successful
-        doThrow(new IOException()).when(queueChannel).basicAck(any(Long.class), any(Boolean.class));
-        worker.run();
+        // this is the way how we wait for queue handling to be finished!
+        final CountDownLatch countDownLatch = workerTestExtension.getCountDownLatch(7, workerLauncher);
 
-        URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), StandardCharsets.UTF_8);
-        workerConsumer.consume("34343", message);
+        workerLauncher.run();
 
-        assertTrue(testWorker.shouldHandleRequestCalled);
+        QueueEvent queueEvent = workerTestExtension.getQueueEvent(transientHeaders);
+        QueueEvent queueEvent2 = workerTestExtension.getQueueEvent(transientHeaders2);
+        // this should be ignored!
+        QueueEvent queueEvent3 = workerTestExtension.getQueueEvent(Map.of(), "SPECIAL_USER");
+        // this should fail!
+        QueueEvent queueEvent4 = workerTestExtension.getQueueEvent(transientHeaders, "PLEASE_FAIL_HERE!");
 
-        QueueEvent queueEvent = testWorker.getHandledQueueEvent();
-        assertEquals("documents.core.app.create", queueEvent.getEvent());
-        assertEquals("http://localhost/core/app/admin", queueEvent.getDocument().get$ref());
-        assertEquals("http://localhost/event/status/mystatus", queueEvent.getStatus().get$ref());
+        workerTestExtension.sendToWorker(queueEvent);
+        workerTestExtension.sendToWorker(queueEvent2);
+        workerTestExtension.sendToWorker(queueEvent3);
+        workerTestExtension.sendToWorker(queueEvent4);
 
-        // register
-        verify(gravitonApi, times(1)).put(isA(EventWorker.class));
+        // wait until finished!
+        countDownLatch.await();
 
-        // 1 execution is due to the mock statement
-        // check if event status will be fetched before every update
-        verify(gravitonApi, times(3)).get(anyString());
-        // working & done
-        verify(gravitonApi, times(2)).patch(isA(EventStatus.class));
-    }
+        // availability check
+        verify(moreThan(1), optionsRequestedFor(urlEqualTo("/")));
 
-    @Test
-    public void testStatusUpdateOnShouldNotHandleRequest() throws Exception {
-        TestQueueWorker testWorker = spy(prepareTestWorker(new TestQueueWorker()));
-        doReturn(false).when(testWorker).shouldHandleRequest(any(QueueEvent.class));
-        worker = getWrappedWorker(testWorker);
-        worker.run();
+        // test auto register on graviton
+        verify(1,
+                putRequestedFor(
+                    urlEqualTo("/event/worker/" + WorkerProperties.WORKER_ID.get())
+                )
+                .withRequestBody(containing(WorkerProperties.WORKER_ID.get()))
+        );
 
-        URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), StandardCharsets.UTF_8);
-        workerConsumer.consume("34343", message);
-
-        verify(testWorker, times(1)).shouldHandleRequest(any(QueueEvent.class));
-
-        // register
-        verify(gravitonApi, times(1)).put(isA(EventWorker.class));
-
-        // 1 execution is due to the mock statement
-        // check if event status will be fetched before every update
-        verify(gravitonApi, times(2)).get(anyString());
+        // status working
+        verify(1,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
+                .withRequestBody(containing("\"working\""))
+        );
+        verify(1,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent2.getEvent()))
+                        .withRequestBody(containing("\"working\""))
+        );
+        // status done
+        verify(1,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
+                        .withRequestBody(containing("\"done\""))
+        );
+        verify(1,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent2.getEvent()))
+                        .withRequestBody(containing("\"done\""))
+        );
         // ignored
-        verify(gravitonApi, times(1)).patch(isA(EventStatus.class));
+        verify(1,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent3.getEvent()))
+                        .withRequestBody(containing("\"ignored\""))
+        );
+
+        /* THIS EVENT FIRES AN EXCEPTION 3 TIMES AND 1 LAST TIME OK AND SET TO DONE */
+
+        // 4 times to 'working'!
+        verify(4,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent4.getEvent()))
+                        .withRequestBody(containing("\"working\""))
+        );
+        // failed! -> we tried 3 times in the worker!
+        verify(3,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent4.getEvent()))
+                        .withRequestBody(containing("\"failed\""))
+                        .withRequestBody(containing("YES_I_DO_FAIL_NOW")) // error message included?
+        );
+        // 4th time this should be put to done!
+        verify(1,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent4.getEvent()))
+                        .withRequestBody(containing("\"done\""))
+        );
+
+        // FINISHED EVENT 4
+
+        TestQueueWorker worker = (TestQueueWorker) workerLauncher.getWorker();
+
+        // test whether the "transient headers" from the queueEvent were used correctly
+        boolean fileWithTransientHeadersWasMatched = false;
+        boolean fileWithTransientHeadersWasMatched2 = false;
+        for (ServeEvent serveEvent : workerTestExtension.getWireMockServer().getAllServeEvents()) {
+            if (serveEvent.getStubMapping().getId().equals(transientHeaderStub.getId())) {
+                fileWithTransientHeadersWasMatched = true;
+            }
+            if (serveEvent.getStubMapping().getId().equals(transientHeaderStub2.getId())) {
+                fileWithTransientHeadersWasMatched2 = true;
+            }
+        }
+
+        Assertions.assertTrue(fileWithTransientHeadersWasMatched);
+        Assertions.assertTrue(fileWithTransientHeadersWasMatched2);
+
+        // assert onStartup has been called
+        Assertions.assertTrue(worker.hasStartedUp);
+        Assertions.assertTrue(worker.shouldHandleRequestCalled);
+        Assertions.assertNotNull(worker.fetchedFile);
+        Assertions.assertEquals(6, worker.callCount);
+        Assertions.assertEquals(3, worker.errorCount);
+
+        try {
+            workerLauncher.stop();
+        } catch (Throwable t) {
+            // something is wrong..
+        }
     }
-    
+
     @Test
-    public void testNoAutoWorker() throws Exception {
-        TestQueueWorkerNoAuto testWorker = spy(prepareTestWorker(new TestQueueWorkerNoAuto()));
-        worker = getWrappedWorker(testWorker);
-        worker.run();
+    public void testNoAutoRegisterAndStatusWorker() throws Exception {
+        WorkerLauncher workerLauncher = workerTestExtension.getWrappedWorker(TestQueueWorkerNoAuto.class);
 
-        URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), StandardCharsets.UTF_8);
-        workerConsumer.consume("34343", message);
-        
-        assertTrue(testWorker.concerningRequestCalled);
-        assertTrue(testWorker.handleRequestCalled);
+        final CountDownLatch countDownLatch = workerTestExtension.getCountDownLatch(1, workerLauncher);
 
-        // register
-        verify(gravitonApi, times(0)).put(isA(EventWorker.class));
+        workerLauncher.run();
 
-        // 1 execution is due to the mock statement
-        verify(gravitonApi, times(1)).get(anyString());
-        // no /event/status update
-        verify(gravitonApi, times(0)).patch(isA(EventStatus.class));
-        
-        // again, this time no request concern
-        testWorker.handleRequestCalled = false;
-        testWorker.isConcerningRequest = false;
+        QueueEvent queueEvent = workerTestExtension.getQueueEvent();
 
-        workerConsumer.consume("34343", message);
-        
-        assertTrue(testWorker.concerningRequestCalled);
-        assertFalse(testWorker.handleRequestCalled);        
+        workerTestExtension.sendToWorker(queueEvent);
+
+        // wait until finished!
+        countDownLatch.await();
+
+        // availability check
+        verify(0, optionsRequestedFor(urlEqualTo("/")));
+
+        // test auto register on graviton
+        verify(0,
+                putRequestedFor(
+                        urlEqualTo("/event/worker/" + WorkerProperties.WORKER_ID.get())
+                )
+        );
+
+        // 0 to status
+        verify(0,
+                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
+        );
+
+        TestQueueWorkerNoAuto worker = (TestQueueWorkerNoAuto) workerLauncher.getWorker();
+
+        Assertions.assertTrue(worker.handleRequestCalled);
+        Assertions.assertTrue(worker.concerningRequestCalled);
+
+        try {
+            workerLauncher.stop();
+        } catch (Throwable t) {
+            // something is wrong..
+        }
     }
-    
+
     @Test
-    public void testWorkerException() throws Exception {
-        TestQueueWorkerException testWorker = prepareTestWorker(new TestQueueWorkerException());
-        worker = getWrappedWorker(testWorker);
-        worker.run();
-        
-        // let worker throw WorkerException
-        URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), StandardCharsets.UTF_8);
-        workerConsumer.consume("34343", message);
+    public void testAutoAckOnException() throws Exception {
+        WorkerLauncher workerLauncher = workerTestExtension.getWrappedWorker(TestQueueWorkerNoRetryOnException.class);
+        ((TestQueueWorkerNoRetryOnException) workerLauncher.getWorker()).callCount = 0;
 
-        // register
-        verify(gravitonApi, times(1)).put(isA(EventWorker.class));
+        final CountDownLatch countDownLatch = workerTestExtension.getCountDownLatch(1, workerLauncher);
 
-        // 1 execution is due to the mock statement
-        // check if event status will be fetched before every update
-        verify(gravitonApi, times(3)).get(anyString());
-        // working update & failed update
-        verify(gravitonApi, times(2)).patch(isA(EventStatus.class));
+        workerLauncher.run();
+
+        QueueEvent queueEvent = workerTestExtension.getQueueEvent();
+
+        workerTestExtension.sendToWorker(queueEvent);
+
+        // wait until finished!
+        countDownLatch.await();
+
+        TestQueueWorkerNoRetryOnException worker = (TestQueueWorkerNoRetryOnException) workerLauncher.getWorker();
+
+        // only once as worker opted to autoAck on Exception!
+        Assertions.assertEquals(1, worker.callCount);
+
+        try {
+            workerLauncher.stop();
+        } catch (Throwable t) {
+            // something is wrong..
+        }
     }
-    
+
+    /**
+     * case when worker is triggered with an EventStatus that DOES NOT exist!
+     *
+     * @throws Exception
+     */
     @Test
-    public void testWorkerExceptionNoAuto() throws Exception {
-        TestQueueWorkerException testWorker = prepareTestWorker(new TestQueueWorkerException());
-        testWorker.doAutoStuff = false;
-        worker = getWrappedWorker(testWorker);
-        worker.run();
-        
-        // let worker throw WorkerException
-        URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), StandardCharsets.UTF_8);
-        workerConsumer.consume("34343", message);
+    public void testBehaviorNonExistentQueueAction() throws Exception {
+        WorkerLauncher workerLauncher = workerTestExtension.getWrappedWorker(TestQueueWorkerNoRetryOnException.class);
+        ((TestQueueWorkerNoRetryOnException) workerLauncher.getWorker()).callCount = 0;
 
-        // register
-        verify(gravitonApi, times(0)).put(isA(EventWorker.class));
+        final CountDownLatch countDownLatch = workerTestExtension.getCountDownLatch(1, workerLauncher);
 
-        // 1 execution is due to the mock statement
-        verify(gravitonApi, times(1)).get(anyString());
-        // no /event/status update
-        verify(gravitonApi, times(0)).patch(isA(EventStatus.class));
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testBackendStatusUpdateError() throws Exception {
-        
-        /*** change mocking so we get an unsuccessful response on /event/status update -> worker shall throw GravitonCommunicationException ***/
-        when(gravitonApi.patch(any(EventStatus.class)).execute()).thenThrow(UnsuccessfulResponseException.class);
-        
-        TestQueueWorker testWorker = prepareTestWorker(new TestQueueWorker());
-        worker = getWrappedWorker(testWorker);
-        worker.run();
-        
-        // let worker throw CommunicationException
-        URL jsonFile = this.getClass().getClassLoader().getResource("json/queueEvent.json");
-        String message = FileUtils.readFileToString(new File(jsonFile.getFile()), StandardCharsets.UTF_8);
-        workerConsumer.consume("34343", message);
-    }
+        workerLauncher.run();
 
-    private <T extends QueueWorkerAbstract> T prepareTestWorker(T worker) {
-        DependencyInjection.init(worker, List.of());
-        DependencyInjection.addInstanceOverride(GravitonAuthApi.class, gravitonApi);
-        DependencyInjection.addInstanceOverride(EventStatusHandler.class, new EventStatusHandler(gravitonApi));
-        return worker;
+        QueueEvent queueEvent = workerTestExtension.getQueueEvent();
+        // change id so it will lead to 404!
+        String newId = queueEvent.getEvent()+"ANOTHER-ID";
+        queueEvent.setEvent(newId);
+        queueEvent.getStatus().set$ref(queueEvent.getStatus().get$ref()+"ANOTHER-ID");
+
+        workerTestExtension.sendToWorker(queueEvent);
+
+        // wait until finished!
+        countDownLatch.await();
+
+        TestQueueWorkerNoRetryOnException worker = (TestQueueWorkerNoRetryOnException) workerLauncher.getWorker();
+
+        // should never have been called!
+        Assertions.assertEquals(0, worker.callCount);
+
+        int retryLimit = Integer.parseInt(WorkerProperties.STATUSHANDLER_RETRY_LIMIT.get());
+
+        verify(retryLimit + 1,
+                getRequestedFor(urlEqualTo("/event/status/" + newId))
+        );
+
+        try {
+            workerLauncher.stop();
+        } catch (Throwable t) {
+            // something is wrong..
+        }
     }
 }

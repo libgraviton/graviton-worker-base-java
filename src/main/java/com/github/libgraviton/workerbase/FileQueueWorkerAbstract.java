@@ -1,21 +1,18 @@
 package com.github.libgraviton.workerbase;
 
-import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadata;
 import com.github.libgraviton.gdk.gravitondyn.file.document.FileMetadataAction;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
-import com.github.libgraviton.workerbase.helper.WorkerUtil;
+import com.github.libgraviton.workerbase.helper.QueueEventScope;
+import com.github.libgraviton.workerbase.helper.WorkerScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
-import com.google.common.base.Joiner;
-import io.micrometer.core.instrument.util.StringUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,14 +26,18 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
 
     private static final Logger LOG = LoggerFactory.getLogger(FileQueueWorkerAbstract.class);
 
-    // just to pass around!
-    private File currentFile;
+    public FileQueueWorkerAbstract(WorkerScope workerScope) {
+        super(workerScope);
+    }
 
-    public boolean shouldHandleRequest(QueueEvent queueEvent) throws WorkerException, GravitonCommunicationException {
+    public boolean shouldHandleRequest(QueueEventScope queueEventScope) throws GravitonCommunicationException {
+        QueueEvent queueEvent = queueEventScope.getQueueEvent();
         List<String> actions = getActionsOfInterest(queueEvent);
 
         // get the file
-        currentFile = getFileFromQueueEvent(queueEvent);
+        File currentFile = queueEventScope.getFileEndpoint().getFileFromQueueEvent(queueEvent);
+
+        queueEventScope.getScopeCacheMap().put("currentFetchedFile", currentFile);
 
         if (currentFile == null) {
             // something is off..
@@ -61,22 +62,21 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
         }
 
         // something matches. clear the actions from the files first.
-        removeFileActionCommand(currentFile, matching);
+        removeFileActionCommand(currentFile, matching, queueEventScope);
 
         return !ListUtils.intersection(actions, referencedActions).isEmpty();
     }
 
-    final public void handleRequest(QueueEvent body) throws WorkerException, GravitonCommunicationException {
+    final public void handleRequest(QueueEventScope queueEventScope) throws WorkerException, GravitonCommunicationException {
         // get the file..
         File fileToPass;
-        if (currentFile != null) {
-            fileToPass = currentFile;
-            currentFile = null;
+        if (queueEventScope.getScopeCacheMap().containsKey("currentFetchedFile")) {
+            fileToPass = (File) queueEventScope.getScopeCacheMap().get("currentFetchedFile");
         } else {
-            fileToPass = getFileFromQueueEvent(body);
+            fileToPass = queueEventScope.getFileEndpoint().getFileFromQueueEvent(queueEventScope.getQueueEvent());
         }
 
-        handleFileRequest(body, fileToPass);
+        handleFileRequest(fileToPass, queueEventScope);
     }
 
     /**
@@ -87,21 +87,6 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
      */
     public abstract List<String> getActionsOfInterest(QueueEvent queueEvent);
 
-    private File getFileFromQueueEvent(QueueEvent queueEvent) throws GravitonCommunicationException {
-        return getGravitonFile(queueEvent.getDocument().get$ref());
-    }
-
-    /**
-     * gets file metadata from backend as a GravitonFile object
-     *
-     * @param fileUrl the url of the object
-     * @throws GravitonCommunicationException if file could not be fetched.
-     * @return file instance
-     */
-    public File getGravitonFile(String fileUrl) throws GravitonCommunicationException {
-        return fileEndpoint.getFileMetadata(fileUrl);
-    }    
-    
     /**
      * checks if a certain action is present in the metadata.action array
      *
@@ -109,7 +94,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
      * @param action a {@link java.lang.String} object.
      * @return true if yes, false if not
      */
-    public Boolean isActionCommandPresent(File gravitonFile, String action) {
+    public boolean isActionCommandPresent(File gravitonFile, String action) {
         FileMetadata metadata = gravitonFile.getMetadata();
         for (FileMetadataAction singleAction: metadata.getAction()) {
             if (singleAction.getCommand() != null && singleAction.getCommand().equals(action) ) {
@@ -125,7 +110,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
      *
      * @throws GravitonCommunicationException when file action command could not be removed at Graviton
      */
-    protected void removeFileActionCommand(File gravitonFile, List<String> actions) throws GravitonCommunicationException {
+    private void removeFileActionCommand(File gravitonFile, List<String> actions, QueueEventScope queueEventScope) throws GravitonCommunicationException {
         FileMetadata metadata = gravitonFile.getMetadata();
 
         // get the matching ones
@@ -139,7 +124,7 @@ public abstract class FileQueueWorkerAbstract extends QueueWorkerAbstract implem
             gravitonFile.getMetadata().getAction().removeAll(matchingActions);
 
             try {
-                fileEndpoint.patch(gravitonFile).execute();
+                queueEventScope.getFileEndpoint().patch(gravitonFile).execute();
             } catch (CommunicationException e) {
                 throw new GravitonCommunicationException("Unable to remove file action elements from '" + gravitonFile.getId() + "'.", e);
             }

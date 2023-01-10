@@ -13,7 +13,7 @@ package com.github.libgraviton.workerbase.messaging.exception;
  */
 public class CannotConnectToQueue extends Exception {
 
-    private String queueName;
+    private final String queueName;
 
     public CannotConnectToQueue(String queueName, Throwable cause) {
         super(String.format("Unable to establish connection to queue '%s'.", queueName), cause);

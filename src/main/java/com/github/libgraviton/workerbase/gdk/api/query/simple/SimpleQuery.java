@@ -23,7 +23,7 @@ public class SimpleQuery extends Query {
     }
 
     public static class Builder {
-        Map<String, String> params = new HashMap<>();
+        final Map<String, String> params = new HashMap<>();
 
         public Builder add(String paramName, String paramValue) {
             params.put(paramName, paramValue);

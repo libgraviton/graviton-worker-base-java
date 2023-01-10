@@ -1,16 +1,20 @@
 package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
+import com.github.libgraviton.workerbase.helper.DependencyInjection;
+import com.github.libgraviton.workerbase.helper.QueueEventScope;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.google.common.base.Stopwatch;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WorkerRunnable implements Runnable {
 
     @FunctionalInterface
     public interface GetWorkloadCallback {
-        WorkerRunnableInterface getWorkload() throws Throwable;
+        WorkerRunnableInterface getWorkload(QueueEventScope queueEventScope) throws Throwable;
     }
 
     @FunctionalInterface
@@ -30,39 +34,46 @@ public class WorkerRunnable implements Runnable {
 
     @FunctionalInterface
     public interface RelevantEventCallback {
-        boolean isRevelant(QueueEvent body) throws Throwable;
+        boolean isRevelant(QueueEventScope queueEventScope) throws Throwable;
     }
 
     private final QueueEvent queueEvent;
     private final GetWorkloadCallback getWorkloadCallback;
     public final AfterStatusChangeCallback afterStatusChangeCallback;
-    private final AfterCompleteCallback afterCompleteCallback;
     private final AfterExceptionCallback afterExceptionCallback;
     private final RelevantEventCallback relevantEventCallback;
+    private final List<AfterCompleteCallback> afterCompleteCallbacks = new ArrayList<>();
 
     public WorkerRunnable(
-            QueueEvent queueEvent,
-            GetWorkloadCallback getWorkloadCallback,
-            AfterStatusChangeCallback afterStatusChangeCallback,
-            AfterCompleteCallback afterCompleteCallback,
-            AfterExceptionCallback afterExceptionCallback,
-            RelevantEventCallback relevantEventCallback
+            final QueueEvent queueEvent,
+            final GetWorkloadCallback getWorkloadCallback,
+            final AfterStatusChangeCallback afterStatusChangeCallback,
+            final AfterCompleteCallback afterCompleteCallback,
+            final AfterExceptionCallback afterExceptionCallback,
+            final RelevantEventCallback relevantEventCallback
     ) {
         this.queueEvent = queueEvent;
         this.getWorkloadCallback = getWorkloadCallback;
         this.afterStatusChangeCallback = afterStatusChangeCallback;
-        this.afterCompleteCallback = afterCompleteCallback;
+        afterCompleteCallbacks.add(afterCompleteCallback);
         this.afterExceptionCallback = afterExceptionCallback;
         this.relevantEventCallback = relevantEventCallback;
     }
 
+    public void addAfterCompleteCallback(AfterCompleteCallback afterCompleteCallback) {
+        afterCompleteCallbacks.add(afterCompleteCallback);
+    }
+
     @Override
     public void run() {
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        final Stopwatch stopwatch = Stopwatch.createStarted();
 
         try {
+            final QueueEventScope queueEventScope = DependencyInjection.getInstance(QueueEventScope.class);
+            queueEventScope.setQueueEvent(queueEvent);
+
             // is it relevant?
-            if (!relevantEventCallback.isRevelant(queueEvent)) {
+            if (!relevantEventCallback.isRevelant(queueEventScope)) {
                 afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.IGNORED);
                 return;
             }
@@ -70,13 +81,14 @@ public class WorkerRunnable implements Runnable {
             afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.WORKING);
 
             // call the worker
-            getWorkloadCallback.getWorkload().doWork(queueEvent);
+            getWorkloadCallback.getWorkload(queueEventScope).doWork(queueEventScope);
 
             afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.DONE);
         } catch (Throwable t) {
             afterExceptionCallback.onException(t);
         } finally {
-            afterCompleteCallback.onComplete(stopwatch.elapsed());
+            // call all after completes!
+            afterCompleteCallbacks.forEach(s -> s.onComplete(stopwatch.elapsed()));
         }
     }
 }

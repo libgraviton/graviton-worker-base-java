@@ -12,7 +12,7 @@ class RecoveringExceptionListener implements ExceptionListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(com.github.libgraviton.workerbase.messaging.strategy.jms.RecoveringExceptionListener.class);
 
-    protected JmsConnection connection;
+    protected final JmsConnection connection;
 
     RecoveringExceptionListener(JmsConnection connection) {
         this.connection = connection;

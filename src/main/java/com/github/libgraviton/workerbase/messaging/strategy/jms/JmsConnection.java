@@ -1,8 +1,7 @@
 package com.github.libgraviton.workerbase.messaging.strategy.jms;
 
 import com.github.libgraviton.workerbase.messaging.QueueConnection;
-import com.github.libgraviton.workerbase.messaging.consumer.AcknowledgingConsumer;
-import com.github.libgraviton.workerbase.messaging.consumer.Consumer;
+import com.github.libgraviton.workerbase.messaging.consumer.Consumeable;
 import com.github.libgraviton.workerbase.messaging.exception.*;
 
 import javax.jms.*;
@@ -83,17 +82,14 @@ public class JmsConnection extends QueueConnection {
     /**
      * Registers a {@link MessageConsumer} with {@link MessageListener}.
      *
-     * @param consumer The consumer to register. All messages will be acknowledged automatically. Except if the consumer
-     *                 implements {@link AcknowledgingConsumer}.
-     *
-     * @throws CannotRegisterConsumer If the consumer cannot be registerd
+     * @throws CannotRegisterConsumeable If the consumer cannot be registerd
      */
     @Override
-    protected void registerConsumer(Consumer consumer) throws CannotRegisterConsumer {
-        MessageListener jmsConsumer = new JmsConsumer(consumer);
+    protected void registerConsumer(Consumeable consumeable) throws CannotRegisterConsumeable {
+        MessageListener jmsConsumer = new JmsConsumer(consumeable);
         MessageConsumer messageConsumer;
         try {
-            connection.setExceptionListener(new com.github.libgraviton.workerbase.messaging.strategy.jms.ReRegisteringExceptionListener(this, consumer));
+            connection.setExceptionListener(new com.github.libgraviton.workerbase.messaging.strategy.jms.ReRegisteringExceptionListener(this, consumeable));
             if (null != messageSelector) {
                 messageConsumer = session.createConsumer(queue, messageSelector);
             } else {
@@ -102,7 +98,7 @@ public class JmsConnection extends QueueConnection {
             messageConsumer.setMessageListener(jmsConsumer);
             connection.start();
         } catch (JMSException e) {
-            throw new CannotRegisterConsumer(consumer, e);
+            throw new CannotRegisterConsumeable(consumeable, e);
         }
     }
 

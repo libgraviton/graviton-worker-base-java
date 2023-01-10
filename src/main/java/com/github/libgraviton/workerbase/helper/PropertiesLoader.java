@@ -108,7 +108,7 @@ class PropertiesLoader {
      * @param doOverride
      * @return
      */
-    static Properties addFromResource(Properties properties, String resourcePath, Boolean doOverride) throws Exception {
+    static Properties addFromResource(Properties properties, String resourcePath, boolean doOverride) throws Exception {
         InputStream is = PropertiesLoader.class.getClassLoader().getResourceAsStream(resourcePath);
         if (is == null) {
             throw new Exception("Could not load resource '"+resourcePath+"' to load in PropertiesLoader!");

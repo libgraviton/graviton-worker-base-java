@@ -36,6 +36,6 @@ public class BasicAuth implements HeaderAuth {
         String usernameAndPassword = username + ":" + password;
         byte[] bytes = usernameAndPassword.getBytes(charset);
         String encoded = ByteString.of(bytes).base64();
-        return "Basic " + encoded;
+        return "Basic ".concat(encoded);
     }
 }

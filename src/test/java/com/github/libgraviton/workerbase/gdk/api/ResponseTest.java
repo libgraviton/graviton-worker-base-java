@@ -4,14 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.libgraviton.workerbase.gdk.data.NoopClass;
 import com.github.libgraviton.workerbase.gdk.data.SerializationTestClass;
 import com.github.libgraviton.workerbase.gdk.exception.DeserializationException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class ResponseTest {
@@ -20,7 +19,7 @@ public class ResponseTest {
 
     private Request request;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         request = mock(Request.class);
         response = new Response.Builder(request)
@@ -32,32 +31,38 @@ public class ResponseTest {
         response.setObjectMapper(new ObjectMapper());
     }
 
-    @Test(expected = DeserializationException.class)
-    public void testDeserializeBodyItemWithDeserializationException() throws DeserializationException {
-        response.getBodyItem(NoopClass.class);
+    @Test
+    public void testDeserializeBodyItemWithDeserializationException() {
+        Assertions.assertThrows(DeserializationException.class, () -> {
+            response.getBodyItem(NoopClass.class);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testDeserializeBodyItemWithMissingObjectMapper() throws DeserializationException {
-        response.setObjectMapper(null);
-        response.getBodyItem(NoopClass.class);
+    @Test
+    public void testDeserializeBodyItemWithMissingObjectMapper() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            response.setObjectMapper(null);
+            response.getBodyItem(NoopClass.class);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testDeserializeBodyItemsWithMissingObjectMapper() throws DeserializationException {
-        response.setObjectMapper(null);
-        response.getBodyItems(NoopClass.class);
+    @Test
+    public void testDeserializeBodyItemsWithMissingObjectMapper() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            response.setObjectMapper(null);
+            response.getBodyItems(NoopClass.class);
+        });
     }
 
     @Test
     public void testSuccessfulDeserializeBody() throws DeserializationException {
         response.getBodyItem(SerializationTestClass.class);
-        assertTrue(response.isSuccessful());
-        assertEquals(200, response.getCode());
-        assertEquals("a message", response.getMessage());
-        assertEquals("{\"code\":0}", response.getBody());
-        assertEquals(request, response.getRequest());
-        assertEquals(0, response.getHeaders().all().size());
+        Assertions.assertTrue(response.isSuccessful());
+        Assertions.assertEquals(200, response.getCode());
+        Assertions.assertEquals("a message", response.getMessage());
+        Assertions.assertEquals("{\"code\":0}", response.getBody());
+        Assertions.assertEquals(request, response.getRequest());
+        Assertions.assertEquals(0, response.getHeaders().all().size());
     }
 
     @Test
@@ -77,10 +82,10 @@ public class ResponseTest {
         response.setObjectMapper(new ObjectMapper());
 
         response.getBodyItems(SerializationTestClass.class);
-        assertTrue(response.isSuccessful());
+        Assertions.assertTrue(response.isSuccessful());
         List<SerializationTestClass> items = response.getBodyItems(SerializationTestClass.class);
-        assertEquals(2, items.size());
-        assertEquals(testClass1.getCode(), items.get(0).getCode());
-        assertEquals(testClass2.getCode(), items.get(1).getCode());
+        Assertions.assertEquals(2, items.size());
+        Assertions.assertEquals(testClass1.getCode(), items.get(0).getCode());
+        Assertions.assertEquals(testClass2.getCode(), items.get(1).getCode());
     }
 }

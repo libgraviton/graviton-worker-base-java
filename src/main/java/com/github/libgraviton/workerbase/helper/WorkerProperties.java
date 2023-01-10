@@ -16,6 +16,33 @@ import java.util.*;
  */
 public class WorkerProperties {
 
+    public record WorkerProperty(String name) {
+        @Override
+        public String toString() {
+            return name;
+        }
+
+        public String get() {
+            return WorkerProperties.getProperty(name);
+        }
+    }
+
+    public static final WorkerProperty GRAVITON_BASE_URL = new WorkerProperty("graviton.base.url");
+    public static final WorkerProperty GATEWAY_BASE_URL = new WorkerProperty("gateway.url");
+    public static final WorkerProperty GATEWAY_USERNAME = new WorkerProperty("gateway.username");
+    public static final WorkerProperty GATEWAY_PASSWORD = new WorkerProperty("gateway.password");
+    public static final WorkerProperty GRAVITON_SUBSCRIPTION = new WorkerProperty("graviton.subscription");
+    public static final WorkerProperty WORKER_ID = new WorkerProperty("graviton.workerId");
+    public static final WorkerProperty AUTH_PREFIX_USERNAME = new WorkerProperty("graviton.authentication.prefix.username");
+    public static final WorkerProperty AUTH_HEADER_NAME = new WorkerProperty("graviton.authentication.header.name");
+    public static final WorkerProperty PROMETHEUS_PORT = new WorkerProperty("graviton.prometheus.port");
+    public static final WorkerProperty WORKER_MAIN_CLASS = new WorkerProperty("worker.mainClass");
+    public static final WorkerProperty HTTP_CLIENT_DORETRY = new WorkerProperty("graviton.okhttp.shouldRetry");
+    public static final WorkerProperty HTTP_CLIENT_FORCE_HTTP1_1 = new WorkerProperty("graviton.okhttp.forcehttp11");
+    public static final WorkerProperty HTTP_CLIENT_TLS_TRUST_ALL = new WorkerProperty("graviton.okhttp.trustAll");
+    public static final WorkerProperty STATUSHANDLER_RETRY_LIMIT = new WorkerProperty("graviton.statushandler.retrylimit");
+    public static final WorkerProperty DI_CLASS_SCAN_USE_CACHE = new WorkerProperty("graviton.di.class_scan.use_cache");
+
     private static final Logger LOG = LoggerFactory.getLogger(WorkerProperties.class);
 
     private static Properties loadedProperties = new Properties();
@@ -79,10 +106,19 @@ public class WorkerProperties {
         propertyOverrides.clear();
     }
 
+    public static String getProperty(String name, String defaultValue) {
+        String value = getProperty(name);
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
+    }
+
     public static String getProperty(String name) {
         if (!alreadyLoaded) {
-            LOG.warn("Properties were called here without explicit call to WorkerProperties.load() before! " +
-                    "This is discouraged as the error handling is disabled here. Please fix that. Continuing ignoring errors.");
+            LOG.warn("Properties were called here without explicit call to WorkerProperties.load() before! "
+                            .concat("This is discouraged as the error handling is disabled here. Please fix that. Continuing ignoring errors.")
+            );
 
             try {
                 WorkerProperties.load();

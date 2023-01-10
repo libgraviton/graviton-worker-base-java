@@ -6,3 +6,4 @@
 target
 logs
 *-pom.xml
+pom.xml.*

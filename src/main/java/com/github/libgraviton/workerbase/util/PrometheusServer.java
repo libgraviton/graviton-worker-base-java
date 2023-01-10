@@ -23,6 +23,9 @@ public class PrometheusServer {
 
   private static boolean started = false;
 
+  private Thread serverThread;
+  private HttpServer server;
+
   public PrometheusServer(String appName) {
     if (!started) {
       init(appName);
@@ -34,9 +37,10 @@ public class PrometheusServer {
 
     // app name
     registry.config().commonTags("application", appName);
+    final int prometheusPort = Integer.parseInt(WorkerProperties.PROMETHEUS_PORT.get());
 
     try {
-      HttpServer server = HttpServer.create(new InetSocketAddress(Integer.parseInt(WorkerProperties.getProperty("graviton.prometheus.port"))), 0);
+      HttpServer server = HttpServer.create(new InetSocketAddress(prometheusPort), 0);
       server.createContext("/metrics", httpExchange -> {
         String response = registry.scrape();
         httpExchange.sendResponseHeaders(200, response.getBytes().length);
@@ -44,10 +48,10 @@ public class PrometheusServer {
           os.write(response.getBytes());
         }
       });
+      server.setExecutor(null);
+      server.start();
 
-      new Thread(server::start).start();
-
-      LOG.info("Started prometheus HTTPServer for metrics on http://0.0.0.0:{}/metrics", WorkerProperties.getProperty("graviton.prometheus.port"));
+      LOG.info("Started prometheus HTTPServer for metrics on http://0.0.0.0:{}/metrics", prometheusPort);
     } catch (Throwable t) {
       LOG.error("Could not start prometheus metrics HTTPServer", t);
     }
@@ -73,5 +77,11 @@ public class PrometheusServer {
 
     // add to global
     Metrics.addRegistry(registry);
+  }
+
+  public void stop() {
+    if (server != null) {
+      server.stop(9);
+    }
   }
 }

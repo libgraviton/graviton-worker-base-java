@@ -24,7 +24,7 @@ public class HeaderBag {
     }
 
     public void set(String headerName, String headerValue) {
-        headers.put(headerName, new Header(Arrays.asList(headerValue)));
+        headers.put(headerName, new Header(Collections.singletonList(headerValue)));
     }
 
     public String getLink(LinkHeader linkHeader) {
@@ -38,7 +38,7 @@ public class HeaderBag {
 
         Header links = this.get("link");
         if (links != null) {
-            String linkHeaderSelfPattern = "(?<=<)((?!<).)*(?=>; *rel=\"" + rel + "\")";
+            String linkHeaderSelfPattern = String.format("(?<=<)((?!<).)*(?=>; *rel=\"%s\")", rel);
             for (String link : links) {
                 Matcher matcher = Pattern.compile(linkHeaderSelfPattern).matcher(link);
                 if (matcher.find()) {
@@ -51,7 +51,7 @@ public class HeaderBag {
 
     public static class Builder {
 
-        private Map<String, List<String>> headers;
+        private final Map<String, List<String>> headers;
 
         public Builder() {
             headers = new HashMap<>();
