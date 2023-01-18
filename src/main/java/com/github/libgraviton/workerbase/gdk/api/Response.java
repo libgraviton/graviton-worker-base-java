@@ -2,10 +2,11 @@ package com.github.libgraviton.workerbase.gdk.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
-import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
 import com.github.libgraviton.workerbase.gdk.exception.DeserializationException;
 import com.github.libgraviton.workerbase.gdk.serialization.JsonPatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,6 +19,8 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class Response {
+
+    protected static final Logger LOG = LoggerFactory.getLogger(Response.class);
 
     protected Request request;
 
@@ -67,11 +70,14 @@ public class Response {
             JsonPatcher.add(pojoValue, getObjectMapper().valueToTree(pojoValue));
             return pojoValue;
         } catch (IOException e) {
-            throw new DeserializationException(String.format(
-                    "Unable to deserialize response body from '%s' to class '%s'.",
-                    getRequest().getUrl(),
-                    beanClass.getName()
-            ), e);
+            LOG.error(
+                    "Unable to deserialize response body from '{}' to class '{}'; received body '{}'.",
+                    getRequest() == null ? '?' : getRequest().getUrl(),
+                    beanClass.getName(),
+                    getBody(),
+                    e
+            );
+            throw new DeserializationException("Error in getBodyItem()", e);
         }
     }
 
@@ -97,11 +103,14 @@ public class Response {
             }
             return pojoValues;
         } catch (IOException e) {
-            throw new DeserializationException(String.format(
-                    "Unable to deserialize response body from '%s' to class '%s'.",
-                    getRequest().getUrl(),
-                    beanClass.getName()
-            ), e);
+            LOG.error(
+                    "Unable to deserialize response body from '{}' to class '{}'; received body '{}'.",
+                    getRequest() == null ? '?' : getRequest().getUrl(),
+                    beanClass.getName(),
+                    getBody(),
+                    e
+            );
+            throw new DeserializationException("Error in getBodyItems()", e);
         }
     }
 
