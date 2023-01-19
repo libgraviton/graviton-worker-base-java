@@ -82,7 +82,7 @@ public class FileWorkerBaseTest {
         Assertions.assertTrue(worker.onStartupCalled);
         Assertions.assertInstanceOf(File.class, worker.fileObj);
 
-        verify(1,
+        workerTestExtension.getWireMockServer().verify(1,
                 getRequestedFor(urlEqualTo("/core/app/hans"))
         );
     }
@@ -112,15 +112,15 @@ public class FileWorkerBaseTest {
         Assertions.assertTrue(worker.onStartupCalled);
         Assertions.assertFalse(worker.handleFileRequestCalled);
 
-        verify(1,
+        workerTestExtension.getWireMockServer().verify(1,
                 patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
                         .withRequestBody(containing("\"ignored\""))
         );
-        verify(0,
+        workerTestExtension.getWireMockServer().verify(0,
                 patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
                         .withRequestBody(containing("\"working\""))
         );
-        verify(0,
+        workerTestExtension.getWireMockServer().verify(0,
                 patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
                         .withRequestBody(containing("\"done\""))
         );

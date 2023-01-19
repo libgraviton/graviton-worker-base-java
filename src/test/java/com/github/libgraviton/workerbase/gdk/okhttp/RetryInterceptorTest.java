@@ -71,7 +71,7 @@ public class RetryInterceptorTest {
     public void testWrongHttpStatusHandling() throws Exception {
 
         /******* CREATE STUBS -> we will fail 3 times! *****/
-        stubFor(get(urlEqualTo("/service"))
+        workerTestExtension.getWireMockServer().stubFor(get(urlEqualTo("/service"))
             .inScenario("test")
             .whenScenarioStateIs("SUCCESS")
             .willReturn(aResponse()
@@ -82,7 +82,7 @@ public class RetryInterceptorTest {
         );
 
         // failures!
-        stubFor(options(urlEqualTo("/"))
+        workerTestExtension.getWireMockServer().stubFor(options(urlEqualTo("/"))
             .inScenario("test")
             .whenScenarioStateIs(Scenario.STARTED)
             .willReturn(aResponse()
@@ -90,7 +90,7 @@ public class RetryInterceptorTest {
             )
             .willSetStateTo("ERROR1")
         );
-        stubFor(options(urlEqualTo("/"))
+        workerTestExtension.getWireMockServer().stubFor(options(urlEqualTo("/"))
             .inScenario("test")
             .whenScenarioStateIs("ERROR1")
             .willReturn(aResponse()
@@ -98,7 +98,7 @@ public class RetryInterceptorTest {
             )
             .willSetStateTo("ERROR2")
         );
-        stubFor(options(urlEqualTo("/"))
+        workerTestExtension.getWireMockServer().stubFor(options(urlEqualTo("/"))
             .inScenario("test")
             .whenScenarioStateIs("ERROR2")
             .willReturn(aResponse()
@@ -106,7 +106,7 @@ public class RetryInterceptorTest {
             )
             .willSetStateTo("ERROR3")
         );
-        stubFor(options(urlEqualTo("/"))
+        workerTestExtension.getWireMockServer().stubFor(options(urlEqualTo("/"))
             .inScenario("test")
             .whenScenarioStateIs("ERROR2")
             .willReturn(aResponse()

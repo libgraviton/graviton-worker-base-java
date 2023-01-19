@@ -73,10 +73,10 @@ public class WorkerBaseTest {
         countDownLatch.await();
 
         // availability check
-        verify(moreThan(1), optionsRequestedFor(urlEqualTo("/")));
+        workerTestExtension.getWireMockServer().verify(moreThan(1), optionsRequestedFor(urlEqualTo("/")));
 
         // test auto register on graviton
-        verify(1,
+        workerTestExtension.getWireMockServer().verify(1,
                 putRequestedFor(
                     urlEqualTo("/event/worker/" + WorkerProperties.WORKER_ID.get())
                 )
@@ -84,25 +84,25 @@ public class WorkerBaseTest {
         );
 
         // status working
-        verify(1,
+        workerTestExtension.getWireMockServer().verify(1,
                 patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
                 .withRequestBody(containing("\"working\""))
         );
-        verify(1,
+        workerTestExtension.getWireMockServer().verify(1,
                 patchRequestedFor(urlEqualTo("/event/status/" + queueEvent2.getEvent()))
                         .withRequestBody(containing("\"working\""))
         );
         // status done
-        verify(1,
+        workerTestExtension.getWireMockServer().verify(1,
                 patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
                         .withRequestBody(containing("\"done\""))
         );
-        verify(1,
+        workerTestExtension.getWireMockServer().verify(1,
                 patchRequestedFor(urlEqualTo("/event/status/" + queueEvent2.getEvent()))
                         .withRequestBody(containing("\"done\""))
         );
         // ignored
-        verify(1,
+        workerTestExtension.getWireMockServer().verify(1,
                 patchRequestedFor(urlEqualTo("/event/status/" + queueEvent3.getEvent()))
                         .withRequestBody(containing("\"ignored\""))
         );
@@ -110,18 +110,18 @@ public class WorkerBaseTest {
         /* THIS EVENT FIRES AN EXCEPTION 3 TIMES AND 1 LAST TIME OK AND SET TO DONE */
 
         // 4 times to 'working'!
-        verify(4,
+        workerTestExtension.getWireMockServer().verify(4,
                 patchRequestedFor(urlEqualTo("/event/status/" + queueEvent4.getEvent()))
                         .withRequestBody(containing("\"working\""))
         );
         // failed! -> we tried 3 times in the worker!
-        verify(3,
+        workerTestExtension.getWireMockServer().verify(3,
                 patchRequestedFor(urlEqualTo("/event/status/" + queueEvent4.getEvent()))
                         .withRequestBody(containing("\"failed\""))
                         .withRequestBody(containing("YES_I_DO_FAIL_NOW")) // error message included?
         );
         // 4th time this should be put to done!
-        verify(1,
+        workerTestExtension.getWireMockServer().verify(1,
                 patchRequestedFor(urlEqualTo("/event/status/" + queueEvent4.getEvent()))
                         .withRequestBody(containing("\"done\""))
         );
@@ -175,17 +175,17 @@ public class WorkerBaseTest {
         countDownLatch.await();
 
         // availability check
-        verify(0, optionsRequestedFor(urlEqualTo("/")));
+        workerTestExtension.getWireMockServer().verify(0, optionsRequestedFor(urlEqualTo("/")));
 
         // test auto register on graviton
-        verify(0,
+        workerTestExtension.getWireMockServer().verify(0,
                 putRequestedFor(
                         urlEqualTo("/event/worker/" + WorkerProperties.WORKER_ID.get())
                 )
         );
 
         // 0 to status
-        verify(0,
+        workerTestExtension.getWireMockServer().verify(0,
                 patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
         );
 
@@ -261,7 +261,7 @@ public class WorkerBaseTest {
 
         int retryLimit = Integer.parseInt(WorkerProperties.STATUSHANDLER_RETRY_LIMIT.get());
 
-        verify(retryLimit + 1,
+        workerTestExtension.getWireMockServer().verify(retryLimit + 1,
                 getRequestedFor(urlEqualTo("/event/status/" + newId))
         );
 
