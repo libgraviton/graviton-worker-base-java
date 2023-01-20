@@ -11,7 +11,6 @@ import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseExcep
 import com.github.libgraviton.workerbase.gdk.requestexecutor.auth.Authenticator;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.exception.AuthenticatorException;
 import com.google.common.base.Stopwatch;
-import io.activej.inject.annotation.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +22,6 @@ import org.slf4j.LoggerFactory;
  * @version $Id: $Id
  */
 public class RequestExecutor {
-
-    @Provides
-    public static RequestExecutor getInstance(ObjectMapper objectMapper, GravitonGateway gateway) {
-        return new RequestExecutor(objectMapper, gateway);
-    }
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestExecutor.class);
 

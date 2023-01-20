@@ -146,7 +146,7 @@ public class QueueWorkerRunner {
         queueManager.close();
     }
 
-    protected void register() throws WorkerException {
+    private void register(int tryCounter) {
         EventWorker eventWorker = new EventWorker();
         eventWorker.setId(worker.getWorkerId());
         eventWorker.setSubscription(worker.getSubscriptions());
@@ -154,8 +154,28 @@ public class QueueWorkerRunner {
         try {
             worker.getWorkerScope().getGravitonApi().put(eventWorker).execute();
         } catch (CommunicationException e) {
-            throw new WorkerException("Unable to register worker '" + worker.getWorkerId() + "'.", e);
+            LOG.error(
+                    "Unable to register worker '{}' at try #{}.",
+                    worker.getWorkerId(),
+                    tryCounter,
+                    e
+            );
+            try {
+                Thread.sleep(3000);
+            } catch (Throwable t) {
+                LOG.error(
+                        "Unable to sleep after register() fail.",
+                        t
+                );
+            }
+
+            tryCounter++;
+            register(tryCounter);
         }
+    }
+
+    protected void register() {
+        register(1);
     }
 
     /**

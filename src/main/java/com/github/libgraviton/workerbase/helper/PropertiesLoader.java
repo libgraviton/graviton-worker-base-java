@@ -20,21 +20,6 @@ class PropertiesLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesLoader.class);
 
-    /**
-     * this is in this repo!
-     */
-    private static final String WORKERBASE_PROPERTIES_PATH = "workerbase.properties";
-
-    /**
-     * this comes from the parent POM; it's dependency of resources!
-     */
-    private static final String DEFAULT_PROPERTIES_PATH = "default.properties";
-
-    /**
-     * and this is finally in the worker.
-     */
-    private static final String OVERWRITE_PROPERTIES_PATH = "app.properties";
-
     private static final String ENV_PREFIX = "worker_";
 
     static Properties load() throws IOException {
@@ -64,15 +49,16 @@ class PropertiesLoader {
         Properties properties = new Properties();
 
         // do in this sequence..
-        List<String> propertiesFileOrder = List.of(WORKERBASE_PROPERTIES_PATH, DEFAULT_PROPERTIES_PATH, OVERWRITE_PROPERTIES_PATH);
+        List<String> propertiesFileOrder = List.of(
+                "workerbase.properties",
+                "default.properties",
+                "app.properties",
+                "test.properties",
+                "runtime.properties"
+        );
 
         for (String propertiesFile : propertiesFileOrder) {
-            try (InputStream propertiesStream = PropertiesLoader.class.getClassLoader().getResourceAsStream(propertiesFile)) {
-                if (propertiesStream != null && propertiesStream.available() > 0) {
-                    LOG.info("Loading default properties from file '{}'", propertiesFile);
-                    properties.load(propertiesStream);
-                }
-            }
+            loadSingleFile(properties, propertiesFile);
         }
 
         LOG.info("Loading system properties (command line args)");
@@ -82,6 +68,15 @@ class PropertiesLoader {
         addFromEnvironment(properties, env);
 
         return properties;
+    }
+
+    private static void loadSingleFile(Properties properties, String propertiesFile) throws IOException {
+        try (InputStream propertiesStream = PropertiesLoader.class.getClassLoader().getResourceAsStream(propertiesFile)) {
+            if (propertiesStream != null && propertiesStream.available() > 0) {
+                properties.load(propertiesStream);
+                LOG.info("Loaded properties from file '{}'", propertiesFile);
+            }
+        }
     }
 
     /**

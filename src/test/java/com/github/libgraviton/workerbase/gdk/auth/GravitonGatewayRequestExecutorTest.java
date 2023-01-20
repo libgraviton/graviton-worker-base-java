@@ -8,6 +8,7 @@ import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workertestbase.WorkerTestExtension;
 import org.json.JSONWriter;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -17,6 +18,11 @@ import java.net.MalformedURLException;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 public class GravitonGatewayRequestExecutorTest {
+
+    @BeforeEach
+    public void setProps() {
+        WorkerProperties.setOverride(WorkerProperties.GATEWAY_BASE_URL.toString(), workerTestExtension.getWiremockUrl());
+    }
 
     @RegisterExtension
     public static WorkerTestExtension workerTestExtension = (new WorkerTestExtension())
@@ -57,13 +63,13 @@ public class GravitonGatewayRequestExecutorTest {
         executor.execute(req);
         executor.close();
 
-        verify(1,
+        workerTestExtension.getWireMockServer().verify(1,
                 postRequestedFor(urlEqualTo("/auth"))
         );
-        verify(1,
+        workerTestExtension.getWireMockServer().verify(1,
                 getRequestedFor(urlEqualTo("/fred/test"))
         );
-        verify(1,
+        workerTestExtension.getWireMockServer().verify(1,
                 getRequestedFor(urlEqualTo("/security/logout"))
         );
     }

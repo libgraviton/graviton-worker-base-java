@@ -5,12 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.libgraviton.workerbase.QueueManager;
 import com.github.libgraviton.workerbase.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
+import com.github.libgraviton.workerbase.gdk.GravitonGatewayRequestExecutor;
+import com.github.libgraviton.workerbase.gdk.RequestExecutor;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.EndpointManager;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.GeneratedEndpointManager;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.exception.UnableToLoadEndpointAssociationsException;
 import com.github.libgraviton.workerbase.gdk.api.gateway.GravitonGateway;
 import com.github.libgraviton.workerbase.gdk.api.gateway.OkHttpGateway;
 import com.github.libgraviton.workerbase.gdk.api.gateway.okhttp.OkHttpGatewayFactory;
+import com.github.libgraviton.workerbase.gdk.requestexecutor.auth.Authenticator;
+import com.github.libgraviton.workerbase.gdk.requestexecutor.auth.GravitonGatewayAuthenticator;
 import com.github.libgraviton.workerbase.gdk.serialization.mapper.RqlObjectMapper;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
@@ -92,6 +96,22 @@ public class WorkerBaseProvider extends AbstractModule {
         }
 
         return client;
+    }
+
+    @Provides
+    public static RequestExecutor requestExecutor(ObjectMapper objectMapper, GravitonGateway gateway) {
+        return new RequestExecutor(objectMapper, gateway);
+    }
+
+    @Provides
+    public static GravitonGatewayRequestExecutor gravitonGatewayRequestExecutor(ObjectMapper objectMapper, GravitonGateway gateway) {
+        Authenticator authenticator = new GravitonGatewayAuthenticator(
+                WorkerProperties.GATEWAY_BASE_URL.get(),
+                WorkerProperties.GATEWAY_USERNAME.get(),
+                WorkerProperties.GATEWAY_PASSWORD.get()
+        );
+
+        return new GravitonGatewayRequestExecutor(objectMapper, gateway, authenticator);
     }
 
     @Provides
