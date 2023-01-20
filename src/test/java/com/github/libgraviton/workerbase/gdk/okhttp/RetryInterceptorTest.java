@@ -124,7 +124,7 @@ public class RetryInterceptorTest {
             .build();
 
         Request request = new Request.Builder()
-            .url(workerTestExtension.getWireMockServer().baseUrl()+"/service")
+            .url(workerTestExtension.getWiremockUrl()+"/service")
             .build();
 
         Response response = client.newCall(request).execute();
