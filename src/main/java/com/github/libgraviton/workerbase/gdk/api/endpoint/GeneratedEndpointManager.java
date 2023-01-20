@@ -26,7 +26,7 @@ public class GeneratedEndpointManager extends EndpointManager {
      */
     private final File serializationFile;
 
-    private final String assocFilePath;
+    private final String assocFilePath = "gdk-resources/assoc";
 
     /**
      * Constructor. Defines the serialization file.
@@ -38,7 +38,6 @@ public class GeneratedEndpointManager extends EndpointManager {
      */
     public GeneratedEndpointManager(File serializationFile, Mode mode) throws UnableToLoadEndpointAssociationsException {
         this.serializationFile = serializationFile;
-        assocFilePath = WorkerProperties.getProperty("graviton.assoc.file.location");
         if (Mode.LOAD.equals(mode)) {
             load();
         } else {

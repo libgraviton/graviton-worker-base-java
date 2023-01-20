@@ -47,8 +47,7 @@ public class EndpointTest {
 
     @Test
     public void testEndpointUrls() throws Exception {
-        Properties properties = WorkerProperties.load();
-        String baseUrl = properties.getProperty("graviton.base.url");
+        String baseUrl = WorkerProperties.GRAVITON_BASE_URL.get();
         Assertions.assertEquals(baseUrl, Endpoint.getBaseUrl());
 
         String itemPath = "/other/item";
