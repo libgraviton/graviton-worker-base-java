@@ -27,4 +27,10 @@ public class ContextProperties extends Properties {
         return super.getProperty(context.concat(name));
     }
 
+    @Override
+    public String getProperty(String key, String defaultValue) {
+        String prop = getProperty(key);
+        return prop == null ? defaultValue : prop;
+    }
+
 }
