@@ -14,7 +14,7 @@ import java.util.Properties;
  */
 abstract public class QueueConnection {
 
-    private static final Logger LOG = LoggerFactory.getLogger(com.github.libgraviton.workerbase.messaging.QueueConnection.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(com.github.libgraviton.workerbase.messaging.QueueConnection.class);
 
     private final int connectionAttempts;
 
