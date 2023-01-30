@@ -91,7 +91,7 @@ public class DependencyInjection {
                     } catch (Throwable t) {
                         throw new RuntimeException(t);
                     }
-                }, WorkerScope.class);
+                }, WorkerScope.class).asTransient();
 
                 try {
                     builder.scan(clazz);
