@@ -1,7 +1,5 @@
 package com.github.libgraviton.workerbase.gdk.api;
 
-import com.github.libgraviton.workerbase.gdk.api.NoopResponse;
-import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulRequestException;
 import org.slf4j.Logger;
