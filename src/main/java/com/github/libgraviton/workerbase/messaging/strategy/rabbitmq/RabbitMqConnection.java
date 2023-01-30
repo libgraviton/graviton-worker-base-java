@@ -127,6 +127,12 @@ public class RabbitMqConnection extends QueueConnection {
                             t
                     );
                 }
+
+                if (!channel.isOpen()) {
+                    LOG.info("Channel is closed - reopening!");
+                    channel = connection.createChannel();
+                }
+
                 channel.queueBind(queueName, exchangeName, routingKey);
             }
         } catch (IOException | TimeoutException e) {
