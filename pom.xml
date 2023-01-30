@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>3.1.0</version>
+  <version>3.2.0</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -41,9 +41,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <dependency.locations.enabled>false</dependency.locations.enabled>
     <dependency.details.enabled>false</dependency.details.enabled>
-    <jackson-jr.version>2.14.1</jackson-jr.version>
+    <jackson-jr.version>2.14.2</jackson-jr.version>
     <log4j.version>2.19.0</log4j.version>
-    <jmockit.version>1.49</jmockit.version>
   </properties>
 
   <repositories>
@@ -157,7 +156,7 @@
     <dependency>
       <groupId>io.sentry</groupId>
       <artifactId>sentry-log4j2</artifactId>
-      <version>6.12.1</version>
+      <version>6.13.0</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -223,19 +222,13 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>4.11.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jmockit</groupId>
-      <artifactId>jmockit</artifactId>
-      <version>${jmockit.version}</version>
+      <version>5.1.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>graviton-worker-test-base</artifactId>
-      <version>3.1.1</version>
+      <version>3.2.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -304,15 +297,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.0.0-M7</version>
-        <configuration>
-          <useSystemClassLoader>false</useSystemClassLoader>
-          <argLine>
-            -javaagent:${settings.localRepository}/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar -Xmx1024m ${argLine}
-          </argLine>
-          <includes>
-            <include>**/*Test.java</include>
-          </includes>
-        </configuration>
       </plugin>
     </plugins>
   </build>

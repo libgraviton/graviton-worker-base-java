@@ -92,6 +92,14 @@ public class RabbitMqConnection extends QueueConnection {
     @Override
     protected void openConnection() throws CannotConnectToQueue {
         try {
+            LOG.info(
+                    "Opening AMQP connection to {}:{} (queue '{}', exchange '{}')",
+                    connectionFactory.getHost(),
+                    connectionFactory.getPort(),
+                    queueName,
+                    exchangeName
+            );
+
             connection = connectionFactory.newConnection();
             channel = connection.createChannel();
             // If defined, use specific queue and declare it, otherwise use random / temporary queue
@@ -108,7 +116,17 @@ public class RabbitMqConnection extends QueueConnection {
             }
             // If defined, use specific exchange and bind queue to it, otherwise use default exchange
             if (null != exchangeName) {
-                channel.exchangeDeclare(exchangeName, exchangeType, exchangeDurable);
+                try {
+                    channel.exchangeDeclare(exchangeName, exchangeType, exchangeDurable);
+                } catch (Throwable t) {
+                    LOG.warn(
+                            "Error creating exchange '{}', type = '{}', durable = '{}' - will still try to connect.",
+                            exchangeName,
+                            exchangeType,
+                            exchangeDurable,
+                            t
+                    );
+                }
                 channel.queueBind(queueName, exchangeName, routingKey);
             }
         } catch (IOException | TimeoutException e) {

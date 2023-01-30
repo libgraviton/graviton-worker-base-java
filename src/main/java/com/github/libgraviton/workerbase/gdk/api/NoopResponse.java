@@ -1,7 +1,5 @@
 package com.github.libgraviton.workerbase.gdk.api;
 
-import com.github.libgraviton.workerbase.gdk.api.NoopRequest;
-import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
 
 /**
