@@ -117,8 +117,7 @@ public class RabbitMqConnection extends QueueConnection {
             // If defined, use specific exchange and bind queue to it, otherwise use default exchange
             if (null != exchangeName) {
                 try {
-                    //channel.exchangeDeclare(exchangeName, exchangeType, exchangeDurable);
-                    channel.exchangeDeclarePassive(exchangeName);
+                    channel.exchangeDeclare(exchangeName, exchangeType, exchangeDurable);
                 } catch (Throwable t) {
                     LOG.warn(
                             "Error creating exchange '{}', type = '{}', durable = '{}' - will still try to connect.",
