@@ -29,7 +29,7 @@ abstract public class QueueConnection {
     }
 
     /**
-     * Opens the connection. If the connection cannot be establishes, it waits for {@link #connectionAttemptsWait}
+     * Opens the connection. If the connection cannot be established, it waits for {@link #connectionAttemptsWait}
      * seconds and then tries again until {@link #connectionAttempts} is reached.
      *
      * @see Builder#connectionAttempts(int)
@@ -45,7 +45,12 @@ abstract public class QueueConnection {
                 openConnection();
                 break;
             } catch (CannotConnectToQueue e) {
-                LOG.error("Unable to open to queue '{}': '{}'", getConnectionName(), e.getMessage());
+                LOG.error(
+                        "Unable to open to queue '{}': '{}' ('{}')",
+                        getConnectionName(),
+                        e.getMessage(),
+                        e.getCause() != null ? e.getCause().getMessage() : "[no cause]"
+                );
                 // Last try failed
                 if (1 == connectionAttempts) {
                     throw e;
