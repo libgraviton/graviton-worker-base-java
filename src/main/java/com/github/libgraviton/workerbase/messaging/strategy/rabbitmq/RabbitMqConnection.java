@@ -92,6 +92,14 @@ public class RabbitMqConnection extends QueueConnection {
     @Override
     protected void openConnection() throws CannotConnectToQueue {
         try {
+            LOG.info(
+                    "Opening AMQP connection to {}:{} (queue '{}', exchange '{}')",
+                    connectionFactory.getHost(),
+                    connectionFactory.getPort(),
+                    queueName,
+                    exchangeName
+            );
+
             connection = connectionFactory.newConnection();
             channel = connection.createChannel();
             // If defined, use specific queue and declare it, otherwise use random / temporary queue
