@@ -5,9 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Load Properties with fallback mechanism
@@ -48,7 +46,9 @@ class PropertiesLoader {
     static Properties load(Map<String, String> env) throws IOException {
         Properties properties = new Properties();
 
-        // do in this sequence..
+        // do in this sequence
+        Map<String, Integer> loadedSources = new LinkedHashMap<>();
+
         List<String> propertiesFileOrder = List.of(
                 "workerbase.properties",
                 "default.properties",
@@ -57,15 +57,38 @@ class PropertiesLoader {
                 "runtime.properties"
         );
 
+        int startCounter = 0;
         for (String propertiesFile : propertiesFileOrder) {
             loadSingleFile(properties, propertiesFile);
+            int addedCount = properties.size() - startCounter;
+            if (addedCount > 0) {
+                loadedSources.put(propertiesFile, addedCount);
+            }
+            startCounter = properties.size();
         }
 
-        LOG.info("Loading system properties (command line args)");
+        // Loading system properties (command line args)
         properties.putAll(System.getProperties());
 
-        LOG.info("Loading from ENV");
+        int addedCount = properties.size() - startCounter;
+        if (addedCount > 0) {
+            loadedSources.put("system", addedCount);
+        }
+        startCounter = properties.size();
+
+        // environment
         addFromEnvironment(properties, env);
+
+        addedCount = properties.size() - startCounter;
+        if (addedCount > 0) {
+            loadedSources.put("ENV", addedCount);
+        }
+
+        LOG.info(
+                "Loaded a total of '{}' properties. Sources: {}",
+                properties.size(),
+                loadedSources
+        );
 
         return properties;
     }
@@ -74,7 +97,6 @@ class PropertiesLoader {
         try (InputStream propertiesStream = PropertiesLoader.class.getClassLoader().getResourceAsStream(propertiesFile)) {
             if (propertiesStream != null && propertiesStream.available() > 0) {
                 properties.load(propertiesStream);
-                LOG.info("Loaded properties from file '{}'", propertiesFile);
             }
         }
     }
