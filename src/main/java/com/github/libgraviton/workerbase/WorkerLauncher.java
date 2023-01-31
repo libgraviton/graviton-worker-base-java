@@ -56,7 +56,7 @@ public final class WorkerLauncher {
 
         final TimerTask memoryReporter = new TimerTask() {
 
-            private final AtomicLong lastRecordedUsage = new AtomicLong(0);
+            private final AtomicInteger lastRecordedUsage = new AtomicInteger(0);
             private final AtomicInteger maxRecordedAllocation = new AtomicInteger(0);
 
             @Override
@@ -70,7 +70,7 @@ public final class WorkerLauncher {
                 int percentageUsed = (int) (usedMemory * 100.0 / maxMemory + 0.5);
                 int percentageAllocated = (int) (totalMemory * 100.0 / maxMemory + 0.5);
 
-                if (usedMemory == lastRecordedUsage.get()) {
+                if (percentageUsed == lastRecordedUsage.get()) {
                     return;
                 }
 
@@ -88,7 +88,7 @@ public final class WorkerLauncher {
                         maxRecordedAllocation.get()
                 );
 
-                lastRecordedUsage.set(usedMemory);
+                lastRecordedUsage.set(percentageUsed);
             }
         };
 
