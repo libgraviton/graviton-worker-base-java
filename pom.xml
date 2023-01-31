@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>3.2.1</version>
+  <version>3.2.2</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -222,7 +222,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.1.0</version>
+      <version>5.1.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
