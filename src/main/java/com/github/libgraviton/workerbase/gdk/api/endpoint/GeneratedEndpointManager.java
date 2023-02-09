@@ -135,7 +135,11 @@ public class GeneratedEndpointManager extends EndpointManager {
         // try to load as resource first
         LOG.debug("Load resource as stream from '{}'.", assocFilePath);
 
-        return GeneratedEndpointManager.class.getClassLoader().getResourceAsStream(assocFilePath);
+        return getClass().getClassLoader().getResourceAsStream(assocFilePath);
+    }
+
+    public int persist() throws UnableToPersistEndpointAssociationsException {
+        return persist(serializationFile.getAbsolutePath());
     }
 
     /**
@@ -144,9 +148,9 @@ public class GeneratedEndpointManager extends EndpointManager {
      * @return The number of service to POJO class associations written.
      * @throws UnableToPersistEndpointAssociationsException on persistence problems
      */
-    public int persist() throws UnableToPersistEndpointAssociationsException {
+    public int persist(String path) throws UnableToPersistEndpointAssociationsException {
         try {
-            FileOutputStream fout = new FileOutputStream(serializationFile);
+            FileOutputStream fout = new FileOutputStream(path);
             ObjectOutputStream oos = new ObjectOutputStream(fout);
             oos.writeObject(endpoints);
             fout.close();
