@@ -63,7 +63,6 @@ public class GravitonGatewayAuthenticator implements Authenticator {
                     )
                     .execute();
 
-            LOG.info("Logged out from Graviton Gateway");
         } catch (Exception e) {
             throw new AuthenticatorException("Unable to logout from Graviton Gateway", e);
         }
@@ -104,7 +103,6 @@ public class GravitonGatewayAuthenticator implements Authenticator {
                     .execute();
 
             response = authResponse.getBodyItem(JsonNode.class);
-            LOG.info("Received HTTP status '{}', body = '{}' from Graviton Gateway.", authResponse.getCode(), response.toString());
         } catch (CommunicationException e) {
             throw new AuthenticatorException("Unable to locate token in authServiceUrl response.", e);
         }
