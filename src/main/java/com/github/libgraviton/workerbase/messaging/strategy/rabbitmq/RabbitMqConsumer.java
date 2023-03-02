@@ -1,16 +1,21 @@
 package com.github.libgraviton.workerbase.messaging.strategy.rabbitmq;
 
+import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.github.libgraviton.workerbase.messaging.consumer.Consumeable;
 import com.github.libgraviton.workerbase.messaging.consumer.WorkerConsumer;
 import com.github.libgraviton.workerbase.messaging.exception.CannotAcknowledgeMessage;
 import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumeable;
 import com.rabbitmq.client.*;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Date;
 
 /**
  * Wraps an instance of {@link WorkerConsumer} in order to consume from an AMQP RabbitMQ queue. Moreover, this consumer does
@@ -28,6 +33,13 @@ class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
 
     private final WorkerConsumer consumer;
 
+    private final Timer eventDelayDurationTimer = Timer
+            .builder("worker_queue_events_delay_duration")
+            .description("Amount of time (in seconds) that queue events was delayed in the queue before being delivered to a worker.")
+            .percentilePrecision(0)
+            .sla(WorkerUtil.getTimeMetricsDurations())
+            .register(Metrics.globalRegistry);
+
     RabbitMqConsumer(RabbitMqConnection connection, Consumeable consumeable) {
         super(connection.getChannel());
         this.consumer = new WorkerConsumer(consumeable, this);
@@ -41,15 +53,26 @@ class RabbitMqConsumer extends DefaultConsumer implements MessageAcknowledger {
     @Override
     public void handleDelivery(
             String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body
-    ) throws IOException {
+    ) {
+
         final String deliveryTag = String.valueOf(envelope.getDeliveryTag());
         final String message = new String(body, StandardCharsets.UTF_8);
+
+        // see delivery delay
+        Duration delayedTime = null;
+        if (properties.getTimestamp() != null) {
+            delayedTime = Duration.between(properties.getTimestamp().toInstant(), new Date().toInstant());
+            eventDelayDurationTimer.record(delayedTime);
+        }
+
         LOG.info(
-                "Message '{}' received on queue '{}': '{}'",
+                "Message '{}' received on queue '{}' with a queue delay of '{}' ms: '{}'",
                 deliveryTag,
                 connection.getConnectionName(),
+                delayedTime != null ? delayedTime.toMillis() : "[unknown]",
                 message
         );
+
         consumer.consume(deliveryTag, message);
     }
 
