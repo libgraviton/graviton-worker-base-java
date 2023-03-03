@@ -10,13 +10,14 @@ import com.github.libgraviton.workerbase.exception.NonExistingEventStatusExcepti
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
+import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
-import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumeable;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.google.common.util.concurrent.AtomicLongMap;
 import io.activej.inject.annotation.Inject;
 import io.micrometer.core.instrument.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +38,12 @@ public class QueueWorkerRunner {
 
     private final AtomicLongMap<EventStatusStatus.Status> eventStates = AtomicLongMap.create();
     private final AtomicLong eventWorkingCounter = new AtomicLong(0);
+
     private final Timer eventWorkingDurationTimer = Timer
             .builder("worker_queue_events_working_duration")
+            .description("Amount of time (in seconds) that queue events took to be processed by the worker.")
+            .percentilePrecision(0)
+            .sla(WorkerUtil.getTimeMetricsDurations())
             .description("How long does it take to work on each queue event")
             .register(Metrics.globalRegistry);
     private final Counter eventReceivedCounter = Counter

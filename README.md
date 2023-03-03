@@ -1,6 +1,6 @@
 # graviton-worker-base-java
 
-[![Build Status](https://travis-ci.org/libgraviton/graviton-worker-base-java.svg?branch=develop)](https://travis-ci.org/libgraviton/graviton-worker-base-java) [![Coverage Status](https://coveralls.io/repos/libgraviton/graviton-worker-base-java/badge.svg?branch=develop&service=github)](https://coveralls.io/github/libgraviton/graviton-worker-base-java?branch=develop)
+[![Build status](https://github.com/libgraviton/graviton-worker-base-java/actions/workflows/maven.yml/badge.svg)](https://github.com/libgraviton/graviton-worker-base-java/actions/workflows/maven.yml)
 
 ## What is it
 
@@ -90,15 +90,6 @@ those connection credentials will automatically override whatever you specify vi
 
 ## Deploying a release
 
-This package is built *without* shade plugin, but ships with Atlassian `jgit-flow`. The goals are:
-
 ```
-mvn jgitflow:release-start
-mvn jgitflow:release-finish
-```
-
-After the release-finish, it will try to deploy to `ossrh` automatically. Please make sure you only do this if everything is configured as expected.
-
-```
-mvn -Dmaven.javadoc.skip=true -DperformRelease=true deploy
+bash deploy.sh
 ```

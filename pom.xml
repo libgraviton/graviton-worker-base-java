@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>3.3.0</version>
+  <version>3.4.0</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -42,27 +42,61 @@
     <dependency.locations.enabled>false</dependency.locations.enabled>
     <dependency.details.enabled>false</dependency.details.enabled>
     <jackson-jr.version>2.14.2</jackson-jr.version>
-    <log4j.version>2.19.0</log4j.version>
+    <log4j.version>2.20.0</log4j.version>
   </properties>
 
   <repositories>
     <repository>
+      <id>libgraviton-github</id>
+      <url>https://maven.pkg.github.com/libgraviton/gdk-java</url>
       <snapshots>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
       </snapshots>
-      <id>artifactory</id>
-      <name>artifactory</name>
-      <url>https://bin.swisscom.com/artifactory/graviton-maven-local</url>
     </repository>
   </repositories>
 
-  <distributionManagement>
-    <repository>
+  <profiles>
+    <profile>
       <id>artifactory</id>
-      <name>artifactory</name>
-      <url>https://bin.swisscom.com/artifactory/graviton-maven-local</url>
-    </repository>
-  </distributionManagement>
+      <activation>
+        <property>
+          <name>!useGithub</name>
+        </property>
+      </activation>
+      <properties>
+      </properties>
+      <distributionManagement>
+        <repository>
+          <id>artifactory</id>
+          <name>artifactory</name>
+          <url>https://bin.swisscom.com/artifactory/graviton-maven-local</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+      </distributionManagement>
+    </profile>
+    <profile>
+      <id>github</id>
+      <activation>
+        <property>
+          <name>useGithub</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <properties>
+      </properties>
+      <distributionManagement>
+        <repository>
+          <id>libgraviton-github</id>
+          <url>https://maven.pkg.github.com/libgraviton/gdk-java</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+      </distributionManagement>
+    </profile>
+  </profiles>
 
   <dependencies>
     <!-- logging -->
@@ -116,7 +150,7 @@
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>gdk-essential-pojos</artifactId>
-      <version>1.0.0</version>
+      <version>1.1.0</version>
       <!-- we don't package this up - needs to be provided at runtime, which it is - so no need to exclude things -->
       <scope>provided</scope>
     </dependency>
@@ -156,7 +190,7 @@
     <dependency>
       <groupId>io.sentry</groupId>
       <artifactId>sentry-log4j2</artifactId>
-      <version>6.14.0</version>
+      <version>6.15.0</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -175,7 +209,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20220924</version>
+      <version>20230227</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.jr</groupId>
@@ -191,7 +225,7 @@
     <dependency>
       <groupId>io.github.classgraph</groupId>
       <artifactId>classgraph</artifactId>
-      <version>4.8.154</version>
+      <version>4.8.155</version>
     </dependency>
 
     <!-- metrics -->
@@ -228,7 +262,7 @@
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>graviton-worker-test-base</artifactId>
-      <version>3.2.1</version>
+      <version>3.2.5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -300,35 +334,5 @@
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>release-sign-artifacts</id>
-      <activation>
-        <property>
-          <name>performRelease</name>
-          <value>true</value>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.5</version>
-            <executions>
-              <execution>
-                <id>sign-artifacts</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
 </project>

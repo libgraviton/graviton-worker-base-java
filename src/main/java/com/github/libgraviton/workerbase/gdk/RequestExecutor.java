@@ -10,9 +10,15 @@ import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.exception.UnsuccessfulResponseException;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.auth.Authenticator;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.exception.AuthenticatorException;
+import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.google.common.base.Stopwatch;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
+import java.util.HashMap;
 
 /**
  * This is the base class used for Graviton API calls.
@@ -36,6 +42,8 @@ public class RequestExecutor {
     private final GravitonGateway gateway;
 
     private final Authenticator authenticator;
+
+    private final HashMap<String, Timer> requestExecutionTimer = new HashMap<>();
 
     public RequestExecutor(ObjectMapper objectMapper, GravitonGateway gateway) {
         this(objectMapper, gateway, null);
@@ -91,14 +99,32 @@ public class RequestExecutor {
             }
         }
 
+        Duration elapsedTime = reqStopwatch.elapsed();
+
         LOG.info(
                 "REQ '{}' to '{}'. RES code '{}' in '{}' ms.{}",
                 request.getMethod(),
                 request.getUrl(),
                 response.getCode(),
-                reqStopwatch.elapsed().toMillis(),
+                elapsedTime.toMillis(),
                 addedText
         );
+
+        String timerId = String.format("%s", request.getMethod().toString().toUpperCase());
+        if (!requestExecutionTimer.containsKey(timerId)) {
+            requestExecutionTimer.put(
+                    timerId,
+                    Timer
+                            .builder("worker_request_executor_request_duration")
+                            .description("Amount of time (in milliseconds) that the RequestExecutor requests take.")
+                            .percentilePrecision(0)
+                            .tags("method", request.getMethod().toString().toUpperCase())
+                            .sla(WorkerUtil.getTimeMetricsDurations())
+                            .register(Metrics.globalRegistry)
+            );
+        }
+
+        requestExecutionTimer.get(timerId).record(elapsedTime);
 
         if (!response.isSuccessful()) {
             throw new UnsuccessfulResponseException(response);
