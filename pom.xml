@@ -47,20 +47,21 @@
 
   <repositories>
     <repository>
+      <id>libgraviton-github</id>
+      <url>https://maven.pkg.github.com/libgraviton/gdk-java</url>
       <snapshots>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
       </snapshots>
-      <id>artifactory</id>
-      <name>artifactory</name>
-      <url>https://bin.swisscom.com/artifactory/graviton-maven-local</url>
     </repository>
   </repositories>
 
   <distributionManagement>
     <repository>
-      <id>artifactory</id>
-      <name>artifactory</name>
-      <url>https://bin.swisscom.com/artifactory/graviton-maven-local</url>
+      <id>libgraviton-github</id>
+      <url>https://maven.pkg.github.com/libgraviton/gdk-java</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
     </repository>
   </distributionManagement>
 
@@ -116,7 +117,7 @@
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>gdk-essential-pojos</artifactId>
-      <version>1.0.0</version>
+      <version>1.1.0</version>
       <!-- we don't package this up - needs to be provided at runtime, which it is - so no need to exclude things -->
       <scope>provided</scope>
     </dependency>
@@ -228,7 +229,7 @@
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>graviton-worker-test-base</artifactId>
-      <version>3.2.1</version>
+      <version>3.2.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
