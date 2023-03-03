@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>3.4.0</version>
+  <version>3.4.0-SNAPSHOT</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -117,7 +117,7 @@
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>gdk-essential-pojos</artifactId>
-      <version>1.0.0</version>
+      <version>1.1.0</version>
       <!-- we don't package this up - needs to be provided at runtime, which it is - so no need to exclude things -->
       <scope>provided</scope>
     </dependency>
@@ -229,7 +229,7 @@
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>graviton-worker-test-base</artifactId>
-      <version>3.2.1</version>
+      <version>3.2.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
