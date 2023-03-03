@@ -90,15 +90,6 @@ those connection credentials will automatically override whatever you specify vi
 
 ## Deploying a release
 
-This package is built *without* shade plugin, but ships with Atlassian `jgit-flow`. The goals are:
-
 ```
-mvn jgitflow:release-start
-mvn jgitflow:release-finish
-```
-
-After the release-finish, it will try to deploy to `ossrh` automatically. Please make sure you only do this if everything is configured as expected.
-
-```
-mvn -Dmaven.javadoc.skip=true -DperformRelease=true deploy
+bash deploy.sh
 ```

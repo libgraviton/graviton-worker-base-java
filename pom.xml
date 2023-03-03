@@ -55,15 +55,48 @@
     </repository>
   </repositories>
 
-  <distributionManagement>
-    <repository>
-      <id>libgraviton-github</id>
-      <url>https://maven.pkg.github.com/libgraviton/gdk-java</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </distributionManagement>
+  <profiles>
+    <profile>
+      <id>artifactory</id>
+      <activation>
+        <property>
+          <name>!useGithub</name>
+        </property>
+      </activation>
+      <properties>
+      </properties>
+      <distributionManagement>
+        <repository>
+          <id>artifactory</id>
+          <name>artifactory</name>
+          <url>https://bin.swisscom.com/artifactory/graviton-maven-local</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+      </distributionManagement>
+    </profile>
+    <profile>
+      <id>github</id>
+      <activation>
+        <property>
+          <name>useGithub</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <properties>
+      </properties>
+      <distributionManagement>
+        <repository>
+          <id>libgraviton-github</id>
+          <url>https://maven.pkg.github.com/libgraviton/gdk-java</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+      </distributionManagement>
+    </profile>
+  </profiles>
 
   <dependencies>
     <!-- logging -->
@@ -229,7 +262,7 @@
     <dependency>
       <groupId>com.github.libgraviton</groupId>
       <artifactId>graviton-worker-test-base</artifactId>
-      <version>3.2.4</version>
+      <version>3.2.5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
