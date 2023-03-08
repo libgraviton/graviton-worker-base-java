@@ -5,8 +5,6 @@ import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -117,8 +115,6 @@ public class EventStatusHandlerTest {
         String secondParam = "anotherInput";
         String thirdParam = "last-input";
 
-        JSONArray statusDocuments = new JSONArray();
-        statusDocuments.put(new JSONObject());
         String rqlFilter = statusHandler.getRqlFilter(filterTemplate, firstParam, secondParam, thirdParam);
         Assertions.assertEquals(expectedFilter, rqlFilter);
     }
@@ -133,8 +129,6 @@ public class EventStatusHandlerTest {
         String thirdParam = "last-input";
         String forthParam = "this-will-never-be-used";
 
-        JSONArray statusDocuments = new JSONArray();
-        statusDocuments.put(new JSONObject());
         String rqlFilter = statusHandler.getRqlFilter(filterTemplate, firstParam, secondParam, thirdParam, forthParam);
         Assertions.assertEquals(expectedFilter, rqlFilter);
     }
@@ -146,8 +140,6 @@ public class EventStatusHandlerTest {
         String expectedFilter = "?elemMatch(information,and(eq(content,myInput),eq(workerId,{workerId})))&elemMatch(status,and(ne(status,done),eq(workerId,{workerId})))";
         String firstParam = "myInput";
 
-        JSONArray statusDocuments = new JSONArray();
-        statusDocuments.put(new JSONObject());
         String rqlFilter = statusHandler.getRqlFilter(filterTemplate, firstParam);
         Assertions.assertEquals(expectedFilter, rqlFilter);
     }
