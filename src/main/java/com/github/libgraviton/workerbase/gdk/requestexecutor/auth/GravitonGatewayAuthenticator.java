@@ -1,17 +1,17 @@
 package com.github.libgraviton.workerbase.gdk.requestexecutor.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.libgraviton.workerbase.gdk.api.HttpMethod;
 import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.exception.AuthenticatorException;
-import org.json.JSONWriter;
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.StringWriter;
 
 public class GravitonGatewayAuthenticator implements Authenticator {
 
@@ -21,7 +21,6 @@ public class GravitonGatewayAuthenticator implements Authenticator {
     private final String gatewayPassword;
     private final String coreUserId;
     private String accessToken;
-    private final String tokenHeaderName = "x-rest-token";
 
     public GravitonGatewayAuthenticator(String gatewayUrl, String gatewayUser, String gatewayPassword) {
         this(gatewayUrl, gatewayUser, gatewayPassword, null);
@@ -40,46 +39,34 @@ public class GravitonGatewayAuthenticator implements Authenticator {
             login();
         }
 
+        String tokenHeaderName = "x-rest-token";
         request.getHeaders().set(tokenHeaderName, accessToken);
 
         return request;
     }
 
     @Override
-    public void onClose() throws AuthenticatorException {
-        if (accessToken == null) {
-            return;
-        }
-
-        Request.Builder requestBuilder = new Request.Builder();
-
-        try {
-            requestBuilder
-                    .setMethod(HttpMethod.GET)
-                    .setUrl(gatewayUrl.concat("/security/logout"))
-                    .setHeaders(new HeaderBag.Builder()
-                            .set(tokenHeaderName, accessToken)
-                            .build()
-                    )
-                    .execute();
-
-        } catch (Exception e) {
-            throw new AuthenticatorException("Unable to logout from Graviton Gateway", e);
-        }
+    public void close() throws Exception {
+        // clear token
+        accessToken = null;
+        LOG.info("Closed Authenticator; token cleared.");
     }
 
     private void login() throws AuthenticatorException {
-        StringWriter stringWriter = new StringWriter();
-        JSONWriter jsonWriter = new JSONWriter(stringWriter);
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode loginNode = objectMapper.createObjectNode();
+
+        loginNode.put("username", gatewayUser);
+        loginNode.put("password", gatewayPassword);
+
+        String authBody;
 
         try {
-            jsonWriter.object().key("username").value(gatewayUser).key("password").value(gatewayPassword).endObject();
-            stringWriter.close();
+            authBody = objectMapper.writeValueAsString(loginNode);
         } catch (Exception e) {
             throw new AuthenticatorException("Unable to generate JSON for Graviton Gateway /auth.", e);
         }
 
-        String authBody = stringWriter.toString();
         Request.Builder requestBuilder = new Request.Builder();
         JsonNode response;
 
@@ -87,6 +74,13 @@ public class GravitonGatewayAuthenticator implements Authenticator {
         try {
             HeaderBag.Builder headers = new HeaderBag.Builder();
             headers.set("Content-Type", "application/json");
+
+            // token lifetime?
+            String tokenLifetime = WorkerProperties.GATEWAY_JWT_LIFETIME.get();
+            if (tokenLifetime != null) {
+                String lifetimeHeaderName = "x-jwt-lifetime";
+                headers.set(lifetimeHeaderName, tokenLifetime);
+            }
 
             // impersonate?
             if (coreUserId != null) {
@@ -111,4 +105,5 @@ public class GravitonGatewayAuthenticator implements Authenticator {
 
         LOG.info("Successfully received token '{}'", accessToken);
     }
+
 }
