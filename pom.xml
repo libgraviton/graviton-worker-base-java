@@ -207,11 +207,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>20230227</version>
-    </dependency>
-    <dependency>
       <groupId>com.fasterxml.jackson.jr</groupId>
       <artifactId>jackson-jr-objects</artifactId>
       <version>${jackson-jr.version}</version>
@@ -225,7 +220,7 @@
     <dependency>
       <groupId>io.github.classgraph</groupId>
       <artifactId>classgraph</artifactId>
-      <version>4.8.155</version>
+      <version>4.8.156</version>
     </dependency>
 
     <!-- metrics -->

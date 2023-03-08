@@ -27,7 +27,7 @@ import java.util.HashMap;
  * @see <a href="http://swisscom.ch">http://swisscom.ch</a>
  * @version $Id: $Id
  */
-public class RequestExecutor {
+public class RequestExecutor implements AutoCloseable {
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestExecutor.class);
 
@@ -132,12 +132,13 @@ public class RequestExecutor {
         return response;
     }
 
+    @Override
     public void close() {
         if (authenticator != null) {
             try {
-                authenticator.onClose();
-            } catch (AuthenticatorException e) {
-                LOG.error("Error on Authenticator.close()", e);
+                authenticator.close();
+            } catch (Throwable t) {
+                LOG.error("Error on Authenticator.close()", t);
             }
         }
     }
