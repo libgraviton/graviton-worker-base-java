@@ -103,7 +103,11 @@ public class WorkerBaseProvider extends AbstractModule {
         return new RequestExecutor(objectMapper, gateway);
     }
 
+    /**
+     * this needs to be transient as it has local state (the jwt token)!
+     */
     @Provides
+    @Transient
     public static GravitonGatewayRequestExecutor gravitonGatewayRequestExecutor(ObjectMapper objectMapper, GravitonGateway gateway) {
         Authenticator authenticator = new GravitonGatewayAuthenticator(
                 WorkerProperties.GATEWAY_BASE_URL.get(),
