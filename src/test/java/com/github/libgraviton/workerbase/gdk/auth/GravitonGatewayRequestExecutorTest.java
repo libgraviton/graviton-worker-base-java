@@ -51,12 +51,6 @@ public class GravitonGatewayRequestExecutorTest {
                         .willReturn(aResponse().withBody("YES").withStatus(200))
         );
 
-        workerTestExtension.getWireMockServer().stubFor(
-                get(urlEqualTo("/security/logout"))
-                        .withHeader("x-rest-token", equalTo("THIS-IS-THE-MAGIC-ACCESS-TOKEN"))
-                        .willReturn(aResponse().withBody("YES").withStatus(200))
-        );
-
         Request.Builder requestBuilder = new Request.Builder();
         Request req = requestBuilder.setUrl(WorkerProperties.GRAVITON_BASE_URL.get() + "/fred/test")
                 .setMethod(HttpMethod.GET)
@@ -69,9 +63,6 @@ public class GravitonGatewayRequestExecutorTest {
         );
         workerTestExtension.getWireMockServer().verify(1,
                 getRequestedFor(urlEqualTo("/fred/test"))
-        );
-        workerTestExtension.getWireMockServer().verify(1,
-                getRequestedFor(urlEqualTo("/security/logout"))
         );
     }
 }
