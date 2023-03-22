@@ -93,6 +93,12 @@ public class MongoDB {
     public static <T> T getDocument(String collectionName, Bson filter, Class<T> type, List<String> fields) {
         Bson projection = fields != null ? Projections.fields(Projections.include(fields)) : new Document();
 
+        return getDocument(collectionName, filter, type, projection);
+    }
+
+    public static <T> T getDocument(String collectionName, Bson filter, Class<T> type, Bson projection) {
+        projection = projection != null ? projection : new Document();
+
         try (MongoClient mongoClient = MongoDB.getMongoClient();
              MongoCursor<T> iterator = mongoClient.getDatabase(MongoDB.getDatabaseName()).getCollection(collectionName,type)
                      .find(filter)
@@ -106,13 +112,19 @@ public class MongoDB {
     public static <T> List<T> getDocuments(String collectionName, Bson filter, Class<T> type, List<String> fields) {
         Bson projection = fields != null ? Projections.fields(Projections.include(fields)) : new Document();
 
+        return getDocuments(collectionName, filter, type, projection);
+    }
+
+    public static <T> List<T> getDocuments(String collectionName, Bson filter, Class<T> type, Bson projection) {
+        projection = projection != null ? projection : new Document();
+
         try (MongoClient mongoClient = MongoDB.getMongoClient();
              MongoCursor<T> iterator = mongoClient.getDatabase(MongoDB.getDatabaseName()).getCollection(collectionName,type)
                      .find(filter)
                      .projection(projection)
                      .iterator()) {
 
-            return Lists.newArrayList(Converter.getInstance(iterator.next(),type));
+            return iterator.hasNext() ? Lists.newArrayList(Converter.getInstance(iterator.next(),type)) : null;
         }
     }
 

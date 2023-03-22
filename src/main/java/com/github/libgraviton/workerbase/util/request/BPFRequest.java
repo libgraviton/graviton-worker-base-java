@@ -1,5 +1,6 @@
 package com.github.libgraviton.workerbase.util.request;
 
+import com.github.libgraviton.workerbase.gdk.api.HttpMethod;
 import com.github.libgraviton.workerbase.util.Converter;
 import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
@@ -52,6 +53,14 @@ public class BPFRequest extends GatewayRequest {
     }
 
     private String execute(Document body) throws Exception {
-        return this.setBody(body.toJson()).execute().getBody();
+        if (body.isEmpty()) {
+            this.setBody(null);
+            this.setHttpMethod(HttpMethod.GET);
+        } else {
+            this.setHttpMethod(HttpMethod.POST);
+            this.setBody(body.toJson());
+        }
+
+        return this.execute().getBody();
     }
 }
