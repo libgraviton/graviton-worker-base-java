@@ -30,20 +30,28 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 public class MongoDB {
 
-    private static String connectionString = WorkerProperties.getProperty("mongodb.url");
-    private static String databaseName = WorkerProperties.getProperty("mongodb.db");
+    private String connectionString = WorkerProperties.getProperty("mongodb.url");
+    private String databaseName = WorkerProperties.getProperty("mongodb.db");
     private static List<String> pojoCodecs = Collections.synchronizedList(new ArrayList<>(){{add("com.github.libgraviton.jdk.gravitondyn");}});
-    private static MongoClientSettings.Builder cientSettings = getMongoClientSettings();
+    private static MongoClientSettings.Builder clientSettings = getMongoClientSettings();
 
 
     public static void addPojoCodecs(ArrayList<String> _pojoCodecs) {
         pojoCodecs.addAll(_pojoCodecs);
-        cientSettings = getMongoClientSettings();
+        clientSettings = getMongoClientSettings();
     }
 
     public static void addPojoCodec(String pojoCodec) {
         pojoCodecs.add(pojoCodec);
-        cientSettings = getMongoClientSettings();
+        clientSettings = getMongoClientSettings();
+    }
+
+    public void setConnectionString(String connectionString) {
+        this.connectionString = connectionString;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     private static MongoClientSettings.Builder getMongoClientSettings() {
@@ -55,52 +63,44 @@ public class MongoDB {
                 .codecRegistry(pojoCodecRegistry);
     }
 
-    public static void setConnectionString(String connectionString) {
-        MongoDB.connectionString = connectionString;
+    public String getDatabaseName() {
+        return this.databaseName;
     }
 
-    public static void setDatabaseName(String databaseName) {
-        MongoDB.databaseName = databaseName;
-    }
-
-    public static String getDatabaseName() {
-        return databaseName;
-    }
-
-    public synchronized static MongoClient getMongoClient() {
+    public synchronized MongoClient getMongoClient() {
         return MongoClients.create(
-                cientSettings.applyConnectionString(
-                        new ConnectionString(connectionString)
+                clientSettings.applyConnectionString(
+                        new ConnectionString(this.connectionString)
                 ).build()
         );
     }
 
-    public static <T> T getDocument(String collectionName, Bson filter, Class<T> type) {
+    public <T> T getDocument(String collectionName, Bson filter, Class<T> type) {
         return getDocument(collectionName,filter,type, new ArrayList<>());
     }
-    public static <T> List<T> getDocuments(String collectionName, Bson filter, Class<T> type) {
+    public <T> List<T> getDocuments(String collectionName, Bson filter, Class<T> type) {
         return getDocuments(collectionName,filter,type, new ArrayList<>());
     }
 
-    public static <T> T getDocument(String collectionName, String id, Class<T> type) {
+    public <T> T getDocument(String collectionName, String id, Class<T> type) {
         return getDocument(collectionName,new Document("_id",id),type, new ArrayList<>());
     }
 
-    public static <T> T getDocument(String collectionName, String id, Class<T> type, List<String> fields) {
+    public <T> T getDocument(String collectionName, String id, Class<T> type, List<String> fields) {
         return getDocument(collectionName,new Document("_id",id),type, fields);
     }
 
-    public static <T> T getDocument(String collectionName, Bson filter, Class<T> type, List<String> fields) {
+    public <T> T getDocument(String collectionName, Bson filter, Class<T> type, List<String> fields) {
         Bson projection = fields != null ? Projections.fields(Projections.include(fields)) : new Document();
 
         return getDocument(collectionName, filter, type, projection);
     }
 
-    public static <T> T getDocument(String collectionName, Bson filter, Class<T> type, Bson projection) {
+    public <T> T getDocument(String collectionName, Bson filter, Class<T> type, Bson projection) {
         projection = projection != null ? projection : new Document();
 
-        try (MongoClient mongoClient = MongoDB.getMongoClient();
-             MongoCursor<T> iterator = mongoClient.getDatabase(MongoDB.getDatabaseName()).getCollection(collectionName,type)
+        try (MongoClient mongoClient = this.getMongoClient();
+             MongoCursor<T> iterator = mongoClient.getDatabase(this.getDatabaseName()).getCollection(collectionName,type)
                      .find(filter)
                      .projection(projection)
                      .iterator()) {
@@ -109,17 +109,17 @@ public class MongoDB {
         }
     }
 
-    public static <T> List<T> getDocuments(String collectionName, Bson filter, Class<T> type, List<String> fields) {
+    public <T> List<T> getDocuments(String collectionName, Bson filter, Class<T> type, List<String> fields) {
         Bson projection = fields != null ? Projections.fields(Projections.include(fields)) : new Document();
 
         return getDocuments(collectionName, filter, type, projection);
     }
 
-    public static <T> List<T> getDocuments(String collectionName, Bson filter, Class<T> type, Bson projection) {
+    public <T> List<T> getDocuments(String collectionName, Bson filter, Class<T> type, Bson projection) {
         projection = projection != null ? projection : new Document();
 
-        try (MongoClient mongoClient = MongoDB.getMongoClient();
-             MongoCursor<T> iterator = mongoClient.getDatabase(MongoDB.getDatabaseName()).getCollection(collectionName,type)
+        try (MongoClient mongoClient = this.getMongoClient();
+             MongoCursor<T> iterator = mongoClient.getDatabase(this.getDatabaseName()).getCollection(collectionName,type)
                      .find(filter)
                      .projection(projection)
                      .iterator()) {
@@ -128,9 +128,9 @@ public class MongoDB {
         }
     }
 
-    public static UpdateResult upsertDocument(String collectionName, String id, Object document, boolean upsert) {
-        MongoClient mongoClient = MongoDB.getMongoClient();
-        MongoCollection<?> collection = mongoClient.getDatabase(MongoDB.getDatabaseName()).getCollection(collectionName, document.getClass());
+    public UpdateResult upsertDocument(String collectionName, String id, Object document, boolean upsert) {
+        MongoClient mongoClient = this.getMongoClient();
+        MongoCollection<?> collection = mongoClient.getDatabase(this.getDatabaseName()).getCollection(collectionName, document.getClass());
 
         UpdateResult updateResult = collection.updateOne(
                 new Document().append("_id", id),
@@ -143,9 +143,9 @@ public class MongoDB {
         return updateResult;
     }
 
-    public static UpdateResult updateMany(String collectionName, Bson filter, Object document, boolean upsert) {
-        MongoClient mongoClient = MongoDB.getMongoClient();
-        MongoCollection<?> collection = mongoClient.getDatabase(MongoDB.getDatabaseName()).getCollection(collectionName, document.getClass());
+    public UpdateResult updateMany(String collectionName, Bson filter, Object document, boolean upsert) {
+        MongoClient mongoClient = this.getMongoClient();
+        MongoCollection<?> collection = mongoClient.getDatabase(this.getDatabaseName()).getCollection(collectionName, document.getClass());
 
         UpdateResult updateResult = collection.updateMany(
                 filter,
@@ -158,13 +158,13 @@ public class MongoDB {
         return updateResult;
     }
 
-    public static DeleteResult deleteDocument(String collectionName, String id) {
+    public DeleteResult deleteDocument(String collectionName, String id) {
         return deleteDocument(collectionName, new Document("_id", id));
     }
 
-    public static DeleteResult deleteDocument(String collectionName, Bson filter) {
-        MongoClient mongoClient = MongoDB.getMongoClient();
-        MongoCollection<?> collection = mongoClient.getDatabase(MongoDB.getDatabaseName()).getCollection(collectionName);
+    public DeleteResult deleteDocument(String collectionName, Bson filter) {
+        MongoClient mongoClient = this.getMongoClient();
+        MongoCollection<?> collection = mongoClient.getDatabase(this.getDatabaseName()).getCollection(collectionName);
 
         DeleteResult deleteResult = collection.deleteMany(filter);
         mongoClient.close();
