@@ -10,6 +10,7 @@ import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
 import com.github.libgraviton.workerbase.gdk.api.Response;
+import com.github.libgraviton.workerbase.gdk.data.GravitonBase;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
@@ -36,6 +37,22 @@ public class Graviton {
         }
     }
 
+    public static <T> List<T> getDocumentsByUrl(@NotNull String documentUrl, @NotNull Class<T> klass) throws WorkerException {
+        try {
+            return gravitonApi.get(documentUrl).execute().getBodyItems(klass);
+        } catch (CommunicationException e) {
+            throw new WorkerException("Cannot get document '%s'.".formatted(documentUrl), e);
+        }
+    }
+
+    public static void deleteDocumentByUrl(@NotNull String documentUrl) throws WorkerException {
+        try {
+            gravitonApi.delete(documentUrl).execute();
+        } catch (CommunicationException e) {
+            throw new WorkerException("Cannot delete document of '%s'.".formatted(documentUrl), e);
+        }
+    }
+
     public static <T> T getDocumentById(@NotNull String id, @NotNull Class<T> klass) throws WorkerException {
         try {
             return gravitonApi.get(id, klass).execute().getBodyItem(klass);
@@ -44,14 +61,31 @@ public class Graviton {
         }
     }
 
+    public static void deleteDocumentById(@NotNull String id, @NotNull Class klass) throws WorkerException {
+        try {
+            gravitonApi.delete(id, klass).execute();
+        } catch (CommunicationException e) {
+            throw new WorkerException("Cannot delete document of type '%s' with '%s'.".formatted(klass, id), e);
+        }
+    }
+
     public static <T> List<T> getDocumentsByRql(@NotNull String serviceRoute, @NotNull String rql, @NotNull Class<T> klass) throws WorkerException {
-        String normalizedRoute = (gravitonApi.getBaseUrl() + "/" + serviceRoute + rql).replaceAll("/+", "/");
+        String normalizedRoute = General.createEndpoint(gravitonApi.getBaseUrl(), serviceRoute, rql);
 
         try {
             return gravitonApi.get(normalizedRoute).execute().getBodyItems(klass);
         } catch (CommunicationException e) {
             throw new WorkerException("Cannot get document of type '%s' by rql '%s'.".formatted(klass, serviceRoute + rql), e);
         }
+    }
+
+    public static void writeDocument(GravitonBase resource) throws WorkerException {
+        try {
+            gravitonApi.post(resource).execute();
+        } catch (CommunicationException e) {
+            throw new WorkerException(e);
+        }
+
     }
 
     public static byte[] getFileByUrl(@NotNull String documentUrl) throws WorkerException {
@@ -140,6 +174,16 @@ public class Graviton {
         }
     }
 
+    public static void updateEventStatus(@NotNull EventStatus eventStatus, @NotNull EventStatusInformation information) throws WorkerException {
+        eventStatus.getInformation().add(information);
+
+        try {
+            eventStatusHandler.update(eventStatus);
+        } catch (GravitonCommunicationException e) {
+            throw new WorkerException("Event status update failed.", e);
+        }
+    }
+
     public static void updateEventStatus(@NotNull EventStatus eventStatus, @NotNull EventStatusStatus.Status status, @NotNull EventStatusInformation information, @NotNull String workerId) throws WorkerException {
         eventStatus.getInformation().add(information);
         updateEventStatus(eventStatus, status, workerId);
@@ -173,14 +217,28 @@ public class Graviton {
         }
     }
 
-    public static Response updateFile(byte[] data, @NotNull File file) throws WorkerException {
-        GravitonFileEndpoint fileEndpoint = new GravitonFileEndpoint(gravitonApi);
+    public static Response updateFile(java.io.File dataFile, @NotNull File file) throws WorkerException {
+        try {
+            return fileEndpoint.put(dataFile, file).execute();
+        } catch (CommunicationException e) {
+            throw new WorkerException("Unable to save document.", e);
+        }
+    }
 
+    public static Response updateFile(byte[] data, @NotNull File file) throws WorkerException {
         try {
             return fileEndpoint.put(data, file).execute();
         } catch (CommunicationException e) {
             throw new WorkerException("Unable to save document.", e);
         }
+    }
+
+    public static Response uploadFile(byte[] data, @NotNull File file) throws WorkerException {
+       return updateFile(data, file);
+    }
+
+    public static Response uploadFile(java.io.File dataFile, @NotNull File file) throws WorkerException {
+        return updateFile(dataFile, file);
     }
 
     public static void removeFileActionCommand(@NotNull File gravitonFile, @NotNull GravitonFileEndpoint fileEndpoint, @NotNull List<String> actions) throws WorkerException {

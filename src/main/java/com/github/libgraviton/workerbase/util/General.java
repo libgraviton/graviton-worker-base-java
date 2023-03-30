@@ -37,15 +37,6 @@ public class General {
         return DigestUtils.sha384Hex(data);
     }
 
-    public static byte[] decodeBase64(byte[] data) {
-        // is base64 encoded?
-        if (org.apache.commons.codec.binary.Base64.isBase64(data)) {
-            return java.util.Base64.getDecoder().decode(data);
-        }
-
-        return data;
-    }
-
     /**
      * returns an endpoint with no consecutive slashes in the path.
      *

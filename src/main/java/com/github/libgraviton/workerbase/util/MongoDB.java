@@ -5,10 +5,7 @@ import com.google.common.collect.Lists;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.WriteConcern;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
+import com.mongodb.client.*;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
@@ -73,6 +70,13 @@ public class MongoDB {
                         new ConnectionString(this.connectionString)
                 ).build()
         );
+    }
+
+    public MongoCollection getMongoCollection(String collectionName) {
+        MongoClient mongoClient = getMongoClient();
+        MongoDatabase mongoDatabase = mongoClient.getDatabase(getDatabaseName());
+
+        return mongoDatabase.getCollection(collectionName);
     }
 
     public <T> T getDocument(String collectionName, Bson filter, Class<T> type) {
