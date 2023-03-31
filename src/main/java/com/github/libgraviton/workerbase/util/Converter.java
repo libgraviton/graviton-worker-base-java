@@ -2,6 +2,7 @@ package com.github.libgraviton.workerbase.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.gdk.exception.SerializationException;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,11 +29,11 @@ public class Converter {
      *
      * @throws SerializationException object could not be serialized
      */
-    public static String objectToJson(@NotNull Object data, @NotNull ObjectMapper objectMapper) throws SerializationException {
+    public static String objectToJson(@NotNull Object data, @NotNull ObjectMapper objectMapper) throws WorkerException {
         try {
             return objectMapper.writeValueAsString(data);
         } catch (JsonProcessingException e) {
-            throw new SerializationException(String.format("Cannot serialize '%s' to json.", data.getClass().getName()), e);
+            throw new WorkerException(String.format("Cannot serialize '%s' to json.", data.getClass().getName()), e);
         }
     }
 
@@ -45,11 +46,11 @@ public class Converter {
      *
      * @throws SerializationException object could not be serialized
      */
-    public static String objectToJson(@NotNull Object data) throws SerializationException {
+    public static String objectToJson(@NotNull Object data) throws WorkerException {
         try {
             return new ObjectMapper().writeValueAsString(data);
         } catch (JsonProcessingException e) {
-            throw new SerializationException(String.format("Cannot serialize '%s' to json.", data.getClass().getName()), e);
+            throw new WorkerException(String.format("Cannot serialize '%s' to json.", data.getClass().getName()), e);
         }
     }
 
