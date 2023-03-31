@@ -45,6 +45,16 @@ public class Graviton {
         }
     }
 
+    public static <T> List<T> getDocumentsByRoute(@NotNull String serviceRoute, @NotNull Class<T> klass) throws WorkerException {
+        String url = General.createEndpoint(gravitonApi.getBaseUrl(), serviceRoute);
+
+        try {
+            return gravitonApi.get(url).execute().getBodyItems(klass);
+        } catch (CommunicationException e) {
+            throw new WorkerException("Cannot get document '%s'.".formatted(url), e);
+        }
+    }
+
     public static void deleteDocumentByUrl(@NotNull String documentUrl) throws WorkerException {
         try {
             gravitonApi.delete(documentUrl).execute();
@@ -70,12 +80,22 @@ public class Graviton {
     }
 
     public static <T> List<T> getDocumentsByRql(@NotNull String serviceRoute, @NotNull String rql, @NotNull Class<T> klass) throws WorkerException {
-        String normalizedRoute = General.createEndpoint(gravitonApi.getBaseUrl(), serviceRoute, rql);
+        String url = General.createEndpoint(gravitonApi.getBaseUrl(), serviceRoute, rql);
 
         try {
-            return gravitonApi.get(normalizedRoute).execute().getBodyItems(klass);
+            return gravitonApi.get(url).execute().getBodyItems(klass);
         } catch (CommunicationException e) {
             throw new WorkerException("Cannot get document of type '%s' by rql '%s'.".formatted(klass, serviceRoute + rql), e);
+        }
+    }
+
+    public static <T> List<T> getDocumentsByRouteWithRql(@NotNull String routeWithRql, @NotNull Class<T> klass) throws WorkerException {
+        String url = General.createEndpoint(gravitonApi.getBaseUrl(), routeWithRql);
+
+        try {
+            return gravitonApi.get(url).execute().getBodyItems(klass);
+        } catch (CommunicationException e) {
+            throw new WorkerException("Cannot get document of type '%s' by rql '%s'.".formatted(klass, routeWithRql), e);
         }
     }
 
@@ -85,7 +105,14 @@ public class Graviton {
         } catch (CommunicationException e) {
             throw new WorkerException(e);
         }
+    }
 
+    public static void updateDocument(GravitonBase resource) throws WorkerException {
+        try {
+            gravitonApi.put(resource).execute();
+        } catch (CommunicationException e) {
+            throw new WorkerException(e);
+        }
     }
 
     public static byte[] getFileByUrl(@NotNull String documentUrl) throws WorkerException {
