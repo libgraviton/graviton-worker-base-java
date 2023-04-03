@@ -89,7 +89,7 @@ public class Graviton {
         }
     }
 
-    public static <T> List<T> getDocumentsByRouteWithRql(@NotNull String routeWithRql, @NotNull Class<T> klass) throws WorkerException {
+    public static <T> List<T> getDocumentsByRql(@NotNull String routeWithRql, @NotNull Class<T> klass) throws WorkerException {
         String url = General.createEndpoint(gravitonApi.getBaseUrl(), routeWithRql);
 
         try {
