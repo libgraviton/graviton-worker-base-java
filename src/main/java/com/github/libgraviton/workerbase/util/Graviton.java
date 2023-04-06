@@ -79,6 +79,14 @@ public class Graviton {
         }
     }
 
+    public static void deleteDocument(@NotNull GravitonBase resource) throws WorkerException {
+        try {
+            gravitonApi.delete(resource.getId(), resource.getClass()).execute();
+        } catch (CommunicationException e) {
+            throw new WorkerException("Cannot delete document of type '%s' with '%s'.".formatted(resource.getClass(), resource.getId()), e);
+        }
+    }
+
     public static <T> List<T> getDocumentsByRql(@NotNull String serviceRoute, @NotNull String rql, @NotNull Class<T> klass) throws WorkerException {
         String url = General.createEndpoint(gravitonApi.getBaseUrl(), serviceRoute, rql);
 
