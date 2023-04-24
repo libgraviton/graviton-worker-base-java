@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>3.5.0</version>
+  <version>3.6.0</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -41,7 +41,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <dependency.locations.enabled>false</dependency.locations.enabled>
     <dependency.details.enabled>false</dependency.details.enabled>
-    <jackson-jr.version>2.14.2</jackson-jr.version>
+    <jackson-jr.version>2.15.0</jackson-jr.version>
     <log4j.version>2.20.0</log4j.version>
   </properties>
 
@@ -124,7 +124,7 @@
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
-      <version>4.10.0</version>
+      <version>4.11.0</version>
       <exclusions>
         <exclusion>
           <groupId>org.jetbrains</groupId>
@@ -180,7 +180,7 @@
     <dependency>
       <groupId>com.rabbitmq</groupId>
       <artifactId>amqp-client</artifactId>
-      <version>5.16.0</version>
+      <version>5.17.0</version>
     </dependency>
     <dependency>
       <groupId>javax.jms</groupId>
@@ -190,7 +190,7 @@
     <dependency>
       <groupId>io.sentry</groupId>
       <artifactId>sentry-log4j2</artifactId>
-      <version>6.15.0</version>
+      <version>6.17.0</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -220,14 +220,14 @@
     <dependency>
       <groupId>io.github.classgraph</groupId>
       <artifactId>classgraph</artifactId>
-      <version>4.8.156</version>
+      <version>4.8.157</version>
     </dependency>
 
     <!-- metrics -->
     <dependency>
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-registry-prometheus</artifactId>
-      <version>1.10.4</version>
+      <version>1.10.6</version>
     </dependency>
     <dependency>
       <groupId>io.github.mweirauch</groupId>
@@ -251,7 +251,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.1.1</version>
+      <version>5.3.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>

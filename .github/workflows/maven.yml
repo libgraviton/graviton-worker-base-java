@@ -31,5 +31,5 @@ jobs:
         run: mvn -B package -s $GITHUB_WORKSPACE/.github/workflows/settings.xml --file pom.xml
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_USER: ${{ env.GITHUB_ACTOR }}
+          GITHUB_USER: ${{ github.actor }}
 
