@@ -38,9 +38,12 @@ public class GravitonGatewayRequestExecutorTest {
         ObjectNode tokenNode = objectMapper.createObjectNode();
         tokenNode.put("token", "THIS-IS-THE-MAGIC-ACCESS-TOKEN");
 
+        String tokenLifetime = WorkerProperties.GATEWAY_JWT_LIFETIME.get();
+
         workerTestExtension.getWireMockServer().stubFor(
                 post(urlEqualTo("/auth"))
                         .withHeader("Content-Type", equalTo("application/json"))
+                        .withHeader("x-jwt-lifetime", equalTo(tokenLifetime))
                         .withRequestBody(equalTo("{\"username\":\"TESTUSERNAME\",\"password\":\"testpw\"}"))
                         .willReturn(aResponse().withBody(objectMapper.writeValueAsString(tokenNode)).withStatus(200))
         );
@@ -55,13 +58,23 @@ public class GravitonGatewayRequestExecutorTest {
         Request req = requestBuilder.setUrl(WorkerProperties.GRAVITON_BASE_URL.get() + "/fred/test")
                 .setMethod(HttpMethod.GET)
                 .build();
+
         executor.execute(req);
+
+        // close it!
         executor.close();
 
+        // execute it again!
+        executor.execute(req);
+
+        executor.close();
+
+        // only 1 /auth call as token should have been cached
         workerTestExtension.getWireMockServer().verify(1,
                 postRequestedFor(urlEqualTo("/auth"))
         );
-        workerTestExtension.getWireMockServer().verify(1,
+        // but 2 requests here..
+        workerTestExtension.getWireMockServer().verify(2,
                 getRequestedFor(urlEqualTo("/fred/test"))
         );
     }
