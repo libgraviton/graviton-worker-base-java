@@ -36,7 +36,35 @@ public class GravitonGatewayAuthenticator implements Authenticator {
     @Override
     public Request onRequest(Request request) throws AuthenticatorException {
         if (accessToken == null) {
-            login();
+            final int maximalRetries = 10;
+            int retries = 0;
+
+            while (retries < maximalRetries) {
+                try {
+                    login();
+                    break;
+                } catch (Throwable t) {
+                    LOG.warn(
+                            "Error on retrieving gateway token. Tried '{}' of maximal '{}' tries. Will retry in 5 seconds.",
+                            retries,
+                            maximalRetries,
+                            t
+                    );
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Throwable t2) {
+                        LOG.warn("Error sleeping in thread", t2);
+                    }
+                }
+                retries++;
+            }
+
+            if (retries == maximalRetries) {
+                throw new AuthenticatorException(
+                        "Unable to get a gateway token, even after " + maximalRetries + " retries. Giving up!",
+                        new Exception("Wrapped")
+                );
+            }
         }
 
         String tokenHeaderName = "x-rest-token";

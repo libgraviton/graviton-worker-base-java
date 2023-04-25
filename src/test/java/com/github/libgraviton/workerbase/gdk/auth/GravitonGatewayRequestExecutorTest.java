@@ -10,11 +10,14 @@ import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workertestbase.WorkerTestExtension;
+import com.github.tomakehurst.wiremock.http.RequestMethod;
+import com.github.tomakehurst.wiremock.matching.MatchResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.net.MalformedURLException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
@@ -40,8 +43,25 @@ public class GravitonGatewayRequestExecutorTest {
 
         String tokenLifetime = WorkerProperties.GATEWAY_JWT_LIFETIME.get();
 
+        final AtomicInteger callCounter = new AtomicInteger(0);
+
+        // not successful reply!
         workerTestExtension.getWireMockServer().stubFor(
-                post(urlEqualTo("/auth"))
+                requestMatching(value -> {
+                    boolean normalCriteria = value.getUrl().equals("/auth") && value.getMethod().equals(RequestMethod.POST);
+                    return MatchResult.of(normalCriteria && callCounter.incrementAndGet() < 5);
+                })
+                        .withHeader("Content-Type", equalTo("application/json"))
+                        .withHeader("x-jwt-lifetime", equalTo(tokenLifetime))
+                        .willReturn(aResponse().withStatus(400))
+        );
+
+        // successful reply!
+        workerTestExtension.getWireMockServer().stubFor(
+                requestMatching(value -> {
+                    boolean normalCriteria = value.getUrl().equals("/auth") && value.getMethod().equals(RequestMethod.POST);
+                    return MatchResult.of(normalCriteria && callCounter.get() > 4);
+                })
                         .withHeader("Content-Type", equalTo("application/json"))
                         .withHeader("x-jwt-lifetime", equalTo(tokenLifetime))
                         .withRequestBody(equalTo("{\"username\":\"TESTUSERNAME\",\"password\":\"testpw\"}"))
@@ -69,8 +89,8 @@ public class GravitonGatewayRequestExecutorTest {
 
         executor.close();
 
-        // only 1 /auth call as token should have been cached
-        workerTestExtension.getWireMockServer().verify(1,
+        // 6 calls to /auth (5 retries not successful, last one ok)
+        workerTestExtension.getWireMockServer().verify(6,
                 postRequestedFor(urlEqualTo("/auth"))
         );
         // but 2 requests here..
