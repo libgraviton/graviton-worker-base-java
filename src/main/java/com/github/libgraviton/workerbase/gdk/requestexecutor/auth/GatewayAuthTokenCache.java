@@ -31,7 +31,7 @@ class GatewayAuthTokenCache {
         }
 
         tokenCache = CacheBuilder.newBuilder()
-                .expireAfterAccess(getCacheLifeTime(), TimeUnit.MINUTES)
+                .expireAfterWrite(getCacheLifeTime(), TimeUnit.MINUTES)
                 .build();
     }
 
