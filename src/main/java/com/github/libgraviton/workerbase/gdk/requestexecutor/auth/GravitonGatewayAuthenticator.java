@@ -84,7 +84,7 @@ public class GravitonGatewayAuthenticator implements Authenticator {
         // do we have a cached token?
         String cachedToken = GatewayAuthTokenCache.getTokenForUser(gatewayUser);
         if (cachedToken != null) {
-            LOG.info("Using in a *cached* jwt token for user '{}' (token '{}')", gatewayUser, cachedToken);
+            LOG.info("Using in a *cached* jwt token for user '{}'", gatewayUser);
             accessToken = cachedToken;
             return;
         }
@@ -143,9 +143,8 @@ public class GravitonGatewayAuthenticator implements Authenticator {
         GatewayAuthTokenCache.setTokenForUser(gatewayUser, accessToken);
 
         LOG.info(
-                "Successfully received token and cached it for use of max '{}' minutes. (token '{}')",
-                GatewayAuthTokenCache.getCacheLifeTime(),
-                accessToken
+                "Successfully received token and cached it for use of max '{}' minutes.",
+                GatewayAuthTokenCache.getCacheLifeTime()
         );
     }
 
