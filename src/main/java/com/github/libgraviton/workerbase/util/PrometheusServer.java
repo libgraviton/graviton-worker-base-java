@@ -21,10 +21,8 @@ public class PrometheusServer {
 
   private static final Logger LOG = LoggerFactory.getLogger(PrometheusServer.class);
 
+  private final static PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
   private static boolean started = false;
-
-  private Thread serverThread;
-  private HttpServer server;
 
   public PrometheusServer(String appName) {
     if (!started) {
@@ -32,9 +30,11 @@ public class PrometheusServer {
     }
   }
 
-  private void init(String appName) {
-    final PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+  public static PrometheusMeterRegistry getRegistry() {
+    return registry;
+  }
 
+  private void init(String appName) {
     // app name
     registry.config().commonTags("application", appName);
     final int prometheusPort = Integer.parseInt(WorkerProperties.PROMETHEUS_PORT.get());
@@ -80,8 +80,5 @@ public class PrometheusServer {
   }
 
   public void stop() {
-    if (server != null) {
-      server.stop(9);
-    }
   }
 }

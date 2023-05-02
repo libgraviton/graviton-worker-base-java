@@ -14,10 +14,12 @@ import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumeable;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.github.libgraviton.workerbase.util.PrometheusServer;
 import com.google.common.util.concurrent.AtomicLongMap;
 import io.activej.inject.annotation.Inject;
 import io.micrometer.core.instrument.*;
 
+import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +82,7 @@ public class QueueWorkerRunner {
         areWeAsync = (worker instanceof AsyncQueueWorkerInterface);
         if (areWeAsync) {
             executorService = DependencyInjection.getInstance(ExecutorService.class);
+            new ExecutorServiceMetrics(executorService, "worker-async", List.of()).bindTo(PrometheusServer.getRegistry());
         } else {
             executorService = null;
         }
