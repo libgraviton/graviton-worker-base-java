@@ -6,7 +6,7 @@
   <groupId>com.github.libgraviton</groupId>
   <artifactId>worker-base</artifactId>
   <packaging>jar</packaging>
-  <version>3.7.0</version>
+  <version>3.7.1</version>
   <name>Graviton Worker Base Library</name>
   <url>https://github.com/libgraviton/graviton-worker-base-java</url>
   <inceptionYear>2015</inceptionYear>
@@ -230,14 +230,14 @@
     <dependency>
       <groupId>io.github.classgraph</groupId>
       <artifactId>classgraph</artifactId>
-      <version>4.8.157</version>
+      <version>4.8.158</version>
     </dependency>
 
     <!-- metrics -->
     <dependency>
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-registry-prometheus</artifactId>
-      <version>1.10.6</version>
+      <version>1.11.0</version>
     </dependency>
     <dependency>
       <groupId>io.github.mweirauch</groupId>
@@ -319,19 +319,22 @@
           <source>17</source>
           <target>17</target>
         </configuration>
+        <executions>
+          <execution>
+            <id>log4j-plugin-processor</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <phase>process-classes</phase>
+            <configuration>
+              <proc>only</proc>
+              <annotationProcessors>
+                <annotationProcessor>org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor</annotationProcessor>
+              </annotationProcessors>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
-      <!--
-      <plugin>
-        <groupId>org.eluder.coveralls</groupId>
-        <artifactId>coveralls-maven-plugin</artifactId>
-        <version>4.3.0</version>
-        <configuration>
-          <sourceEncoding>UTF-8</sourceEncoding>
-          <serviceName>travis-ci</serviceName>
-          <serviceJobId>${env.TRAVIS_JOB_ID}</serviceJobId>
-        </configuration>
-      </plugin>
-      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>

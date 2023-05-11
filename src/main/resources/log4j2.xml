@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration status="warn" packages="org.apache.logging.log4j.core,io.sentry.log4j2">
+<configuration status="warn">
     <appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%date{ISO8601_OFFSET_DATE_TIME_HHMM} [%thread] %5level %logger{1.} - %maxLen{%message}{1000}%n" />
