@@ -411,7 +411,7 @@ public class RabbitMqConnection extends QueueConnection {
                     .queueDurable(PropertyUtil.getBoolean(properties, "queue.durable", queueDurable))
                     .queueExclusive(PropertyUtil.getBoolean(properties, "queue.exclusive", queueExclusive))
                     .queueAutoDelete(PropertyUtil.getBoolean(properties, "queue.autodelete", queueAutoDelete))
-                    .prefetchCount(PropertyUtil.getInteger(properties,"queue.prefetchcount", prefetchCount))
+                    .prefetchCount(PropertyUtil.getInteger(properties, "queue.prefetchcount", prefetchCount))
                     .exchangeName(properties.getProperty("exchange.name", exchangeName))
                     .exchangeType(properties.getProperty("exchange.type", exchangeType))
                     .exchangeDurable(PropertyUtil.getBoolean(properties, "exchange.durable", exchangeDurable))
