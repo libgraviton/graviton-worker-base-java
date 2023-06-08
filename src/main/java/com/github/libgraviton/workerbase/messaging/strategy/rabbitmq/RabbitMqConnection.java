@@ -43,6 +43,8 @@ public class RabbitMqConnection extends QueueConnection {
 
     private String queueName;
 
+    private int prefetchCount;
+
     private String consumerTag;
 
     private Connection connection;
@@ -60,6 +62,18 @@ public class RabbitMqConnection extends QueueConnection {
         routingKey = builder.routingKey;
         connectionFactory = builder.connectionFactory;
         queueName = super.queueName;
+        prefetchCount = builder.prefetchCount;
+    }
+
+    public void setPrefetchCount(int prefetchCount) {
+        this.prefetchCount = prefetchCount;
+        if (channel != null) {
+            try {
+                channel.basicQos(prefetchCount);
+            } catch (Throwable t) {
+                LOG.error("Unable to change prefetch count on channel to '{}'", prefetchCount, t);
+            }
+        }
     }
 
     @Override
@@ -93,11 +107,12 @@ public class RabbitMqConnection extends QueueConnection {
     protected void openConnection() throws CannotConnectToQueue {
         try {
             LOG.info(
-                    "Opening AMQP connection to {}:{} (queue '{}', exchange '{}')",
+                    "Opening AMQP connection to {}:{} (queue '{}', exchange '{}', prefetch '{}')",
                     connectionFactory.getHost(),
                     connectionFactory.getPort(),
                     queueName,
-                    exchangeName
+                    exchangeName,
+                    prefetchCount
             );
 
             connection = connectionFactory.newConnection();
@@ -135,6 +150,9 @@ public class RabbitMqConnection extends QueueConnection {
 
                 channel.queueBind(queueName, exchangeName, routingKey);
             }
+
+            // see https://www.rabbitmq.com/consumer-prefetch.html - normally should only 1, "0" is infinite!
+            channel.basicQos(prefetchCount);
         } catch (IOException | TimeoutException e) {
             throw new CannotConnectToQueue(queueName, e);
         }
@@ -147,10 +165,8 @@ public class RabbitMqConnection extends QueueConnection {
      */
     @Override
     protected void registerConsumer(Consumeable consumeable) throws CannotRegisterConsumeable {
-        com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConsumer rabbitMqConsumer = new com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConsumer(this, consumeable);
         try {
-            // see https://www.rabbitmq.com/consumer-prefetch.html - normally should only 1, "0" is infinite!
-            channel.basicQos(rabbitMqConsumer.getPrefetchCount());
+            com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConsumer rabbitMqConsumer = new com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConsumer(this, consumeable);
             consumerTag = channel.basicConsume(queueName, false, rabbitMqConsumer);
         } catch (IOException e) {
             throw new CannotRegisterConsumeable(consumeable, e);
@@ -244,6 +260,8 @@ public class RabbitMqConnection extends QueueConnection {
 
         private String routingKey = null;
 
+        private int prefetchCount = 1;
+
         private String virtualHost = "/";
 
         private ConnectionFactory connectionFactory;
@@ -309,6 +327,11 @@ public class RabbitMqConnection extends QueueConnection {
          */
         public Builder queueAutoDelete(boolean queueAutoDelete) {
             this.queueAutoDelete = queueAutoDelete;
+            return this;
+        }
+
+        public Builder prefetchCount(int prefetchCount) {
+            this.prefetchCount = prefetchCount;
             return this;
         }
 
@@ -388,6 +411,7 @@ public class RabbitMqConnection extends QueueConnection {
                     .queueDurable(PropertyUtil.getBoolean(properties, "queue.durable", queueDurable))
                     .queueExclusive(PropertyUtil.getBoolean(properties, "queue.exclusive", queueExclusive))
                     .queueAutoDelete(PropertyUtil.getBoolean(properties, "queue.autodelete", queueAutoDelete))
+                    .prefetchCount(PropertyUtil.getInteger(properties,"queue.prefetchcount", prefetchCount))
                     .exchangeName(properties.getProperty("exchange.name", exchangeName))
                     .exchangeType(properties.getProperty("exchange.type", exchangeType))
                     .exchangeDurable(PropertyUtil.getBoolean(properties, "exchange.durable", exchangeDurable))
