@@ -31,8 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.TimeZone;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class WorkerBaseProvider extends AbstractModule {
 
@@ -131,7 +130,7 @@ public class WorkerBaseProvider extends AbstractModule {
 
     @Provides
     public static ExecutorService executorService(Properties properties) {
-        int size = Integer.parseInt(properties.getOrDefault("executor.threadPoolSize", "10").toString());
+        int size = Integer.parseInt(WorkerProperties.THREADPOOL_SIZE.get());
         return Executors.newFixedThreadPool(size);
     }
 
