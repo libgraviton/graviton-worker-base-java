@@ -3,7 +3,6 @@ package com.github.libgraviton.workerbase;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workerbase.messaging.QueueConnection;
 import com.github.libgraviton.workerbase.messaging.consumer.Consumeable;
-import com.github.libgraviton.workerbase.messaging.exception.CannotConnectToQueue;
 import com.github.libgraviton.workerbase.messaging.exception.CannotPublishMessage;
 import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumeable;
 import com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConnection;
@@ -40,6 +39,10 @@ public class QueueManager {
 
     public void publish(String message) throws CannotPublishMessage {
         connection.publish(message);
+    }
+
+    public QueueConnection getConnection() {
+        return connection;
     }
 
     public void close() {
