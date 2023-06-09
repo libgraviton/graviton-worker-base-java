@@ -37,6 +37,7 @@ public class WorkerProperties {
     public static final WorkerProperty AUTH_PREFIX_USERNAME = new WorkerProperty("graviton.authentication.prefix.username");
     public static final WorkerProperty AUTH_HEADER_NAME = new WorkerProperty("graviton.authentication.header.name");
     public static final WorkerProperty PROMETHEUS_PORT = new WorkerProperty("graviton.prometheus.port");
+    public static final WorkerProperty THREADPOOL_SIZE = new WorkerProperty("executor.threadpool.size");
     public static final WorkerProperty WORKER_MAIN_CLASS = new WorkerProperty("worker.mainClass");
     public static final WorkerProperty HTTP_CLIENT_DORETRY = new WorkerProperty("graviton.okhttp.shouldRetry");
     public static final WorkerProperty HTTP_CLIENT_FORCE_HTTP1_1 = new WorkerProperty("graviton.okhttp.forcehttp11");

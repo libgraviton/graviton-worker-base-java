@@ -10,9 +10,11 @@ import com.github.libgraviton.workerbase.exception.NonExistingEventStatusExcepti
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
+import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumeable;
+import com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConnection;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.github.libgraviton.workerbase.util.PrometheusServer;
 import com.google.common.util.concurrent.AtomicLongMap;
@@ -78,11 +80,21 @@ public class QueueWorkerRunner {
 
     @Inject
     public QueueWorkerRunner(QueueWorkerAbstract worker) {
-        this.queueManager = DependencyInjection.getInstance(QueueManager.class);
         areWeAsync = (worker instanceof AsyncQueueWorkerInterface);
+
+        this.queueManager = DependencyInjection.getInstance(QueueManager.class);
+
         if (areWeAsync) {
             executorService = DependencyInjection.getInstance(ExecutorService.class);
             new ExecutorServiceMetrics(executorService, "worker-async", List.of()).bindTo(PrometheusServer.getRegistry());
+
+            // prefetch size for async should be the same as max pool size to use our resources!
+            if (queueManager.getConnection() instanceof RabbitMqConnection) {
+                // set prefetch count to same size as max pool size!
+                int prefetchCount = Integer.parseInt(WorkerProperties.THREADPOOL_SIZE.get());
+                ((RabbitMqConnection) queueManager.getConnection()).setPrefetchCount(prefetchCount);
+                LOG.info("Seems we are in an async context - setting queue prefetch count to threadpool size of '{}'", prefetchCount);
+            }
         } else {
             executorService = null;
         }
