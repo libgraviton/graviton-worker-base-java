@@ -269,12 +269,18 @@ public class Request {
         }
 
         public Response execute() throws CommunicationException {
+
+            throw new CommunicationException("HANS");
+
+            /*
             try {
                 return executor.execute(build());
             } catch (MalformedURLException e) {
                 throw new UnsuccessfulRequestException(String.format("'%s' to '%s' failed due to malformed url.", method, url),
                         e);
             }
+
+             */
         }
 
         protected URL buildUrl() throws MalformedURLException {

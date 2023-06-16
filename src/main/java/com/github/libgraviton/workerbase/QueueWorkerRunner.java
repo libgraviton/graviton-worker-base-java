@@ -8,7 +8,9 @@ import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.NonExistingEventStatusException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
+import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
+import com.github.libgraviton.workerbase.gdk.exception.SerializationException;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workerbase.helper.WorkerUtil;
@@ -19,17 +21,26 @@ import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.github.libgraviton.workerbase.util.PrometheusServer;
 import com.google.common.util.concurrent.AtomicLongMap;
 import io.activej.inject.annotation.Inject;
+import io.github.resilience4j.core.functions.CheckedSupplier;
+import io.github.resilience4j.decorators.Decorators;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
+import io.github.resilience4j.retry.RetryRegistry;
 import io.micrometer.core.instrument.*;
 
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 public class QueueWorkerRunner {
 
@@ -166,36 +177,25 @@ public class QueueWorkerRunner {
         queueManager.close();
     }
 
-    private void register(int tryCounter) {
+    protected void register() {
         EventWorker eventWorker = new EventWorker();
         eventWorker.setId(worker.getWorkerId());
         eventWorker.setSubscription(worker.getSubscriptions());
 
         try {
-            worker.getWorkerScope().getGravitonApi().put(eventWorker).execute();
-        } catch (CommunicationException e) {
-            LOG.error(
-                    "Unable to register worker '{}' at try #{}.",
-                    worker.getWorkerId(),
-                    tryCounter,
-                    e
+            com.github.libgraviton.workerbase.util.RetryRegistry.retrySomethingForever(
+              () -> worker.getWorkerScope().getGravitonApi().put(eventWorker).execute(),
+              (event) -> LOG.warn("Error registering worker, will still retry..", event.getLastThrowable())
+
             );
-            try {
-                Thread.sleep(3000);
-            } catch (Throwable t) {
-                LOG.error(
-                        "Unable to sleep after register() fail.",
-                        t
-                );
-            }
-
-            tryCounter++;
-            register(tryCounter);
+        } catch (Throwable e) {
+            LOG.error(
+              "Retries exhausted for worker registration for worker {}",
+              worker.getWorkerId(),
+              e
+            );
         }
-    }
 
-    protected void register() {
-        register(1);
     }
 
     /**
