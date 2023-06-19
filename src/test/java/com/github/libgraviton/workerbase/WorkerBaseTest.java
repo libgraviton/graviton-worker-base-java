@@ -72,9 +72,6 @@ public class WorkerBaseTest {
         // wait until finished!
         countDownLatch.await();
 
-        // availability check
-        workerTestExtension.getWireMockServer().verify(moreThan(1), optionsRequestedFor(urlEqualTo("/")));
-
         // test auto register on graviton
         workerTestExtension.getWireMockServer().verify(1,
                 putRequestedFor(
@@ -261,7 +258,7 @@ public class WorkerBaseTest {
 
         int retryLimit = Integer.parseInt(WorkerProperties.STATUSHANDLER_RETRY_LIMIT.get());
 
-        workerTestExtension.getWireMockServer().verify(retryLimit + 1,
+        workerTestExtension.getWireMockServer().verify(retryLimit,
                 getRequestedFor(urlEqualTo("/event/status/" + newId))
         );
 

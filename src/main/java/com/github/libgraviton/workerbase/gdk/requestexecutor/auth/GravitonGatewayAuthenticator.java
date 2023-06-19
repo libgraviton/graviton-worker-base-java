@@ -39,17 +39,15 @@ public class GravitonGatewayAuthenticator implements Authenticator {
   @Override
   public Request onRequest(Request request) throws AuthenticatorException {
     if (accessToken == null) {
-
       try {
-
         RetryRegistry.retrySomething(
-          50,
+          10,
           () -> {
             login();
             return null;
           },
-          Duration.ofSeconds(10),
-          (event) -> LOG.warn("Error trying to authenticate with Gateway", event.getLastThrowable())
+          Duration.ofSeconds(5),
+          (event) -> LOG.warn("Error trying to authenticate with Gateway, try '{}'", event.getNumberOfRetryAttempts())
         );
       } catch (Throwable e) {
         LOG.error(

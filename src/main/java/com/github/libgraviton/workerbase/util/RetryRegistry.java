@@ -12,6 +12,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.function.Predicate;
 
 public class RetryRegistry {
 
@@ -56,15 +57,39 @@ public class RetryRegistry {
     Duration waitDuration,
     EventConsumer<RetryOnRetryEvent> onRetry
   ) throws Throwable {
+    return retrySomething(
+      retryMax,
+      supplier,
+      waitDuration,
+      onRetry,
+      null,
+    null
+    );
+  }
+
+  public static <T> T retrySomething(
+    Integer retryMax,
+    CheckedSupplier<T> supplier,
+    Duration waitDuration,
+    EventConsumer<RetryOnRetryEvent> onRetry,
+    Predicate<Throwable> retryException,
+    Predicate<T> retryResult
+  ) throws Throwable {
 
     String retryName = UUID.randomUUID().toString();
-
-    RetryConfig retryConfig = RetryConfig.custom()
+    RetryConfig.Builder<T> retryConfigBuilder = RetryConfig.<T>custom()
       .maxAttempts(retryMax)
-      .waitDuration(waitDuration)
-      .build();
+      .waitDuration(waitDuration);
 
-    getInstance().retry(retryName, retryConfig);
+    if (retryException != null) {
+      retryConfigBuilder.retryOnException(retryException);
+    }
+
+    if (retryResult != null) {
+      retryConfigBuilder.retryOnResult(retryResult);
+    }
+
+    getInstance().retry(retryName, retryConfigBuilder.build());
 
     try {
       getInstance().retry(retryName).getEventPublisher().onRetry(onRetry);
