@@ -8,6 +8,7 @@ import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
 import com.github.libgraviton.workerbase.exception.NonExistingEventStatusException;
 import com.github.libgraviton.workerbase.exception.WorkerException;
+import com.github.libgraviton.workerbase.exception.WorkerExceptionFatal;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workerbase.helper.WorkerUtil;
@@ -147,7 +148,7 @@ public class QueueWorkerRunner {
           final QueueEvent queueEvent = objectMapper.readValue(message, QueueEvent.class);
           handleDelivery(queueEvent, messageId, acknowledger);
         } catch (JsonProcessingException e) {
-          LOG.error("The content received from the queue could not be unserialized into an QueueEvent instance. Dismissing the message.", e);
+          LOG.error("The content received from the queue could not be deserialized into an QueueEvent instance. Dismissing the message.", e);
           try {
             acknowledger.acknowledge(messageId);
           } catch (Throwable t) {
@@ -158,7 +159,7 @@ public class QueueWorkerRunner {
         }
       });
     } catch (CannotRegisterConsumeable e) {
-      throw new WorkerException("Unable to initialize worker.", e);
+      throw new WorkerExceptionFatal("Unable to initialize worker.", e);
     }
   }
 
@@ -245,6 +246,14 @@ public class QueueWorkerRunner {
 
       // failure acknowledge
       if (!isAcknowledged.get()) {
+        final boolean isFatalException = (throwable instanceof WorkerExceptionFatal);
+        if (isFatalException) {
+          LOG.warn("Worker thrown a WorkerExceptionFatal - will not try again!");
+          acknowledgeCallback.onAck(false);
+          isAcknowledged.set(true);
+          return;
+        }
+
         // should we give up now?
         // NO if the worker wants redelivery
         boolean shouldWeGiveUp = worker.shouldAutoAcknowledgeOnException();
@@ -256,7 +265,6 @@ public class QueueWorkerRunner {
 
         // -> no redeliver!
         acknowledgeCallback.onAck(!shouldWeGiveUp);
-
         isAcknowledged.set(true);
       }
     };
