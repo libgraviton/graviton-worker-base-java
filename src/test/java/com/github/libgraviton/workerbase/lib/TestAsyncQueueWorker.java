@@ -35,12 +35,6 @@ public class TestAsyncQueueWorker extends AsyncQueueWorkerAbstract {
 
             handleRequestCallCount.incrementAndGet();
 
-            // always fail once with retriable!
-            if (!queueEventScope.getScopeCacheMap().containsKey("alreadyFired")) {
-                queueEventScope.getScopeCacheMap().put("alreadyFired", "1");
-                throw new WorkerExceptionRetriable("RETRY ME!");
-            }
-
             final CountDownLatch latch = new CountDownLatch(1);
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
@@ -57,7 +51,7 @@ public class TestAsyncQueueWorker extends AsyncQueueWorkerAbstract {
               queueEventScope1.getScopeCacheMap().get("CHECK-THIS-VALUE")
             );
 
-            int waitfor = RandomUtils.nextInt(500, 2000);
+            int waitfor = RandomUtils.nextInt(1000, 2000);
 
             executor.schedule(latch::countDown, waitfor, TimeUnit.MILLISECONDS);
 
@@ -68,6 +62,12 @@ public class TestAsyncQueueWorker extends AsyncQueueWorkerAbstract {
                 LOG.error("Error in awaiting, got interrupted!", e);
             }
             LOG.info("END AWAIT");
+
+            // always fail once with retriable!
+            if (!queueEventScope.getScopeCacheMap().containsKey("alreadyFired")) {
+                queueEventScope.getScopeCacheMap().put("alreadyFired", "1");
+                throw new WorkerExceptionRetriable("RETRY ME!");
+            }
         };
     }
 
