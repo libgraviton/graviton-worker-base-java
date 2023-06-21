@@ -101,10 +101,7 @@ public class WorkerRunnable implements Runnable {
                 event.getNumberOfRetryAttempts(),
                 retryLimit
               ),
-              (throwable) -> {
-                  int hans = 3;
-                  return throwable instanceof WorkerExceptionRetriable;
-              }, // only retry this type!
+              (throwable) -> throwable instanceof WorkerExceptionRetriable, // only retry this type!
               null
             );
 
