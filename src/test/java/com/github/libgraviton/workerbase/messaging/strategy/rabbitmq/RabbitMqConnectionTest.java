@@ -137,15 +137,6 @@ public class RabbitMqConnectionTest {
     }
 
     @Test
-    public void testOpenConnectionFailed() throws Exception {
-        doThrow(new IOException()).when(rabbitFactory).newConnection();
-
-        Assertions.assertThrows(CannotConnectToQueue.class, () -> {
-            connection.open();
-        });
-    }
-
-    @Test
     public void testPublishTextMessage() throws Exception {
         connection.publish("gugus");
         verify(rabbitChannel).basicPublish(

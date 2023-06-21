@@ -1,6 +1,7 @@
 package com.github.libgraviton.workerbase;
 
 import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
+import com.github.libgraviton.workerbase.exception.WorkerExceptionFatal;
 import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.util.PrometheusServer;
@@ -120,7 +121,7 @@ public final class WorkerLauncher {
      */
     public void run() throws WorkerException {
         if (worker == null) {
-            throw new RuntimeException("No worker set to be run...");
+            throw new WorkerExceptionFatal("No worker set to be run...");
         }
 
         // on startup call
@@ -131,7 +132,7 @@ public final class WorkerLauncher {
         } else if (worker instanceof QueueWorkerAbstract && queueWorkerRunner != null) {
             queueWorkerRunner.run();
         } else {
-            throw new RuntimeException("The worker is not runnable!");
+            throw new WorkerExceptionFatal("The worker is not runnable!");
         }
     }
 
