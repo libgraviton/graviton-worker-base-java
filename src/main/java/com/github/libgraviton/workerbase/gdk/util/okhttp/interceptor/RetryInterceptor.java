@@ -50,7 +50,7 @@ public class RetryInterceptor implements Interceptor {
         retryCount,
         responseSupplier,
         Duration.ofSeconds(waitInBetween),
-        (event) -> LOG.warn("Error on http request.", event.getLastThrowable())
+        (event) -> LOG.warn("Error on http request: {}", event.getLastThrowable() == null ? "?" : event.getLastThrowable().getMessage())
       );
     } catch (Throwable e) {
       LOG.error(

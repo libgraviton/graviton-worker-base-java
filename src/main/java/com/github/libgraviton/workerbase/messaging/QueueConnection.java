@@ -39,7 +39,7 @@ abstract public class QueueConnection {
           LOG.info("Connection to queue '{}' successfully established.", getConnectionName());
           return null;
         },
-        (event) -> LOG.warn("Error connecting to the queue.", event.getLastThrowable())
+        (event) -> LOG.warn("Error connecting to the queue: {}", event.getLastThrowable() == null ? "?" : event.getLastThrowable().getMessage())
       );
     } catch (Throwable e) {
       LOG.error(

@@ -174,7 +174,7 @@ public class QueueWorkerRunner {
     try {
       RetryRegistry.retrySomethingForever(
         () -> worker.getWorkerScope().getGravitonApi().put(eventWorker).execute(),
-        (event) -> LOG.warn("Error registering worker.", event.getLastThrowable())
+        (event) -> LOG.warn("Error registering worker: {}", event.getLastThrowable() == null ? "?" : event.getLastThrowable().getMessage())
       );
     } catch (Throwable e) {
       LOG.error(
