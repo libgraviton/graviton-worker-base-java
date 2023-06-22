@@ -90,9 +90,12 @@ public class EventStatusHandler {
       RetryRegistry.retrySomething(
         retryLimit,
         request::execute,
-        (event) -> LOG.warn("Error on http request.", event.getLastThrowable())
+        (event) -> LOG.warn("Error on http request: {}", event.getLastThrowable() == null ? "?" : event.getLastThrowable().getMessage())
       );
     } catch (Throwable e) {
+      if (e instanceof UnsuccessfulResponseException && ((UnsuccessfulResponseException) e).getResponse().getCode() == 404) {
+        throw new NonExistingEventStatusException("Giving up trying to fetch EventStatus (getting 404 status after " + retryLimit + " tries) with url '" + endpointUrl + "'");
+      }
       throw new GravitonCommunicationException("Unable to update EventStatus", e);
     }
   }
