@@ -25,17 +25,6 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         super(workerScope);
     }
 
-    /*
-    protected void update(EventStatus eventStatus, String workerId, EventStatusStatus.Status status) throws GravitonCommunicationException {
-        if (shouldLinkAction(workerId, eventStatus.getStatus())) {
-            workerScope.getStatusHandler().updateWithAction(eventStatus, workerId, status, getWorkerAction());
-        } else {
-            workerScope.getStatusHandler().update(eventStatus, workerId, status);
-        }
-    }
-
-     */
-
     public boolean shouldLinkAction(String workerId, List<EventStatusStatus> status) {
         for (EventStatusStatus statusEntry : status) {
             if (workerId.equals(statusEntry.getWorkerId())
@@ -45,14 +34,6 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         }
         return true;
     }
-
-    /*
-    protected void update(String eventStatusUrl, EventStatusStatus.Status status) throws GravitonCommunicationException {
-        update(workerScope.getStatusHandler().getEventStatusFromUrl(eventStatusUrl), getWorkerId(), status);
-    }
-
-     */
-
 
     /**
      * can be overriden by worker implementation. should the lib automatically update the EventStatus in the backend?

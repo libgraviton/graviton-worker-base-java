@@ -1,7 +1,10 @@
 package com.github.libgraviton.workerbase.helper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.libgraviton.workerbase.exception.NonExistingEventStatusException;
 import com.github.libgraviton.workerbase.gdk.GravitonApi;
+import com.github.libgraviton.workerbase.gdk.api.HttpMethod;
+import com.github.libgraviton.workerbase.gdk.api.Request;
 import com.github.libgraviton.workerbase.gdk.api.Response;
 import com.github.libgraviton.workerbase.gdk.exception.CommunicationException;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
@@ -27,13 +30,13 @@ import java.util.List;
 public class EventStatusHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(EventStatusHandler.class);
-
   private final GravitonApi gravitonApi;
-
+  private final String workerId;
   private final int retryLimit;
 
-  public EventStatusHandler(GravitonApi gravitonApi, int retryLimit) {
+  public EventStatusHandler(GravitonApi gravitonApi, String workerId, int retryLimit) {
     this.gravitonApi = gravitonApi;
+    this.workerId = workerId;
     this.retryLimit = retryLimit;
   }
 
@@ -41,101 +44,60 @@ public class EventStatusHandler {
     return gravitonApi;
   }
 
-  /**
-   * Update the event status object on Graviton side
-   *
-   * @param eventStatus  adapted status that should be updated
-   * @param workerId id of this worker
-   * @param status the new status of the worker
-   * @param action link to a worker action
-   * @throws GravitonCommunicationException when status cannot be updated at Graviton
-   */
-  public void updateWithAction(EventStatus eventStatus, String workerId, EventStatusStatus.Status status, EventStatusStatusAction action) throws GravitonCommunicationException {
-    EventStatusStatus workerStatus = new EventStatusStatus();
-    workerStatus.setWorkerId(workerId);
-    workerStatus.setStatus(status);
-    workerStatus.setAction(action);
-    update(eventStatus, workerStatus);
+  public void updateToFailed(String eventStatusUrlOrId, String errorMessage) throws GravitonCommunicationException {
+    update(eventStatusUrlOrId, EventStatusStatus.Status.FAILED, null, EventStatusInformation.Type.ERROR, errorMessage);
   }
 
-  /**
-   * Sets an EventStatus to error state with message and to FAILED
-   *
-   * @param eventStatus  adapted status that should be updated
-   * @param workerId id of this worker
-   * @param errorMessage error message to set
-   * @throws GravitonCommunicationException when status cannot be updated at Graviton
-   */
-  public void updateToErrorState(EventStatus eventStatus, String workerId, String errorMessage) throws GravitonCommunicationException {
-    EventStatusInformation information = new EventStatusInformation();
-    information.setWorkerId(workerId);
-    information.setType(EventStatusInformation.Type.ERROR);
-    information.setContent(errorMessage);
-    eventStatus.getInformation().add(information);
-    LOG.info(
-      "Adding information type 'error' with content '{}' for event status '{}'",
-      errorMessage,
-      eventStatus.getId()
+  public void update(String eventStatusUrlOrId, EventStatusStatus.Status status) throws GravitonCommunicationException {
+    update(eventStatusUrlOrId, status, null);
+  }
+
+  public void update(String eventStatusUrlOrId, EventStatusStatus.Status status, EventStatusStatusAction action) throws GravitonCommunicationException {
+    update(eventStatusUrlOrId, status, action, null, null);
+  }
+
+  public void update(String eventStatusUrlOrId, EventStatusStatus.Status status, EventStatusStatusAction action, EventStatusInformation.Type informationType, String informationContent) throws GravitonCommunicationException {
+    String eventStatusId = gravitonApi.getIdFromUrlOrId(eventStatusUrlOrId);
+
+    // use the "new" status update endpoint
+    String endpointUrl = String.format(
+      "/event/status/%s/%s/%s/%s",
+      eventStatusId,
+      workerId,
+      status.value(),
+      action != null && action.get$ref() != null ? gravitonApi.getIdFromUrlOrId(action.get$ref()) : ""
     );
-    update(eventStatus, workerId, EventStatusStatus.Status.FAILED);
-  }
 
-  /**
-   * Sets an EventStatus to error state with message and to FAILED
-   *
-   * @param statusUrl  url to status
-   * @param workerId id of this worker
-   * @param errorMessage error message to set
-   * @throws GravitonCommunicationException when status cannot be updated at Graviton
-   */
-  public void updateToErrorState(String statusUrl, String workerId, String errorMessage) throws GravitonCommunicationException {
-    EventStatus eventStatus = getEventStatusFromUrl(statusUrl);
-    updateToErrorState(eventStatus, workerId, errorMessage);
-  }
+    String payload = "";
 
-  /**
-   * Update the event status object on Graviton side
-   *
-   * @param eventStatus  adapted status that should be updated
-   * @param workerId id of this worker
-   * @param status the new status of the worker
-   * @throws GravitonCommunicationException when status cannot be updated at Graviton
-   */
-  public void update(EventStatus eventStatus, String workerId, EventStatusStatus.Status status) throws GravitonCommunicationException {
-    EventStatusStatus workerStatus = new EventStatusStatus();
-    workerStatus.setWorkerId(workerId);
-    workerStatus.setStatus(status);
-    update(eventStatus, workerStatus);
-  }
+    // do we have an information message payload?
+    if (informationType != null && informationContent != null) {
+      EventStatusInformation information = new EventStatusInformation();
+      information.setType(informationType);
+      information.setWorkerId(workerId);
+      information.setContent(informationContent);
 
-  public void update(EventStatus eventStatus) throws GravitonCommunicationException {
-    try {
-      gravitonApi.patch(eventStatus).execute();
-    } catch (CommunicationException e) {
-      throw new GravitonCommunicationException("Failed to update the event status.", e);
-    }
-  }
-
-  protected void update(EventStatus eventStatus, EventStatusStatus workerStatus) throws GravitonCommunicationException {
-
-    List<EventStatusStatus> status = eventStatus.getStatus();
-
-    if (status == null || status.size() == 0) {
-      throw new IllegalStateException("Got an invalid EventStatus status.");
-    }
-
-    for (EventStatusStatus statusEntry : status) {
-      String currentWorkerId = statusEntry.getWorkerId();
-      if (currentWorkerId != null && currentWorkerId.equals(workerStatus.getWorkerId())) {
-        if(workerStatus.getAction() != null) {
-          statusEntry.setAction(workerStatus.getAction());
-        }
-        statusEntry.setStatus(workerStatus.getStatus());
-        break;
+      try {
+        payload = gravitonApi.getObjectMapper().writeValueAsString(information);
+      } catch (JsonProcessingException e) {
+        LOG.error("Unable to render information body content for EventStatus update", e);
       }
     }
 
-    update(eventStatus);
+    try {
+      Request.Builder request = gravitonApi.request().setUrl(gravitonApi.getBaseUrl() + endpointUrl).setBody(payload).setMethod(HttpMethod.PUT);
+
+      RetryRegistry.retrySomething(
+        retryLimit,
+        request::execute,
+        (event) -> LOG.warn("Error on http request: {}", event.getLastThrowable() == null ? "?" : event.getLastThrowable().getMessage())
+      );
+    } catch (Throwable e) {
+      if (e instanceof UnsuccessfulResponseException && ((UnsuccessfulResponseException) e).getResponse().getCode() == 404) {
+        throw new NonExistingEventStatusException("Giving up trying to fetch EventStatus (getting 404 status after " + retryLimit + " tries) with url '" + endpointUrl + "'");
+      }
+      throw new GravitonCommunicationException("Unable to update EventStatus", e);
+    }
   }
 
   public EventStatus getEventStatusFromUrl(String url) throws GravitonCommunicationException {
