@@ -4,8 +4,6 @@ import com.github.libgraviton.gdk.gravitondyn.file.document.File;
 import com.github.libgraviton.workerbase.lib.TestAsyncQueueWorker;
 import com.github.libgraviton.workerbase.model.QueueEvent;
 import com.github.libgraviton.workertestbase.WorkerTestExtension;
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.CountMatchingStrategy;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -14,8 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 public class AsyncWorkerBaseTest {
 
@@ -27,7 +23,6 @@ public class AsyncWorkerBaseTest {
     @Test
     public void testBasicAsyncHandling() throws Throwable {
         WorkerLauncher workerLauncher = workerTestExtension.getWrappedWorker(TestAsyncQueueWorker.class);
-        WireMockServer wireMockServer = workerTestExtension.getWireMockServer();
 
         // generate 30 events!
         List<QueueEvent> events = new ArrayList<>();
@@ -66,21 +61,8 @@ public class AsyncWorkerBaseTest {
         Assertions.assertTrue(worker.onStartupCalled);
 
         for (QueueEvent event : events) {
-            wireMockServer.verify(new CountMatchingStrategy(CountMatchingStrategy.GREATER_THAN_OR_EQUAL, 1),
-                    patchRequestedFor(urlEqualTo("/event/status/" + event.getEvent()))
-                            .withRequestBody(containing("\"working\""))
-            );
-            wireMockServer.verify(1,
-                    patchRequestedFor(urlEqualTo("/event/status/" + event.getEvent()))
-                            .withRequestBody(containing("\"done\""))
-            );
-            wireMockServer.verify(0,
-                    patchRequestedFor(urlEqualTo("/event/status/" + event.getEvent()))
-                            .withRequestBody(containing("\"failed\""))
-            );
+            workerTestExtension.verifyQueueEventWasDone(event.getEvent());
         }
-
-
 
         try {
             workerLauncher.stop();
