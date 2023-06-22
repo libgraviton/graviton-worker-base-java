@@ -2,7 +2,6 @@ package com.github.libgraviton.workerbase;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatus;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorker;
 import com.github.libgraviton.workerbase.exception.GravitonCommunicationException;
@@ -223,7 +222,7 @@ public class QueueWorkerRunner {
     });
 
     // exception callback! -> will be used here and in the runnable!
-    final WorkerRunnable.AfterExceptionCallback exceptionCallback = (throwable) -> {
+    final WorkerRunnable.AfterExceptionCallback exceptionCallback = (queueEventScope, throwable) -> {
       // mark as errored
       eventStates.incrementAndGet(EventStatusStatus.Status.FAILED);
 
@@ -237,7 +236,7 @@ public class QueueWorkerRunner {
           LOG.warn("Will not try update status of EventStatus as it doesn't seem to exist ('{}')", throwable.getMessage());
         } else {
           try {
-            worker.getWorkerScope().getStatusHandler().updateToErrorState(statusUrl, worker.getWorkerId(), throwable.toString());
+            queueEventScope.getStatusHandler().updateToFailed(statusUrl, throwable.toString());
           } catch (GravitonCommunicationException e1) {
             LOG.error("Unable to update worker status at '{}'.", statusUrl, e1);
           }
@@ -270,7 +269,7 @@ public class QueueWorkerRunner {
     };
 
     // on status change this!
-    final WorkerRunnable.AfterStatusChangeCallback afterStatusChangeCallback = (status) -> {
+    final WorkerRunnable.AfterStatusChangeCallback afterStatusChangeCallback = (queueEventScope, status) -> {
       // if now working, mark as working
       if (status.equals(EventStatusStatus.Status.WORKING)) {
         eventWorkingCounter.incrementAndGet();
@@ -284,66 +283,62 @@ public class QueueWorkerRunner {
       // should we acknowledge now?
       if (acknowledgeStates.contains(status) && !isAcknowledged.get()) {
         acknowledgeCallback.onAck(false);
-        //LOG.info("Acknowledged QueueEvent status '{}' as message ID '{}' to queue.", statusUrl, messageId);
         isAcknowledged.set(true);
       }
 
       if (worker.shouldAutoUpdateStatus()) {
-        EventStatus eventStatus = worker.getWorkerScope().getStatusHandler().getEventStatusFromUrl(statusUrl);
-        if (worker.shouldLinkAction(worker.getWorkerId(), eventStatus.getStatus())) {
-          worker.getWorkerScope().getStatusHandler().updateWithAction(eventStatus, worker.getWorkerId(), status, worker.getWorkerAction());
-        } else {
-          worker.getWorkerScope().getStatusHandler().update(eventStatus, worker.getWorkerId(), status);
-        }
+        queueEventScope.getStatusHandler()
+          .update(
+            statusUrl,
+            status,
+            worker.getWorkerAction()
+          );
       }
     };
 
-    try {
-      // wrap with status handling stuff
-      final WorkerRunnable workerRunnable = new WorkerRunnable(
-        queueEvent,
-        (queueEventScope) -> {
-          final WorkerRunnableInterface workload;
-          if (areWeAsync) {
-            workload = ((AsyncQueueWorkerInterface) worker).handleRequestAsync(queueEventScope);
-          } else {
-            workload = worker::handleRequest;
-          }
-          return workload;
-        },
-        afterStatusChangeCallback,
-        (workingDuration) -> {
+    // wrap with status handling stuff
+    final WorkerRunnable workerRunnable = new WorkerRunnable(
+      queueEvent,
+      (queueEventScope) -> {
+        final WorkerRunnableInterface workload;
+        if (areWeAsync) {
+          workload = ((AsyncQueueWorkerInterface) worker).handleRequestAsync(queueEventScope);
+        } else {
+          workload = worker::handleRequest;
+        }
+        return workload;
+      },
+      afterStatusChangeCallback,
+      (workingDuration) -> {
 
-          // decrement working
-          long workingCounter = eventWorkingCounter.decrementAndGet();
-          if (workingCounter < 0) {
-            eventWorkingCounter.set(0);
-          }
+        // decrement working
+        long workingCounter = eventWorkingCounter.decrementAndGet();
+        if (workingCounter < 0) {
+          eventWorkingCounter.set(0);
+        }
 
-          LOG.info(
-            "QueueEvent processing is completed, working duration of '{}' ms. Message acknowledge state is '{}'.",
-            workingDuration.toMillis(),
-            isAcknowledged.get()
-          );
+        LOG.info(
+          "QueueEvent processing is completed, working duration of '{}' ms. Message acknowledge state is '{}'.",
+          workingDuration.toMillis(),
+          isAcknowledged.get()
+        );
 
-          // record duration
-          eventWorkingDurationTimer.record(workingDuration);
-        },
-        exceptionCallback,
-        worker::shouldHandleRequest
-      );
+        // record duration
+        eventWorkingDurationTimer.record(workingDuration);
+      },
+      exceptionCallback,
+      worker::shouldHandleRequest
+    );
 
-      afterCompleteCallbacks.forEach(workerRunnable::addAfterCompleteCallback);
+    afterCompleteCallbacks.forEach(workerRunnable::addAfterCompleteCallback);
 
-      if (areWeAsync) {
-        executorService.execute(workerRunnable);
-      } else {
-        // directly execute
-        workerRunnable.run();
-      }
-    } catch (Throwable t) {
-      exceptionCallback.onException(t);
+    if (areWeAsync) {
+      executorService.execute(workerRunnable);
+    } else {
+      // directly execute
+      workerRunnable.run();
     }
+
   }
 
 }

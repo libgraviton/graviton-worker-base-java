@@ -32,12 +32,12 @@ public class WorkerRunnable implements Runnable {
 
     @FunctionalInterface
     public interface AfterExceptionCallback {
-        void onException(Throwable t);
+        void onException(QueueEventScope queueEventScope, Throwable t);
     }
 
     @FunctionalInterface
     public interface AfterStatusChangeCallback {
-        void onStatusChange(EventStatusStatus.Status status) throws Throwable;
+        void onStatusChange(QueueEventScope queueEventScope, EventStatusStatus.Status status) throws Throwable;
     }
 
     @FunctionalInterface
@@ -77,17 +77,18 @@ public class WorkerRunnable implements Runnable {
         final Stopwatch stopwatch = Stopwatch.createStarted();
         final int retryLimit = Integer.parseInt(WorkerProperties.DIRECT_RETRY_LIMIT.get());
 
+        final QueueEventScope queueEventScope = DependencyInjection.getInstance(QueueEventScope.class);
+        queueEventScope.setQueueEvent(queueEvent);
+
         try {
-            final QueueEventScope queueEventScope = DependencyInjection.getInstance(QueueEventScope.class);
-            queueEventScope.setQueueEvent(queueEvent);
 
             // is it relevant?
             if (!relevantEventCallback.isRevelant(queueEventScope)) {
-                afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.IGNORED);
+                afterStatusChangeCallback.onStatusChange(queueEventScope, EventStatusStatus.Status.IGNORED);
                 return;
             }
 
-            afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.WORKING);
+            afterStatusChangeCallback.onStatusChange(queueEventScope, EventStatusStatus.Status.WORKING);
 
             RetryRegistry.retrySomething(
               retryLimit,
@@ -105,9 +106,9 @@ public class WorkerRunnable implements Runnable {
               null
             );
 
-            afterStatusChangeCallback.onStatusChange(EventStatusStatus.Status.DONE);
+            afterStatusChangeCallback.onStatusChange(queueEventScope, EventStatusStatus.Status.DONE);
         } catch (Throwable t) {
-            afterExceptionCallback.onException(t);
+            afterExceptionCallback.onException(queueEventScope, t);
         } finally {
             // call all after completes!
             afterCompleteCallbacks.forEach(s -> s.onComplete(stopwatch.elapsed()));
