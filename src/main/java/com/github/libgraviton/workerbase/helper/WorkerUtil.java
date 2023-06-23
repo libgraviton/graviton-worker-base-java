@@ -3,9 +3,9 @@
  */
 package com.github.libgraviton.workerbase.helper;
 
+import java.net.InetAddress;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -57,6 +57,19 @@ public class WorkerUtil {
         } catch (Throwable t) {
             return "(UNKNOWN)";
         }
+    }
+
+    public static String getQueueClientId() {
+      // hostname
+      String hostname = "[unknown]";
+      try {
+        InetAddress localhost = InetAddress.getLocalHost();
+        hostname = localhost.getHostName();
+      } catch (Throwable t) {
+        // not so important
+      }
+
+      return String.format("%s@%s", WorkerProperties.WORKER_ID.get(), hostname);
     }
 
     public static Duration[] getTimeMetricsDurations() {
