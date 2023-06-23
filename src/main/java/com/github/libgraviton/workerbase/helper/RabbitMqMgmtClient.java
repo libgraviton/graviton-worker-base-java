@@ -69,7 +69,7 @@ public class RabbitMqMgmtClient {
     List<String> found = new ArrayList<>();
 
     for (ConnectionInfo connectionInfo : client.getConnections()) {
-      if (checkNames.contains(connectionInfo.getClientProperties().getConnectionName())) {
+      if (connectionInfo.getClientProperties().getConnectionName() != null && checkNames.contains(connectionInfo.getClientProperties().getConnectionName())) {
         found.add(connectionInfo.getClientProperties().getConnectionName());
       }
     }
