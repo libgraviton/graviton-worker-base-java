@@ -182,6 +182,18 @@
       <artifactId>amqp-client</artifactId>
       <version>5.18.0</version>
     </dependency>
+    <!-- rabbitmq http client to access mgmt api -->
+    <dependency>
+      <groupId>com.rabbitmq</groupId>
+      <artifactId>http-client</artifactId>
+      <version>5.0.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>javax.jms</groupId>
       <artifactId>javax.jms-api</artifactId>
