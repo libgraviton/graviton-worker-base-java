@@ -1,5 +1,6 @@
 package com.github.libgraviton.workerbase.messaging.strategy.rabbitmq;
 
+import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.messaging.QueueConnection;
 import com.github.libgraviton.workerbase.messaging.config.PropertyUtil;
 import com.github.libgraviton.workerbase.messaging.consumer.Consumeable;
@@ -115,7 +116,7 @@ public class RabbitMqConnection extends QueueConnection {
                     prefetchCount
             );
 
-            connection = connectionFactory.newConnection();
+            connection = connectionFactory.newConnection(WorkerUtil.getQueueClientId());
             channel = connection.createChannel();
             // If defined, use specific queue and declare it, otherwise use random / temporary queue
             if (null != queueName) {
