@@ -31,6 +31,12 @@ public class WorkerProperties {
     public static final WorkerProperty GATEWAY_BASE_URL = new WorkerProperty("gateway.url");
     public static final WorkerProperty GATEWAY_USERNAME = new WorkerProperty("gateway.username");
     public static final WorkerProperty GATEWAY_PASSWORD = new WorkerProperty("gateway.password");
+    public static final WorkerProperty QUEUE_HOST = new WorkerProperty("queue.host");
+    public static final WorkerProperty QUEUE_PORT = new WorkerProperty("queue.port");
+    public static final WorkerProperty QUEUE_MGMTPORT = new WorkerProperty("queue.mgmtPort");
+    public static final WorkerProperty QUEUE_USER = new WorkerProperty("queue.user");
+    public static final WorkerProperty QUEUE_PASSWORD = new WorkerProperty("queue.password");
+    public static final WorkerProperty QUEUE_VIRTUALHOST = new WorkerProperty("queue.virtualhost");
     public static final WorkerProperty GATEWAY_JWT_LIFETIME = new WorkerProperty("gateway.jwt_lifetime");
     public static final WorkerProperty GRAVITON_SUBSCRIPTION = new WorkerProperty("graviton.subscription");
     public static final WorkerProperty WORKER_ID = new WorkerProperty("graviton.workerId");
