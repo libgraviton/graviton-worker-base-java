@@ -37,7 +37,7 @@ public class RabbitMqConnectionTest {
         doReturn(true).when(rabbitConnection).isOpen();
 
         rabbitFactory = mock(ConnectionFactory.class);
-        doReturn(rabbitConnection).when(rabbitFactory).newConnection();
+        doReturn(rabbitConnection).when(rabbitFactory).newConnection(anyString());
 
         connection = new RabbitMqConnection.Builder()
                 .exchangeName("exchange")
@@ -46,6 +46,7 @@ public class RabbitMqConnectionTest {
                 .connectionAttempts(1)
                 .connectionFactory(rabbitFactory)
                 .build();
+
         connection = spy(connection);
     }
 
