@@ -9,6 +9,9 @@ import java.net.URISyntaxException;
 
 public class QueueWorkerHealthcheck {
   public static void main(String[] args) throws IOException, URISyntaxException {
+    String connectionName = WorkerUtil.getQueueClientId();
+    System.out.println("Checking for queue connection named: " + connectionName);
+
     WorkerProperties.load();
 
     RabbitMqMgmtClient rabbitMqMgmtClient = new RabbitMqMgmtClient(
@@ -19,6 +22,6 @@ public class QueueWorkerHealthcheck {
       1
     );
 
-    rabbitMqMgmtClient.ensureClientPresence(WorkerUtil.getQueueClientId());
+    rabbitMqMgmtClient.ensureClientPresence(connectionName);
   }
 }
