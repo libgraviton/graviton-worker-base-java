@@ -3,8 +3,10 @@ package com.github.libgraviton.workerbase.helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * this is a singleton implementation/wrapper for properties handling
@@ -15,6 +17,8 @@ import java.util.*;
  * 3) accept both instance and static use - and still have the same properties
  */
 public class WorkerProperties {
+
+    private static final String CACHE_ENV_PATH = "PROPERTIES_CACHE_FILE";
 
     public record WorkerProperty(String name) {
         @Override
@@ -93,10 +97,30 @@ public class WorkerProperties {
 
     public static Properties load() throws IOException {
         if (!alreadyLoaded) {
-            loadedProperties = PropertiesLoader.load();
+            // is there a cached one?
+            File file = new File(CACHE_ENV_PATH);
+            if (file.exists()) {
+                try (InputStream inputStream = new GZIPInputStream(new FileInputStream(CACHE_ENV_PATH))) {
+                    loadedProperties = new Properties();
+                    loadedProperties.load(inputStream);
+                }
+            } else {
+                loadedProperties = PropertiesLoader.load();
+            }
             alreadyLoaded = true;
         }
         return new InnerProperties();
+    }
+
+    public static void persist() throws IOException {
+        String cacheFile = System.getenv(CACHE_ENV_PATH);
+        if (cacheFile == null) {
+            return;
+        }
+
+        try (OutputStream outputStream = new GZIPOutputStream(new FileOutputStream(cacheFile))) {
+            loadedProperties.store(outputStream, "Serialized Properties");
+        }
     }
 
     public static void addOverrides(Map<String, String> map) {

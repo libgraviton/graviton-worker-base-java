@@ -8,8 +8,8 @@ import com.rabbitmq.http.client.domain.ConnectionInfo;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,14 +39,26 @@ public class RabbitMqMgmtClient {
   }
 
   public void ensureClientPresence(List<String> clientNames, boolean silentCheck) throws IOException {
+    final Set<String> lookingFor = Set.copyOf(clientNames);
+
     try {
       RetryRegistry.retrySomething(
         maxTries,
         () -> {
-          if (!checkClientPresence(clientNames)) {
-            throw new IOException("Could not detect all needed clients.");
+          Set<String> connectedNames = getConnectedClientNames();
+          Set<String> found = new HashSet<>();
+
+          for (String clientName : lookingFor) {
+            if (connectedNames.contains(clientName)) {
+              found.add(clientName);
+            }
           }
-          return null;
+
+          if (found.size() == lookingFor.size()) {
+            return null;
+          }
+
+          throw new IOException("Could not detect all needed clients.");
         },
         (event) -> {
           if (!silentCheck) {
@@ -65,15 +77,14 @@ public class RabbitMqMgmtClient {
     }
   }
 
-  private boolean checkClientPresence(List<String> checkNames) {
-    List<String> found = new ArrayList<>();
-
+  private Set<String> getConnectedClientNames() {
+    Set<String> found = new HashSet<>();
     for (ConnectionInfo connectionInfo : client.getConnections()) {
-      if (connectionInfo.getClientProperties().getConnectionName() != null && checkNames.contains(connectionInfo.getClientProperties().getConnectionName())) {
+      if (connectionInfo.getClientProperties().getConnectionName() != null) {
         found.add(connectionInfo.getClientProperties().getConnectionName());
       }
     }
 
-    return found.size() == checkNames.size();
+    return found;
   }
 }
