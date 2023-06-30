@@ -14,6 +14,9 @@ public class Application {
         WorkerProperties.load();
         DependencyInjection.init();
 
+        // try to persist them
+        WorkerProperties.persist();
+
         Set<Class<?>> workerClasses = DependencyInjection.getWorkerClasses();
 
         Class<WorkerInterface> classToLoad = null;
