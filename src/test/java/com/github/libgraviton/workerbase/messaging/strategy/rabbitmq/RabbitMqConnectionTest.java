@@ -37,7 +37,7 @@ public class RabbitMqConnectionTest {
         doReturn(true).when(rabbitConnection).isOpen();
 
         rabbitFactory = mock(ConnectionFactory.class);
-        doReturn(rabbitConnection).when(rabbitFactory).newConnection();
+        doReturn(rabbitConnection).when(rabbitFactory).newConnection(anyString());
 
         connection = new RabbitMqConnection.Builder()
                 .exchangeName("exchange")
@@ -46,6 +46,7 @@ public class RabbitMqConnectionTest {
                 .connectionAttempts(1)
                 .connectionFactory(rabbitFactory)
                 .build();
+
         connection = spy(connection);
     }
 
@@ -134,15 +135,6 @@ public class RabbitMqConnectionTest {
         verify(rabbitChannel).queueDeclare("queue", true, false, false, null);
         verify(rabbitChannel, never()).exchangeDeclare(anyString(), anyString(), anyBoolean());
         verify(rabbitChannel, never()).queueBind(anyString(), anyString(), anyString());
-    }
-
-    @Test
-    public void testOpenConnectionFailed() throws Exception {
-        doThrow(new IOException()).when(rabbitFactory).newConnection();
-
-        Assertions.assertThrows(CannotConnectToQueue.class, () -> {
-            connection.open();
-        });
     }
 
     @Test

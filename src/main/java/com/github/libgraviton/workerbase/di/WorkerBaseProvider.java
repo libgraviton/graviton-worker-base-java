@@ -65,6 +65,7 @@ public class WorkerBaseProvider extends AbstractModule {
     public static EventStatusHandler eventStatusHandler(Properties properties, GravitonApi gravitonApi) {
         return new EventStatusHandler(
                 gravitonApi,
+                WorkerProperties.WORKER_ID.get(),
                 Integer.parseInt(WorkerProperties.STATUSHANDLER_RETRY_LIMIT.get())
         );
     }

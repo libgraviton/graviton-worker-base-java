@@ -112,17 +112,8 @@ public class FileWorkerBaseTest {
         Assertions.assertTrue(worker.onStartupCalled);
         Assertions.assertFalse(worker.handleFileRequestCalled);
 
-        workerTestExtension.getWireMockServer().verify(1,
-                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
-                        .withRequestBody(containing("\"ignored\""))
-        );
-        workerTestExtension.getWireMockServer().verify(0,
-                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
-                        .withRequestBody(containing("\"working\""))
-        );
-        workerTestExtension.getWireMockServer().verify(0,
-                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
-                        .withRequestBody(containing("\"done\""))
-        );
+        workerTestExtension.verifyQueueEventWasSetToStatus(queueEvent.getEvent(), "ignored");
+        workerTestExtension.verifyQueueEventWasNotSetToStatus(queueEvent.getEvent(), "working");
+        workerTestExtension.verifyQueueEventWasNotSetToStatus(queueEvent.getEvent(), "done");
     }
 }

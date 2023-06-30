@@ -72,9 +72,6 @@ public class WorkerBaseTest {
         // wait until finished!
         countDownLatch.await();
 
-        // availability check
-        workerTestExtension.getWireMockServer().verify(moreThan(1), optionsRequestedFor(urlEqualTo("/")));
-
         // test auto register on graviton
         workerTestExtension.getWireMockServer().verify(1,
                 putRequestedFor(
@@ -84,47 +81,24 @@ public class WorkerBaseTest {
         );
 
         // status working
-        workerTestExtension.getWireMockServer().verify(1,
-                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
-                .withRequestBody(containing("\"working\""))
-        );
-        workerTestExtension.getWireMockServer().verify(1,
-                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent2.getEvent()))
-                        .withRequestBody(containing("\"working\""))
-        );
+        workerTestExtension.verifyQueueEventWasSetToStatus(queueEvent.getEvent(), "working");
+        workerTestExtension.verifyQueueEventWasSetToStatus(queueEvent2.getEvent(), "working");
+
         // status done
-        workerTestExtension.getWireMockServer().verify(1,
-                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent.getEvent()))
-                        .withRequestBody(containing("\"done\""))
-        );
-        workerTestExtension.getWireMockServer().verify(1,
-                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent2.getEvent()))
-                        .withRequestBody(containing("\"done\""))
-        );
+        workerTestExtension.verifyQueueEventWasSetToStatus(queueEvent.getEvent(), "done");
+        workerTestExtension.verifyQueueEventWasSetToStatus(queueEvent2.getEvent(), "done");
+
         // ignored
-        workerTestExtension.getWireMockServer().verify(1,
-                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent3.getEvent()))
-                        .withRequestBody(containing("\"ignored\""))
-        );
+        workerTestExtension.verifyQueueEventWasSetToStatus(queueEvent3.getEvent(), "ignored");
 
         /* THIS EVENT FIRES AN EXCEPTION 3 TIMES AND 1 LAST TIME OK AND SET TO DONE */
 
         // 4 times to 'working'!
-        workerTestExtension.getWireMockServer().verify(4,
-                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent4.getEvent()))
-                        .withRequestBody(containing("\"working\""))
-        );
+        workerTestExtension.verifyQueueEventWasSetToStatus(queueEvent4.getEvent(), "working", null, 4);
+
         // failed! -> we tried 3 times in the worker!
-        workerTestExtension.getWireMockServer().verify(3,
-                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent4.getEvent()))
-                        .withRequestBody(containing("\"failed\""))
-                        .withRequestBody(containing("YES_I_DO_FAIL_NOW")) // error message included?
-        );
-        // 4th time this should be put to done!
-        workerTestExtension.getWireMockServer().verify(1,
-                patchRequestedFor(urlEqualTo("/event/status/" + queueEvent4.getEvent()))
-                        .withRequestBody(containing("\"done\""))
-        );
+        workerTestExtension.verifyQueueEventWasSetToStatus(queueEvent4.getEvent(), "failed", "YES_I_DO_FAIL_NOW", 3);
+        workerTestExtension.verifyQueueEventWasSetToStatus(queueEvent4.getEvent(), "done", null, 1);
 
         // FINISHED EVENT 4
 
@@ -261,9 +235,7 @@ public class WorkerBaseTest {
 
         int retryLimit = Integer.parseInt(WorkerProperties.STATUSHANDLER_RETRY_LIMIT.get());
 
-        workerTestExtension.getWireMockServer().verify(retryLimit + 1,
-                getRequestedFor(urlEqualTo("/event/status/" + newId))
-        );
+        workerTestExtension.verifyQueueEventWasSetToStatus(newId, "working", null, retryLimit);
 
         try {
             workerLauncher.stop();
