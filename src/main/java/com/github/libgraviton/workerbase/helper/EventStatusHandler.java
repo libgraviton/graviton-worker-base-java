@@ -45,7 +45,7 @@ public class EventStatusHandler {
   }
 
   public void updateToFailed(String eventStatusUrlOrId, String errorMessage) throws GravitonCommunicationException {
-    update(eventStatusUrlOrId, EventStatusStatus.Status.FAILED, null, EventStatusInformation.Type.ERROR, errorMessage);
+    update(eventStatusUrlOrId, EventStatusStatus.Status.FAILED, null, EventStatusInformation.Type.ERROR, errorMessage, null);
   }
 
   public void update(String eventStatusUrlOrId, EventStatusStatus.Status status) throws GravitonCommunicationException {
@@ -53,10 +53,18 @@ public class EventStatusHandler {
   }
 
   public void update(String eventStatusUrlOrId, EventStatusStatus.Status status, EventStatusStatusAction action) throws GravitonCommunicationException {
-    update(eventStatusUrlOrId, status, action, null, null);
+    update(eventStatusUrlOrId, status, action, null, null, null);
   }
 
-  public void update(String eventStatusUrlOrId, EventStatusStatus.Status status, EventStatusStatusAction action, EventStatusInformation.Type informationType, String informationContent) throws GravitonCommunicationException {
+  public void update(String eventStatusUrlOrId, EventStatusStatus.Status status, EventStatusInformation.Type informationType, String informationContent) throws GravitonCommunicationException {
+    update(eventStatusUrlOrId, status, null, informationType, informationContent, null);
+  }
+
+  public void update(String eventStatusUrlOrId, EventStatusStatus.Status status, EventStatusInformation.Type informationType, String informationContent, String informationRef) throws GravitonCommunicationException {
+    update(eventStatusUrlOrId, status, null, informationType, informationContent, informationRef);
+  }
+
+  public void update(String eventStatusUrlOrId, EventStatusStatus.Status status, EventStatusStatusAction action, EventStatusInformation.Type informationType, String informationContent, String informationRef) throws GravitonCommunicationException {
     String eventStatusId = gravitonApi.getIdFromUrlOrId(eventStatusUrlOrId);
 
     // use the "new" status update endpoint
@@ -76,6 +84,10 @@ public class EventStatusHandler {
       information.setType(informationType);
       information.setWorkerId(workerId);
       information.setContent(informationContent);
+
+      if (informationRef != null) {
+        information.set$ref(informationRef);
+      }
 
       try {
         payload = gravitonApi.getObjectMapper().writeValueAsString(information);
