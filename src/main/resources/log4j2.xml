@@ -11,8 +11,8 @@
     <loggers>
         <root level="INFO">
             <appender-ref ref="Console" />
-            <!-- Note that the Sentry logging threshold is overridden to the WARN level -->
-            <appender-ref ref="Sentry" level="WARN" />
+            <!-- Note that the Sentry logging threshold is overridden to the ERROR level -->
+            <appender-ref ref="Sentry" level="ERROR" />
         </root>
     </loggers>
 </configuration>
