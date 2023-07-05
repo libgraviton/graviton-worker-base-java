@@ -9,10 +9,10 @@ import java.net.URISyntaxException;
 
 public class QueueWorkerHealthcheck {
   public static void main(String[] args) throws IOException, URISyntaxException {
+    WorkerProperties.load();
+
     String connectionName = WorkerUtil.getQueueClientId();
     System.out.println("Checking for queue connection named: " + connectionName);
-
-    WorkerProperties.load();
 
     RabbitMqMgmtClient rabbitMqMgmtClient = new RabbitMqMgmtClient(
       WorkerProperties.QUEUE_HOST.get(),
@@ -23,5 +23,6 @@ public class QueueWorkerHealthcheck {
     );
 
     rabbitMqMgmtClient.ensureClientPresence(connectionName);
+    System.out.println("OK!");
   }
 }
