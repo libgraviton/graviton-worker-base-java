@@ -126,6 +126,11 @@ public class WorkerBaseTest {
         Assertions.assertEquals(6, worker.callCount);
         Assertions.assertEquals(3, worker.errorCount);
 
+        // check that callbacks were called
+        Assertions.assertEquals(7, worker.afterCompleteCalled.get());
+        Assertions.assertEquals(3, worker.afterExceptionCalled.get());
+        Assertions.assertEquals(10, worker.afterStatusChangeCalled.get());
+
         try {
             workerLauncher.stop();
         } catch (Throwable t) {
