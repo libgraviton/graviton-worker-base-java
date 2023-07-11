@@ -15,18 +15,19 @@ import com.github.libgraviton.workerbase.messaging.MessageAcknowledger;
 import com.github.libgraviton.workerbase.messaging.exception.CannotRegisterConsumeable;
 import com.github.libgraviton.workerbase.messaging.strategy.rabbitmq.RabbitMqConnection;
 import com.github.libgraviton.workerbase.model.QueueEvent;
+import com.github.libgraviton.workerbase.util.CallbackRegistrar;
 import com.github.libgraviton.workerbase.util.PrometheusServer;
 import com.github.libgraviton.workerbase.util.RetryRegistry;
 import com.google.common.util.concurrent.AtomicLongMap;
 import io.activej.inject.annotation.Inject;
 import io.micrometer.core.instrument.*;
 
+import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -38,6 +39,11 @@ public class QueueWorkerRunner {
   @FunctionalInterface
   public interface AcknowledgeCallback {
     void onAck(boolean doNackAndRedeliver);
+  }
+
+  @FunctionalInterface
+  public interface AddCallbacksCallback {
+    void addCallback(CallbackRegistrar callbackRegistrar);
   }
 
   private final AtomicLongMap<EventStatusStatus.Status> eventStates = AtomicLongMap.create();
@@ -75,14 +81,14 @@ public class QueueWorkerRunner {
   private final QueueWorkerAbstract worker;
   private final ObjectMapper objectMapper;
   private final ExecutorService executorService;
-
-  private final List<WorkerRunnable.AfterCompleteCallback> afterCompleteCallbacks = new ArrayList<>();
+  private final CallbackRegistrar callbackRegistrar;
 
   @Inject
   public QueueWorkerRunner(QueueWorkerAbstract worker) {
     areWeAsync = (worker instanceof AsyncQueueWorkerInterface);
 
     this.queueManager = DependencyInjection.getInstance(QueueManager.class);
+    callbackRegistrar = new CallbackRegistrar();
 
     if (areWeAsync) {
       executorService = DependencyInjection.getInstance(ExecutorService.class);
@@ -101,6 +107,9 @@ public class QueueWorkerRunner {
 
     this.worker = worker;
     this.objectMapper = DependencyInjection.getInstance(ObjectMapper.class);
+
+    // callbacks
+    worker.addCallbacks(callbackRegistrar);
 
     // register ack state
     acknowledgeStates = List.of(
@@ -124,10 +133,6 @@ public class QueueWorkerRunner {
     Gauge.builder("worker_queue_events_working", eventWorkingCounter::get)
       .description("How many events are currently in working state.")
       .register(Metrics.globalRegistry);
-  }
-
-  public void addOnCompleteCallback(final WorkerRunnable.AfterCompleteCallback afterCompleteCallback) {
-    afterCompleteCallbacks.add(afterCompleteCallback);
   }
 
   public void run() throws WorkerException {
@@ -162,6 +167,10 @@ public class QueueWorkerRunner {
     }
   }
 
+  public void addCallbacks(AddCallbacksCallback callbacksCallback) {
+    callbacksCallback.addCallback(callbackRegistrar);
+  }
+
   public void close() {
     queueManager.close();
   }
@@ -188,9 +197,9 @@ public class QueueWorkerRunner {
   /**
    * outer function that will be called on an queue event
    *
-   * @param messageId delivery tag from envelope
+   * @param messageId    delivery tag from envelope
    * @param acknowledger registered acknowledger
-   * @param queueEvent queue event
+   * @param queueEvent   queue event
    */
   public final void handleDelivery(final QueueEvent queueEvent, final String messageId, final MessageAcknowledger acknowledger) {
 
@@ -221,96 +230,88 @@ public class QueueWorkerRunner {
       }
     });
 
-    // exception callback! -> will be used here and in the runnable!
-    final WorkerRunnable.AfterExceptionCallback exceptionCallback = (queueEventScope, throwable) -> {
-      // mark as errored
-      eventStates.incrementAndGet(EventStatusStatus.Status.FAILED);
+    final Collection<WorkerRunnable.AfterExceptionCallback> onException = callbackRegistrar.getAndAddAfterExceptionCallback(
+      (queueEventScope, throwable) -> {
+        // mark as errored
+        eventStates.incrementAndGet(EventStatusStatus.Status.FAILED);
 
-      // logic should differ when event status does not exist!
-      final boolean eventStatusDoesNotExist = (throwable instanceof NonExistingEventStatusException);
+        // logic should differ when event status does not exist!
+        final boolean eventStatusDoesNotExist = (throwable instanceof NonExistingEventStatusException);
 
-      LOG.error("Error in worker {}: {}", worker.getWorkerId(), throwable.getMessage(), throwable);
+        LOG.error("Error in worker {}: {}", worker.getWorkerId(), throwable.getMessage(), throwable);
 
-      if (worker.shouldAutoUpdateStatus()) {
-        if (eventStatusDoesNotExist) {
-          LOG.warn("Will not try update status of EventStatus as it doesn't seem to exist ('{}')", throwable.getMessage());
-        } else {
-          try {
-            queueEventScope.getStatusHandler().updateToFailed(statusUrl, throwable.toString());
-          } catch (GravitonCommunicationException e1) {
-            LOG.error("Unable to update worker status at '{}'.", statusUrl, e1);
+        if (worker.shouldAutoUpdateStatus()) {
+          if (eventStatusDoesNotExist) {
+            LOG.warn("Will not try update status of EventStatus as it doesn't seem to exist ('{}')", throwable.getMessage());
+          } else {
+            try {
+              queueEventScope.getStatusHandler().updateToFailed(statusUrl, throwable.toString());
+            } catch (GravitonCommunicationException e1) {
+              LOG.error("Unable to update worker status at '{}'.", statusUrl, e1);
+            }
           }
         }
-      }
 
-      // failure acknowledge
-      if (!isAcknowledged.get()) {
-        final boolean isFatalException = (throwable instanceof WorkerExceptionFatal);
-        if (isFatalException) {
-          LOG.warn("Worker thrown a WorkerExceptionFatal - will not try again!");
+        // failure acknowledge
+        if (!isAcknowledged.get()) {
+          final boolean isFatalException = (throwable instanceof WorkerExceptionFatal);
+          if (isFatalException) {
+            LOG.warn("Worker thrown a WorkerExceptionFatal - will not try again!");
+            acknowledgeCallback.onAck(false);
+            isAcknowledged.set(true);
+            return;
+          }
+
+          // should we give up now?
+          // NO if the worker wants redelivery
+          boolean shouldWeGiveUp = worker.shouldAutoAcknowledgeOnException();
+          // but YES if the eventstatus does not exist.
+          if (!shouldWeGiveUp && eventStatusDoesNotExist) {
+            LOG.warn("Worker wants redelivery but we could not get the EventStatus because of 404 errors, so we need to give up! ('{}')", throwable.getMessage());
+            shouldWeGiveUp = true;
+          }
+
+          // -> no redeliver!
+          acknowledgeCallback.onAck(!shouldWeGiveUp);
+          isAcknowledged.set(true);
+        }
+      },
+      Integer.MAX_VALUE - 1000
+    );
+
+    final Collection<WorkerRunnable.AfterStatusChangeCallback> onStatusChange = callbackRegistrar.getAndAddAfterStatusChangeCallback(
+      (queueEventScope, status) -> {
+        // if now working, mark as working
+        if (status.equals(EventStatusStatus.Status.WORKING)) {
+          eventWorkingCounter.incrementAndGet();
+        }
+
+        // is it done now?
+        if (outcomeStates.contains(status)) {
+          eventStates.incrementAndGet(status);
+        }
+
+        // should we acknowledge now?
+        if (acknowledgeStates.contains(status) && !isAcknowledged.get()) {
           acknowledgeCallback.onAck(false);
           isAcknowledged.set(true);
-          return;
         }
 
-        // should we give up now?
-        // NO if the worker wants redelivery
-        boolean shouldWeGiveUp = worker.shouldAutoAcknowledgeOnException();
-        // but YES if the eventstatus does not exist.
-        if (!shouldWeGiveUp && eventStatusDoesNotExist) {
-          LOG.warn("Worker wants redelivery but we could not get the EventStatus because of 404 errors, so we need to give up! ('{}')", throwable.getMessage());
-          shouldWeGiveUp = true;
+        if (worker.shouldAutoUpdateStatus()) {
+          queueEventScope.getStatusHandler()
+            .update(
+              statusUrl,
+              status,
+              worker.getWorkerAction()
+            );
         }
-
-        // -> no redeliver!
-        acknowledgeCallback.onAck(!shouldWeGiveUp);
-        isAcknowledged.set(true);
-      }
-    };
-
-    // on status change this!
-    final WorkerRunnable.AfterStatusChangeCallback afterStatusChangeCallback = (queueEventScope, status) -> {
-      // if now working, mark as working
-      if (status.equals(EventStatusStatus.Status.WORKING)) {
-        eventWorkingCounter.incrementAndGet();
-      }
-
-      // is it done now?
-      if (outcomeStates.contains(status)) {
-        eventStates.incrementAndGet(status);
-      }
-
-      // should we acknowledge now?
-      if (acknowledgeStates.contains(status) && !isAcknowledged.get()) {
-        acknowledgeCallback.onAck(false);
-        isAcknowledged.set(true);
-      }
-
-      if (worker.shouldAutoUpdateStatus()) {
-        queueEventScope.getStatusHandler()
-          .update(
-            statusUrl,
-            status,
-            worker.getWorkerAction()
-          );
-      }
-    };
-
-    // wrap with status handling stuff
-    final WorkerRunnable workerRunnable = new WorkerRunnable(
-      queueEvent,
-      (queueEventScope) -> {
-        final WorkerRunnableInterface workload;
-        if (areWeAsync) {
-          workload = ((AsyncQueueWorkerInterface) worker).handleRequestAsync(queueEventScope);
-        } else {
-          workload = worker::handleRequest;
-        }
-        return workload;
       },
-      afterStatusChangeCallback,
-      (workingDuration) -> {
+      Integer.MAX_VALUE - 1000
+    );
 
+    // stuff to execute on COMPLETE
+    final Collection<WorkerRunnable.AfterCompleteCallback> onComplete = callbackRegistrar.getAndAddAfterCompleteCallback(
+      workingDuration -> {
         // decrement working
         long workingCounter = eventWorkingCounter.decrementAndGet();
         if (workingCounter < 0) {
@@ -326,11 +327,26 @@ public class QueueWorkerRunner {
         // record duration
         eventWorkingDurationTimer.record(workingDuration);
       },
-      exceptionCallback,
-      worker::shouldHandleRequest
+      Integer.MAX_VALUE - 1000
     );
 
-    afterCompleteCallbacks.forEach(workerRunnable::addAfterCompleteCallback);
+    // wrap with status handling stuff
+    final WorkerRunnable workerRunnable = new WorkerRunnable(
+      queueEvent,
+      (queueEventScope) -> {
+        final WorkerRunnableInterface workload;
+        if (areWeAsync) {
+          workload = ((AsyncQueueWorkerInterface) worker).handleRequestAsync(queueEventScope);
+        } else {
+          workload = worker::handleRequest;
+        }
+        return workload;
+      },
+      onStatusChange,
+      onComplete,
+      onException,
+      worker::shouldHandleRequest
+    );
 
     if (areWeAsync) {
       executorService.execute(workerRunnable);

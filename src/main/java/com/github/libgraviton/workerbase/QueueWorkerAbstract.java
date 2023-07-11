@@ -6,6 +6,7 @@ import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventSt
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workerbase.helper.WorkerScope;
+import com.github.libgraviton.workerbase.util.CallbackRegistrar;
 import io.activej.inject.annotation.Inject;
 
 import java.util.ArrayList;
@@ -63,6 +64,9 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
     public boolean shouldAutoRegister()
     {
         return true;
+    }
+
+    public void addCallbacks(CallbackRegistrar callbackRegistrar) {
     }
 
     /**

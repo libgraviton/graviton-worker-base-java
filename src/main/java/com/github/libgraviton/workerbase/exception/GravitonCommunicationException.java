@@ -1,13 +1,13 @@
 package com.github.libgraviton.workerbase.exception;
 
 /**
- * Exception for unsucessful communication with Graviton
+ * Exception for unsuccessful communication with Graviton
  *
  * @author List of contributors
  *         https://github.com/libgraviton/graviton/graphs/contributors
  * @see <a href="http://swisscom.chm">http://swisscom.ch</a>
  */
-public class GravitonCommunicationException extends Exception {
+public class GravitonCommunicationException extends WorkerException {
 
     public GravitonCommunicationException() {
     }
