@@ -4,8 +4,10 @@ import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusSt
 import com.github.libgraviton.gdk.gravitondyn.eventstatus.document.EventStatusStatusAction;
 import com.github.libgraviton.gdk.gravitondyn.eventstatusaction.document.EventStatusAction;
 import com.github.libgraviton.gdk.gravitondyn.eventworker.document.EventWorkerSubscription;
+import com.github.libgraviton.workerbase.helper.RabbitMqMgmtClient;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
 import com.github.libgraviton.workerbase.helper.WorkerScope;
+import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.util.CallbackRegistrar;
 import io.activej.inject.annotation.Inject;
 
@@ -21,9 +23,12 @@ import java.util.List;
  */
 public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWorkerInterface {
 
+    private final String queueConnectionName;
+
     @Inject
     public QueueWorkerAbstract(WorkerScope workerScope) {
         super(workerScope);
+        queueConnectionName = WorkerUtil.getQueueClientId();
     }
 
     public boolean shouldLinkAction(String workerId, List<EventStatusStatus> status) {
@@ -105,5 +110,24 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
         EventStatusStatusAction action = new EventStatusStatusAction();
         action.set$ref(String.format("%s%s-default", eventStatusActionEndpointUrl, workerId));
         return action;
+    }
+
+    public boolean doHealthCheck() {
+        LOG.info("Performing healthcheck for queue connection named '{}'", queueConnectionName);
+        try {
+            RabbitMqMgmtClient rabbitMqMgmtClient = new RabbitMqMgmtClient(
+              WorkerProperties.QUEUE_HOST.get(),
+              Integer.parseInt(WorkerProperties.QUEUE_MGMTPORT.get()),
+              WorkerProperties.QUEUE_USER.get(),
+              WorkerProperties.QUEUE_PASSWORD.get(),
+              1
+            );
+
+            rabbitMqMgmtClient.ensureClientPresence(queueConnectionName);
+            return true;
+        } catch (Throwable t) {
+            LOG.warn("Healthcheck failed", t);
+            return false;
+        }
     }
 }
