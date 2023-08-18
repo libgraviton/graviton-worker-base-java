@@ -7,4 +7,6 @@ public interface WorkerInterface {
   String getWorkerId();
 
   void onStartUp() throws WorkerException;
+
+  boolean doHealthCheck() throws WorkerException;
 }
