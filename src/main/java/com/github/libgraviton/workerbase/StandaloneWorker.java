@@ -9,4 +9,11 @@ abstract public class StandaloneWorker extends BaseWorker implements StandaloneW
     public StandaloneWorker(WorkerScope workerScope) {
         super(workerScope);
     }
+
+    public boolean doHealthCheck() {
+        LOG.warn(
+          "This is a standalone worker, but there is no healthcheck defined! Please define one by implementing doHealthCheck() in your worker class!"
+        );
+        return true;
+    }
 }
