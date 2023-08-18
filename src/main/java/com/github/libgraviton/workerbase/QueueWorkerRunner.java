@@ -330,6 +330,8 @@ public class QueueWorkerRunner {
       Integer.MAX_VALUE - 1000
     );
 
+    LOG.debug("onComplete callbacks '{}', {}", onComplete.size(), onComplete);
+
     // wrap with status handling stuff
     final WorkerRunnable workerRunnable = new WorkerRunnable(
       queueEvent,

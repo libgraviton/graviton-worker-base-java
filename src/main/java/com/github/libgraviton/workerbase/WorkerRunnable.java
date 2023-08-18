@@ -102,16 +102,38 @@ public class WorkerRunnable implements Runnable {
 
       onStatusChange(queueEventScope, EventStatusStatus.Status.DONE);
     } catch (Throwable t) {
-      afterExceptionCallbacks.forEach(callback -> callback.onException(queueEventScope, t));
+      LOG.debug(
+        "Exception '{}' thrown, starting onException with '{}' callbacks.",
+        t.getClass().getName(),
+        afterExceptionCallbacks.size()
+      );
+      afterExceptionCallbacks.forEach(callback -> {
+        LOG.debug("Calling onException callback '{}'", callback);
+        callback.onException(queueEventScope, t);
+      });
     } finally {
       // call all after completes!
       final Duration elapsed = stopwatch.elapsed();
-      afterCompleteCallbacks.forEach(s -> s.onComplete(elapsed));
+      LOG.debug(
+        "run() of worker finished, elapsed '{}ms'. Starting onComplete with '{}' callbacks.",
+        elapsed.toMillis(),
+        afterCompleteCallbacks.size()
+      );
+      afterCompleteCallbacks.forEach(s -> {
+        LOG.debug("Calling onComplete callback '{}'", s);
+        s.onComplete(elapsed);
+      });
     }
   }
 
   private void onStatusChange(QueueEventScope scope, EventStatusStatus.Status status) throws Throwable {
+    LOG.debug(
+      "onStatusChange() to status '{}'. Starting onStatusChange with '{}' callbacks.",
+      status.value(),
+      afterStatusChangeCallbacks.size()
+    );
     for (AfterStatusChangeCallback callback : afterStatusChangeCallbacks) {
+      LOG.debug("Calling onStatusChange callback '{}'", callback);
       callback.onStatusChange(scope, status);
     }
   }
