@@ -113,7 +113,8 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
     }
 
     public boolean doHealthCheck() {
-        LOG.info("Performing healthcheck for queue connection named '{}'", queueConnectionName);
+        LOG.debug("Performing healthcheck for queue connection named '{}'", queueConnectionName);
+
         try {
             RabbitMqMgmtClient rabbitMqMgmtClient = new RabbitMqMgmtClient(
               WorkerProperties.QUEUE_HOST.get(),
@@ -124,6 +125,8 @@ public abstract class QueueWorkerAbstract extends BaseWorker implements QueueWor
             );
 
             rabbitMqMgmtClient.ensureClientPresence(queueConnectionName);
+            LOG.debug("Healthcheck succeeded.");
+
             return true;
         } catch (Throwable t) {
             LOG.warn("Healthcheck failed", t);
