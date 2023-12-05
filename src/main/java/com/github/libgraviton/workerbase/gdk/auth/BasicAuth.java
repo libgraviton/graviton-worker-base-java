@@ -1,13 +1,12 @@
 package com.github.libgraviton.workerbase.gdk.auth;
 
 import com.github.libgraviton.workerbase.gdk.api.header.HeaderBag;
-import com.github.libgraviton.workerbase.gdk.auth.HeaderAuth;
-import okio.ByteString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 
 public class BasicAuth implements HeaderAuth {
@@ -35,7 +34,8 @@ public class BasicAuth implements HeaderAuth {
     public String basic(Charset charset) {
         String usernameAndPassword = username + ":" + password;
         byte[] bytes = usernameAndPassword.getBytes(charset);
-        String encoded = ByteString.of(bytes).base64();
-        return "Basic ".concat(encoded);
+
+        String encodedString = Base64.getEncoder().encodeToString(bytes);
+        return "Basic ".concat(encodedString);
     }
 }
