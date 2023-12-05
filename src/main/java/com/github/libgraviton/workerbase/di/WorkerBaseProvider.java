@@ -26,6 +26,7 @@ import io.activej.inject.binding.Binding;
 import io.activej.inject.module.AbstractModule;
 
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 import java.util.TimeZone;
@@ -75,11 +76,16 @@ public class WorkerBaseProvider extends AbstractModule {
     }
 
     @Provides
-    public static Methanol getHttpClient() throws Exception {
+    public static Methanol getMethanol() throws Exception {
         final boolean hasRetry = WorkerProperties.HTTP_CLIENT_DORETRY.get().equals("true");
         final boolean trustAll = WorkerProperties.HTTP_CLIENT_TLS_TRUST_ALL.get().equals("true");
 
         return MethanolGatewayFactory.getInstance(hasRetry, trustAll);
+    }
+
+    @Provides
+    public static HttpClient getHttpClient() throws Exception {
+        return getMethanol();
     }
 
     @Provides
