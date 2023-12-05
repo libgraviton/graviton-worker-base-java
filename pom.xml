@@ -294,7 +294,7 @@
       <dependency>
         <groupId>com.github.libgraviton</groupId>
         <artifactId>graviton-worker-test-base</artifactId>
-        <version>4.0.0-SNAPSHOT</version>
+        <version>4.0.0</version>
         <scope>test</scope>
         <exclusions>
           <exclusion>
