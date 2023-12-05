@@ -15,7 +15,6 @@ public class NoopResponse extends Response {
         this.request = request;
         this.code = -1;
         this.isSuccessful = true;
-        this.message = "This is not the response you are looking for";
         this.body = null;
         this.headers = new HeaderBag.Builder().build();
     }

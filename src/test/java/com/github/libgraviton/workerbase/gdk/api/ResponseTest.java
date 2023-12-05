@@ -58,7 +58,6 @@ public class ResponseTest {
         response.getBodyItem(SerializationTestClass.class);
         Assertions.assertTrue(response.isSuccessful());
         Assertions.assertEquals(200, response.getCode());
-        Assertions.assertEquals("a message", response.getMessage());
         Assertions.assertEquals("{\"code\":0}", response.getBody());
         Assertions.assertEquals(request, response.getRequest());
         Assertions.assertEquals(0, response.getHeaders().all().size());

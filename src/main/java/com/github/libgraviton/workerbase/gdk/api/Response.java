@@ -26,8 +26,6 @@ public class Response {
 
     protected int code;
 
-    protected String message;
-
     protected HeaderBag headers;
 
     protected byte[] body;
@@ -148,10 +146,6 @@ public class Response {
 
     public int getCode() {
         return code;
-    }
-
-    public String getMessage() {
-        return message;
     }
 
     public static class Builder {
