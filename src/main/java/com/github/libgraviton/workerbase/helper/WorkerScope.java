@@ -7,9 +7,9 @@ import com.github.libgraviton.workerbase.annotation.GravitonWorkerDiScan;
 import com.github.libgraviton.workerbase.gdk.GravitonApi;
 import com.github.libgraviton.workerbase.gdk.GravitonFileEndpoint;
 import io.activej.inject.annotation.Inject;
-import okhttp3.HttpUrl;
 import org.apache.commons.collections4.map.HashedMap;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.Properties;
 
@@ -65,17 +65,24 @@ public class WorkerScope {
      * @return corrected url
      */
     public String convertToGravitonUrl(String url) {
-        HttpUrl baseUrl = HttpUrl.parse(WorkerProperties.GRAVITON_BASE_URL.get());
+        try {
+            URI baseUri = new URI(WorkerProperties.GRAVITON_BASE_URL.get());
+            URI srcUri = new URI(url);
 
-        // convert
-        HttpUrl targetUrl = HttpUrl
-                .parse(url)
-                .newBuilder()
-                .host(baseUrl.host())
-                .port(baseUrl.port())
-                .scheme(baseUrl.scheme())
-                .build();
+            URI newUri = new URI(
+              baseUri.getScheme(),
+              baseUri.getUserInfo(),
+              baseUri.getHost(),
+              baseUri.getPort(),
+              srcUri.getPath(),
+              srcUri.getQuery(),
+              srcUri.getFragment()
+            );
 
-        return targetUrl.toString();
+            return newUri.toURL().toString();
+        } catch (Throwable t) {
+        }
+
+        return url;
     }
 }
