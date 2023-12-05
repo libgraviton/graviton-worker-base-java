@@ -43,7 +43,6 @@ public class Response {
         request = builder.request;
         code = builder.code;
         isSuccessful = builder.isSuccessful;
-        message = builder.message;
         body = builder.body;
         headers = builder.headerBuilder.build();
     }
@@ -159,8 +158,6 @@ public class Response {
 
         protected int code;
 
-        protected String message;
-
         protected final Request request;
 
         protected byte[] body;
@@ -181,11 +178,6 @@ public class Response {
 
         public Builder successful(boolean isSuccessful) {
             this.isSuccessful = isSuccessful;
-            return this;
-        }
-
-        public Builder message(String message) {
-            this.message = message;
             return this;
         }
 

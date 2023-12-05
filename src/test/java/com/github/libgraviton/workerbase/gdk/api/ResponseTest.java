@@ -25,7 +25,6 @@ public class ResponseTest {
         response = new Response.Builder(request)
                 .body("{\"code\":0}".getBytes())
                 .successful(true)
-                .message("a message")
                 .code(200)
                 .build();
         response.setObjectMapper(new ObjectMapper());
@@ -76,7 +75,6 @@ public class ResponseTest {
         response = new Response.Builder(request)
                 .body(new ObjectMapper().writeValueAsString(testClasses).getBytes())
                 .successful(true)
-                .message("a message")
                 .code(200)
                 .build();
         response.setObjectMapper(new ObjectMapper());
