@@ -1,15 +1,21 @@
 package com.github.libgraviton.workerbase.util;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
-import okhttp3.*;
-import okio.BufferedSink;
-import okio.Okio;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DownloadClient {
+
+  private static final Logger LOG = LoggerFactory.getLogger(DownloadClient.class);
 
   /**
    * Downloads a file to disk
@@ -19,15 +25,20 @@ public class DownloadClient {
    * @throws Exception
    */
   public static void downloadFile(String url, final String targetPath, Map<String, String> requestHeaders) {
-    try (ResponseBody body = getResponseBody(url, requestHeaders)) {
-      File file = new File(targetPath);
-      BufferedSink sink = Okio.buffer(Okio.sink(file));
+    try {
+      HttpClient httpClient = DependencyInjection.getInstance(HttpClient.class);
 
-      sink.writeAll(body.source());
-      sink.flush();
-      sink.close();
-    } catch (Exception e) {
-      throw new RuntimeException("Error downloading URL '" + url + "'", e);
+      HttpRequest.Builder reqBuilder = HttpRequest.newBuilder(new URI(url));
+      requestHeaders.forEach(reqBuilder::header);
+
+      httpClient.send(
+        reqBuilder.build(),
+        HttpResponse.BodyHandlers.ofFile(Path.of(targetPath))
+      );
+
+      LOG.info("Downloaded '{}' to path '{}'", url, targetPath);
+    } catch (Throwable t) {
+      LOG.error("Error downloading url '{}'", url, t);
     }
   }
 
@@ -37,22 +48,23 @@ public class DownloadClient {
 
   @Deprecated(since = "Use writeFileContentToDisk(), File and streams to deal with files, not byte arrays!")
   public static byte[] downloadFileBytes(String url) throws IOException {
-    try (ResponseBody body = getResponseBody(url, Map.of())) {
-      return body.bytes();
-    }
-  }
+    java.io.File finalTemp = java.io.File.createTempFile("grv-file", ".tmp");
 
-  private static ResponseBody getResponseBody(String url, Map<String, String> requestHeaders) throws IOException {
-    Request request = new Request.Builder().url(url).headers(Headers.of(requestHeaders)).build();
+    // download
+    downloadFile(url, finalTemp.getAbsolutePath(), Map.of());
 
-    OkHttpClient client = DependencyInjection.getInstance(OkHttpClient.class);
-    Response response = client.newCall(request).execute();
-
-    if (response.code() < 200 || response.code() > 300) {
-      throw new RuntimeException(
-              "Download of url '" + url + "' returned an unexpected status code of " + response.code());
+    if (!finalTemp.exists()) {
+      LOG.error("URL '{}' could not be downloaded", url);
+      throw new IOException("Could not download URL");
     }
 
-    return response.body();
+    byte[] contents = Files.readAllBytes(finalTemp.toPath());
+
+    // delete file
+    finalTemp.delete();
+
+    // read into array
+    return contents;
   }
+
 }

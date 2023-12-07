@@ -26,8 +26,6 @@ public class Response {
 
     protected int code;
 
-    protected String message;
-
     protected HeaderBag headers;
 
     protected byte[] body;
@@ -43,7 +41,6 @@ public class Response {
         request = builder.request;
         code = builder.code;
         isSuccessful = builder.isSuccessful;
-        message = builder.message;
         body = builder.body;
         headers = builder.headerBuilder.build();
     }
@@ -151,15 +148,9 @@ public class Response {
         return code;
     }
 
-    public String getMessage() {
-        return message;
-    }
-
     public static class Builder {
 
         protected int code;
-
-        protected String message;
 
         protected final Request request;
 
@@ -181,11 +172,6 @@ public class Response {
 
         public Builder successful(boolean isSuccessful) {
             this.isSuccessful = isSuccessful;
-            return this;
-        }
-
-        public Builder message(String message) {
-            this.message = message;
             return this;
         }
 

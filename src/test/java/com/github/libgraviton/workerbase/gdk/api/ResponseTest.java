@@ -25,7 +25,6 @@ public class ResponseTest {
         response = new Response.Builder(request)
                 .body("{\"code\":0}".getBytes())
                 .successful(true)
-                .message("a message")
                 .code(200)
                 .build();
         response.setObjectMapper(new ObjectMapper());
@@ -59,7 +58,6 @@ public class ResponseTest {
         response.getBodyItem(SerializationTestClass.class);
         Assertions.assertTrue(response.isSuccessful());
         Assertions.assertEquals(200, response.getCode());
-        Assertions.assertEquals("a message", response.getMessage());
         Assertions.assertEquals("{\"code\":0}", response.getBody());
         Assertions.assertEquals(request, response.getRequest());
         Assertions.assertEquals(0, response.getHeaders().all().size());
@@ -76,7 +74,6 @@ public class ResponseTest {
         response = new Response.Builder(request)
                 .body(new ObjectMapper().writeValueAsString(testClasses).getBytes())
                 .successful(true)
-                .message("a message")
                 .code(200)
                 .build();
         response.setObjectMapper(new ObjectMapper());
