@@ -4,6 +4,9 @@ import com.github.libgraviton.workerbase.gdk.util.http.interceptor.RetryIntercep
 import com.github.mizosoft.methanol.Methanol;
 
 import javax.net.ssl.*;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.Socket;
 import java.net.http.HttpClient;
 import java.security.KeyManagementException;
@@ -56,17 +59,24 @@ public class MethanolGatewayFactory {
    *
    * @return instance
    */
-  public static Methanol getInstance(boolean hasRetry, boolean trustAll) throws NoSuchAlgorithmException, KeyManagementException {
+  public static Methanol getInstance(boolean hasRetry, boolean trustAll, boolean hasCookie) throws NoSuchAlgorithmException, KeyManagementException {
     Methanol.Builder builder = Methanol.newBuilder();
     if (trustAll) {
       SSLContext sslContext = SSLContext.getInstance("SSL"); // OR TLS
       sslContext.init(null, new TrustManager[]{MOCK_TRUST_MANAGER}, new SecureRandom());
-
       builder.sslContext(sslContext);
     }
 
     if (hasRetry) {
       builder.interceptor(new RetryInterceptor());
+    }
+
+    if (hasCookie) {
+      CookieManager cm = new CookieManager();
+      cm.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+      CookieHandler.setDefault(cm);
+
+      builder.cookieHandler(CookieHandler.getDefault());
     }
 
     builder.followRedirects(HttpClient.Redirect.ALWAYS);

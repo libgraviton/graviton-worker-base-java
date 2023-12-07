@@ -80,7 +80,7 @@ public class WorkerBaseProvider extends AbstractModule {
         final boolean hasRetry = WorkerProperties.HTTP_CLIENT_DORETRY.get().equals("true");
         final boolean trustAll = WorkerProperties.HTTP_CLIENT_TLS_TRUST_ALL.get().equals("true");
 
-        return MethanolGatewayFactory.getInstance(hasRetry, trustAll);
+        return MethanolGatewayFactory.getInstance(hasRetry, trustAll, false);
     }
 
     @Provides
