@@ -11,24 +11,23 @@ import com.github.libgraviton.workerbase.gdk.api.endpoint.EndpointManager;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.GeneratedEndpointManager;
 import com.github.libgraviton.workerbase.gdk.api.endpoint.exception.UnableToLoadEndpointAssociationsException;
 import com.github.libgraviton.workerbase.gdk.api.gateway.GravitonGateway;
-import com.github.libgraviton.workerbase.gdk.api.gateway.OkHttpGateway;
-import com.github.libgraviton.workerbase.gdk.api.gateway.okhttp.OkHttpGatewayFactory;
+import com.github.libgraviton.workerbase.gdk.api.gateway.MethanolGateway;
+import com.github.libgraviton.workerbase.gdk.api.gateway.http.MethanolGatewayFactory;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.auth.Authenticator;
 import com.github.libgraviton.workerbase.gdk.requestexecutor.auth.GravitonGatewayAuthenticator;
 import com.github.libgraviton.workerbase.gdk.serialization.mapper.RqlObjectMapper;
 import com.github.libgraviton.workerbase.helper.EventStatusHandler;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
+import com.github.mizosoft.methanol.Methanol;
 import io.activej.inject.Key;
 import io.activej.inject.annotation.Provides;
 import io.activej.inject.annotation.Transient;
 import io.activej.inject.binding.Binding;
 import io.activej.inject.module.AbstractModule;
-import okhttp3.OkHttpClient;
-import okhttp3.Protocol;
 
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.concurrent.*;
@@ -42,7 +41,7 @@ public class WorkerBaseProvider extends AbstractModule {
          */
         generate(GravitonGateway.class, (bindings, scope, key) -> {
             if (key.getType().equals(GravitonGateway.class)) {
-                return Binding.to(Key.of(OkHttpGateway.class));
+                return Binding.to(Key.of(MethanolGateway.class));
             }
             return null;
         });
@@ -77,25 +76,16 @@ public class WorkerBaseProvider extends AbstractModule {
     }
 
     @Provides
-    public static OkHttpClient getOkHttpClient() throws Exception {
+    public static Methanol getMethanol() throws Exception {
         final boolean hasRetry = WorkerProperties.HTTP_CLIENT_DORETRY.get().equals("true");
-        final boolean forceHttp11 = WorkerProperties.HTTP_CLIENT_FORCE_HTTP1_1.get().equals("true");
         final boolean trustAll = WorkerProperties.HTTP_CLIENT_TLS_TRUST_ALL.get().equals("true");
 
-        OkHttpClient client = OkHttpGatewayFactory.getInstance(hasRetry);
-        if (trustAll) {
-            client = OkHttpGatewayFactory.getAllTrustingInstance(hasRetry, client);
-        }
+        return MethanolGatewayFactory.getInstance(hasRetry, trustAll);
+    }
 
-        if (forceHttp11) {
-            client = client
-                    .newBuilder()
-                    .retryOnConnectionFailure(true)
-                    .protocols(Collections.singletonList(Protocol.HTTP_1_1))
-                    .build();
-        }
-
-        return client;
+    @Provides
+    public static HttpClient getHttpClient() throws Exception {
+        return getMethanol();
     }
 
     @Provides

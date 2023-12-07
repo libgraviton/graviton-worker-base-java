@@ -1,17 +1,20 @@
 package com.github.libgraviton.workerbase.gdk.okhttp;
 
-import com.github.libgraviton.workerbase.gdk.util.okhttp.interceptor.RetryInterceptor;
+import com.github.libgraviton.workerbase.gdk.util.http.interceptor.RetryInterceptor;
 import com.github.libgraviton.workertestbase.WorkerTestExtension;
+import com.github.mizosoft.methanol.Methanol;
+import com.github.mizosoft.methanol.MutableRequest;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
@@ -21,22 +24,21 @@ public class RetryInterceptorTest {
     public static WorkerTestExtension workerTestExtension = (new WorkerTestExtension())
             .setStartWiremock(true);
 
-    private OkHttpClient client;
+    private HttpClient client;
 
     @Test
     public void testWrongHostHandling() {
         Assertions.assertThrows(IOException.class, () -> {
             RetryInterceptor retryInterceptor = new RetryInterceptor(5, 1);
 
-            client = new OkHttpClient.Builder()
-                    .addInterceptor(retryInterceptor)
+            client = Methanol.newBuilder()
+                    .interceptor(retryInterceptor)
                     .build();
 
-            Request request = new Request.Builder()
-                    .url("http://myservice/my-precious-url/4")
-                    .build();
+            HttpRequest request = MutableRequest.newBuilder(new URI("http://myservice/my-precious-url/4"))
+              .build();
 
-            client.newCall(request).execute();
+            client.send(request, HttpResponse.BodyHandlers.discarding());
         });
     }
 
@@ -45,16 +47,15 @@ public class RetryInterceptorTest {
         Assertions.assertThrows(IOException.class, () -> {
             RetryInterceptor retryInterceptor = new RetryInterceptor(5, 1);
 
-            client = new OkHttpClient.Builder()
-                    .addInterceptor(retryInterceptor)
-                    .build();
+            client = Methanol.newBuilder()
+              .interceptor(retryInterceptor)
+              .build();
 
-            Request request = new Request.Builder()
-                    .url("http://localhost:9988")
-                    .build();
+            HttpRequest request = MutableRequest.newBuilder(new URI("http://localhost:9988"))
+              .build();
 
             try {
-                client.newCall(request).execute();
+                client.send(request, HttpResponse.BodyHandlers.discarding());
             } catch (ConnectException e) {
                 throw e;
             }
@@ -91,18 +92,17 @@ public class RetryInterceptorTest {
 
         RetryInterceptor retryInterceptor = new RetryInterceptor(5, 1);
 
-        client = new OkHttpClient.Builder()
-            .addInterceptor(retryInterceptor)
-            .build();
+        client = Methanol.newBuilder()
+          .interceptor(retryInterceptor)
+          .build();
 
-        Request request = new Request.Builder()
-            .url(workerTestExtension.getWiremockUrl() + "/service")
-            .build();
+        HttpRequest request = MutableRequest.newBuilder(new URI(workerTestExtension.getWiremockUrl() + "/service"))
+          .build();
 
-        Response response = client.newCall(request).execute();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        Assertions.assertEquals(200, response.code());
-        Assertions.assertEquals("YEEEEES!", response.body().string());
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertEquals("YEEEEES!", response.body());
     }
 
 }
