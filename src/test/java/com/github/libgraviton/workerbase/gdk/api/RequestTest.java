@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +31,7 @@ public class RequestTest {
 
         RequestExecutor executor = mock(RequestExecutor.class);
         when(executor.execute(any(Request.class))).thenReturn(response);
-        URL url = new URL("http://aRandomUrl");
+        URL url = new URI("http://aRandomUrl").toURL();
         builder = new Request.Builder().setUrl(url);
     }
 
@@ -117,7 +118,7 @@ public class RequestTest {
         Assertions.assertEquals(HttpMethod.PUT, request.getMethod());
         List<Part> parts = request.getParts();
         Assertions.assertEquals(1, parts.size());
-        Assertions.assertEquals(part, parts.get(0));
+        Assertions.assertEquals(part, parts.getFirst());
     }
 
     @Test
