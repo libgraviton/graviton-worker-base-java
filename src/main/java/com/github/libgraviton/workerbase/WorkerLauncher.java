@@ -6,7 +6,6 @@ import com.github.libgraviton.workerbase.helper.WorkerUtil;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.util.PrometheusServer;
 import com.sun.net.httpserver.HttpServer;
-import io.activej.inject.annotation.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,18 +33,13 @@ public final class WorkerLauncher {
   private final PrometheusServer prometheusServer;
   private final QueueWorkerRunner queueWorkerRunner;
 
-  @Inject
   public WorkerLauncher(
     WorkerInterface worker,
-    Properties properties
+    Properties properties,
+    String applicationName
   ) {
 
     this.worker = worker;
-
-    String applicationName = properties.getProperty("application.name");
-    if (properties.getProperty("graviton.workerName") != null) {
-      applicationName = properties.getProperty("graviton.workerName");
-    }
 
     LOG.info(
       "Starting '{} {}' (class '{}', worker-base '{}'). Runtime '{}' version '{}', TZ '{}'",
