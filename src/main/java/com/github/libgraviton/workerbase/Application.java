@@ -73,22 +73,20 @@ public class Application {
 
     Properties workerProperties = DependencyInjection.getInstance(Properties.class);
 
-    Sentry.init(options -> {
-      String dsn = System.getenv("SENTRY_DSN");
-
-      if (null != dsn && !dsn.isBlank()) {
+    String dsn = System.getenv("SENTRY_DSN");
+    if (null != dsn && !dsn.isBlank()) {
+      Sentry.init(options -> {
         options.setDsn(dsn);
         options.setEnabled(true);
-      }
-
-      options.setRelease(
-        String.format(
-          "%s@%s",
-          getApplicationName(workerProperties),
-          workerProperties.getProperty("application.version")
-        )
-      );
-    });
+        options.setRelease(
+          String.format(
+            "%s@%s",
+            getApplicationName(workerProperties),
+            workerProperties.getProperty("application.version")
+          )
+        );
+      });
+    }
 
     return workerProperties;
   }
