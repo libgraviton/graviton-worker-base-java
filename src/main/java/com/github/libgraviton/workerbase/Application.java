@@ -3,20 +3,16 @@ package com.github.libgraviton.workerbase;
 import com.github.libgraviton.workerbase.exception.WorkerException;
 import com.github.libgraviton.workerbase.helper.DependencyInjection;
 import com.github.libgraviton.workerbase.helper.WorkerProperties;
+import io.sentry.Sentry;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Application {
-  public static void main(String[] args) throws IOException, WorkerException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-    WorkerProperties.load();
-    DependencyInjection.init();
-
-    // try to persist them
-    WorkerProperties.persist();
+  public static void main(String[] args) throws IOException, WorkerException {
+    Properties workerProperties = initPropertiesAndSentry();
 
     Set<Class<?>> workerClasses = DependencyInjection.getWorkerClasses();
 
@@ -61,9 +57,44 @@ public class Application {
 
     final WorkerLauncher workerLauncher = new WorkerLauncher(
       worker,
-      DependencyInjection.getInstance(Properties.class)
+      workerProperties,
+      getApplicationName(workerProperties)
     );
 
     workerLauncher.run();
+  }
+
+  private static Properties initPropertiesAndSentry() throws IOException {
+    WorkerProperties.load();
+    DependencyInjection.init();
+
+    // try to persist them
+    WorkerProperties.persist();
+
+    Properties workerProperties = DependencyInjection.getInstance(Properties.class);
+
+    Sentry.init(options -> {
+      String dsn = System.getenv("SENTRY_DSN");
+
+      if (null != dsn && !dsn.isBlank()) {
+        options.setDsn(dsn);
+        options.setEnabled(true);
+      }
+
+      options.setRelease(
+        String.format(
+          "%s@%s",
+          getApplicationName(workerProperties),
+          workerProperties.getProperty("application.version")
+        )
+      );
+    });
+
+    return workerProperties;
+  }
+
+  private static String getApplicationName(Properties properties)
+  {
+    return properties.getProperty("graviton.workerName") != null ? properties.getProperty("graviton.workerName") : properties.getProperty("application.name");
   }
 }
